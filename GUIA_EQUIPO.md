@@ -26,7 +26,7 @@ El archivo `application.properties` no está en el repositorio por seguridad.
 Creás el archivo en `src/main/resources/application.properties` con esto:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/taller_alfaro
+spring.datasource.url=jdbc:postgresql://localhost:5432/taller_db
 spring.datasource.username=postgres
 spring.datasource.password=TU_CONTRASEÑA
 spring.datasource.driver-class-name=org.postgresql.Driver
@@ -277,22 +277,128 @@ try {
 
 ## Flujo de trabajo con Git
 
+### Estructura de ramas
+
+```
+main        ← solo cuando el sistema esté completamente terminado
+└── develop ← rama principal de desarrollo, de aquí parten todas las ramas
+    ├── feature/cobros
+    ├── feature/cierres
+    ├── feature/reportes
+    └── feature/auth
+```
+
+Nunca trabajés directamente en `main` ni en `develop`.
+Cada integrante trabaja en su propia rama `feature/`.
+
+---
+
+### Primera vez — clonar el proyecto
+
 ```bash
-# Antes de empezar a trabajar siempre
-git pull origin main
+git clone https://github.com/tu-usuario/Taller-Alfaro-DSI.git
+cd Taller-Alfaro-DSI
+git checkout develop
+```
 
-# Crear tu rama de trabajo
+---
+
+### Crear tu rama de trabajo
+
+Siempre creás tu rama partiendo desde `develop`:
+
+```bash
+git checkout develop
+git pull origin develop
 git checkout -b feature/nombre-de-tu-modulo
+```
 
-# Guardar tus cambios
+Ejemplos de nombres de rama:
+- `feature/cobros`
+- `feature/cierres`
+- `feature/reportes`
+- `feature/historial`
+
+---
+
+### Guardar y subir tus cambios
+
+Cada vez que terminás algo que funciona lo guardás y subís:
+
+```bash
 git add .
-git commit -m "descripción de lo que hiciste"
-
-# Subir tu rama
+git commit -m "descripción clara de lo que hiciste"
 git push origin feature/nombre-de-tu-modulo
 ```
 
-Nunca trabajés directamente en `main`. Cada integrante trabaja en su propia rama.
+Ejemplos de mensajes de commit:
+- `agrego CobrosController con endpoint registrar cobro`
+- `implemento validacion de orden en estado FINALIZADO`
+- `agrego pagina de arqueo de caja en React`
+
+---
+
+### Bajar cambios de develop a tu rama
+
+Cuando otro integrante termina su parte y lo mergea a `develop`,
+vos necesitás traer esos cambios a tu rama para no quedarte desactualizado.
+Hacés esto regularmente, mínimo una vez al día:
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout feature/nombre-de-tu-modulo
+git merge develop
+```
+
+Si hay conflictos IntelliJ te muestra un editor visual para resolverlos.
+Resolvés los conflictos, guardás y hacés un commit:
+
+```bash
+git add .
+git commit -m "merge con develop"
+```
+
+---
+
+### Cuando terminás tu módulo — Pull Request
+
+Cuando tu módulo está completo y probado en Insomnia:
+
+1. Subís todos tus cambios:
+```bash
+git add .
+git commit -m "modulo cobros completo"
+git push origin feature/nombre-de-tu-modulo
+```
+
+2. Entrás a GitHub → tu repositorio
+3. Click en **Compare & pull request**
+4. Base: `develop` ← Compare: `feature/tu-rama`
+5. Escribís una descripción de lo que implementaste
+6. Click en **Create pull request**
+7. Avisás al equipo para que revisen y aprueben el merge
+
+---
+
+### Comandos útiles del día a día
+
+```bash
+# Ver en qué rama estás
+git branch
+
+# Ver el estado de tus archivos
+git status
+
+# Ver el historial de commits
+git log --oneline
+
+# Descartar cambios en un archivo (cuidado, no se puede deshacer)
+git checkout -- nombre-del-archivo
+
+# Ver diferencias antes de hacer commit
+git diff
+```
 
 ---
 
