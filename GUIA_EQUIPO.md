@@ -2,33 +2,50 @@
 
 ## Requisitos previos
 
-Antes de arrancar asegurate de tener instalado:
-- Java 17
-- IntelliJ IDEA
-- Node.js v20.19+
-- PostgreSQL
-- pgAdmin
-- Git
-- Insomnia o Postman
+Instalá estas herramientas antes de arrancar:
+
+| Herramienta | Versión |
+|-------------|---------|
+| Java | 17 |
+| IntelliJ IDEA | Cualquier versión reciente |
+| Node.js | v20.19 o superior |
+| PostgreSQL | Cualquier versión reciente |
+| pgAdmin | Cualquier versión reciente |
+| Git | Cualquier versión reciente |
+| Insomnia | Cualquier versión reciente |
 
 ---
 
-## Clonar el proyecto
+## Paso 1 — Clonar el proyecto
 
 ```bash
-git clone https://github.com/tu-usuario/taller-alfaro-backend.git
-cd taller-alfaro-backend
+git clone https://github.com/gabymcanales/Taller-Alfaro-DSI
+cd Taller-Alfaro-DSI
+git checkout develop
 ```
 
-### Crear tu application.properties
+---
 
-El archivo `application.properties` no está en el repositorio por seguridad.
-Creás el archivo en `src/main/resources/application.properties` con esto:
+## Paso 2 — Configurar la base de datos
+
+Abrís pgAdmin y ejecutás:
+
+```sql
+CREATE DATABASE taller_db;
+```
+
+---
+
+## Paso 3 — Crear application.properties
+
+Este archivo NO está en el repositorio por seguridad. Cada integrante crea el suyo.
+
+Creás el archivo en `src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/taller_db
+spring.datasource.url=jdbc:postgresql://localhost:5432/taller_alfaro
 spring.datasource.username=postgres
-spring.datasource.password=TU_CONTRASEÑA
+spring.datasource.password=TU_CONTRASEÑA_POSTGRES
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
@@ -42,71 +59,73 @@ jwt.secret=tallerAlfaroSecretKey2026DSIProyecto
 jwt.expiration=86400000
 ```
 
-### Crear la base de datos en pgAdmin
+---
 
-```sql
-CREATE DATABASE taller_db;
-```
+## Paso 4 — Arrancar el proyecto
 
-### Arrancar el proyecto
+Click en **Run** en IntelliJ o presionás `Shift + F10`.
 
-Click en el botón **Run** en IntelliJ o `Shift + F10`.
-
-Al arrancar por primera vez se crea automáticamente el usuario administrador:
+Al arrancar por primera vez se crea automáticamente el administrador:
 - **username:** admin
 - **password:** admin123
 
 ---
 
-## Estructura del proyecto
+## Paso 5 — Crear tu rama de trabajo
+
+Las ramas se nombran con tu **carnet de estudiante**.
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b tuCarnet
+git push -u origin tuCarnet
+```
+
+Ejemplo: si tu carnet es `MC221045` tu rama se llama `MC221045`.
+
+---
+
+## Estructura de ramas
 
 ```
-com.taller
-├── auth          → login y JWT
-├── cobros        → módulo de cobros (HU-17, HU-19, HU-22)
-├── cierres       → módulo de cierres (HU-20, HU-21)
-├── reportes      → módulo de reportes (HU-23, HU-24, HU-25, HU-26)
-├── ordenes       → gestión de órdenes
-├── model         → entidades JPA (tablas de la BD)
-├── dto           → objetos de transferencia de datos
-├── config        → configuración de seguridad
-└── exception     → manejo de errores
+main        ← NO tocar, solo al finalizar el sistema
+└── develop ← base de desarrollo, de aquí parten todas las ramas
+    ├── MC221045   ← rama integrante 1
+    ├── MC221046   ← rama integrante 2
+    └── MC221047   ← rama integrante 3
 ```
 
 ---
 
 ## Cómo desarrollar tu módulo
 
-Seguís este orden para cada funcionalidad. No te saltés pasos.
+Seguí este orden. No te saltés pasos.
 
-### Paso 1 — Entender la HU que te tocó
+### 1 — Leé tu HU antes de escribir código
 
-Leé los criterios de aceptación de tu Historia de Usuario antes de escribir
-cualquier código. Cada criterio es una validación que tu código debe cumplir.
+Cada criterio de aceptación es una validación que tu código debe cumplir.
 
-Ejemplo HU-17:
-- Solo cobrar ordenes en estado FINALIZADO → validación en el Service
+Ejemplo HU-17 — Registro de pago en efectivo:
+- Solo cobrar órdenes en estado `FINALIZADO` → validación en el Service
 - Calcular cambio automáticamente → lógica en el Service
 - No aceptar monto menor al total → validación en el Service
-- Cambiar estado a ENTREGADO al confirmar → lógica en el Service
+- Cambiar estado a `ENTREGADO` al confirmar → lógica en el Service
 
-### Paso 2 — Crear el Repository (si no existe)
+### 2 — Crea el Repository
 
-El Repository es la interfaz que se comunica con la base de datos.
-Va dentro del paquete de tu módulo.
+Va dentro del paquete de tu módulo. Es la interfaz que consulta la base de datos.
 
 ```java
 @Repository
 public interface MiRepository extends JpaRepository<MiEntidad, Long> {
-    // Métodos de consulta según necesites
     List<MiEntidad> findByFecha(LocalDate fecha);
 }
 ```
 
-### Paso 3 — Crear el Service
+### 3 — Crea el Service
 
-El Service contiene toda la lógica de negocio. Las validaciones van aquí,
-nunca en el Controller.
+Toda la lógica de negocio y validaciones van aquí. Nunca en el Controller.
 
 ```java
 @Service
@@ -115,23 +134,20 @@ public class MiService {
 
     private final MiRepository miRepository;
 
-    public MiEntidad miMetodo(parametros) {
-        // 1. Validaciones
+    public MiDTO miMetodo(parametros) {
+        // 1. Validar
         // 2. Lógica de negocio
-        // 3. Guardar y retornar
+        // 3. Guardar y retornar DTO
     }
 }
 ```
 
-Reglas del Service:
-- Todas las validaciones de las HU van aquí
-- Lanzás excepciones del paquete `com.taller.exception` cuando algo falla
-- Nunca retornás entidades JPA directamente, convertís a DTO antes
+> Usá siempre las excepciones de `com.taller.exception` cuando algo falla.
+> Nunca retornés la entidad JPA directamente, convertila a DTO primero.
 
-### Paso 4 — Crear el DTO
+### 4 — Crea el DTO
 
-El DTO es el objeto que enviás al frontend. Solo incluye los campos
-que el frontend necesita, nunca expongas contraseñas ni datos sensibles.
+Solo incluí los campos que el frontend necesita. Nunca expongas contraseñas.
 
 ```java
 @Data
@@ -142,10 +158,9 @@ public class MiDTO {
 }
 ```
 
-### Paso 5 — Crear el Controller
+### 5 — Crea el Controller
 
-El Controller expone los endpoints REST. Solo recibe la petición,
-llama al Service y devuelve la respuesta. Sin lógica de negocio aquí.
+Solo recibe la petición, llama al Service y devuelve la respuesta. Sin lógica aquí.
 
 ```java
 @RestController
@@ -167,9 +182,9 @@ public class MiController {
 }
 ```
 
-### Paso 6 — Probar en Insomnia
+### 6 — Probá en Insomnia
 
-Antes de tocar el frontend probás todos tus endpoints en Insomnia.
+Probá todos tus endpoints antes de tocar el frontend.
 
 **Obtener el token:**
 ```
@@ -181,26 +196,26 @@ Body JSON:
 }
 ```
 
-**Usar el token en tus requests:**
-En Insomnia → pestaña Auth → Bearer Token → pegás el token.
+**Usar el token:**
+Insomnia → pestaña **Auth** → **Bearer Token** → pegás el token.
 
-Probás cada caso de éxito y cada caso de error de tus HU antes de continuar.
+Probá cada caso de éxito y cada caso de error de tus HU.
 
-### Paso 7 — Crear las páginas en React
+### 7 — Crea las páginas en React
 
-Solo arrancás el frontend cuando los endpoints ya funcionan correctamente.
+Solo arrancás el frontend cuando los endpoints funcionan correctamente.
 
 ```bash
 cd taller-frontend
+npm install
 npm run dev
 ```
 
 El frontend corre en `http://localhost:5173`.
 
-**Orden de creación en React:**
+**Orden en React:**
 
-1. Creás el servicio en `src/services/miModuloService.js`
-
+**1. Servicio** en `src/services/miModuloService.js`
 ```javascript
 import axiosInstance from '../api/axiosInstance';
 
@@ -208,8 +223,7 @@ export const getMisDatos = () => axiosInstance.get('/mi-modulo');
 export const crearDato = (data) => axiosInstance.post('/mi-modulo', data);
 ```
 
-2. Creás la página en `src/pages/mi-modulo/MiPagina.jsx`
-
+**2. Página** en `src/pages/mi-modulo/MiPagina.jsx`
 ```jsx
 import { useState, useEffect } from 'react';
 import { getMisDatos } from '../../services/miModuloService';
@@ -231,13 +245,78 @@ const MiPagina = () => {
 export default MiPagina;
 ```
 
-3. Registrás la ruta en `src/router/AppRouter.jsx`
+**3. Ruta** en `src/router/AppRouter.jsx`
+
+---
+
+## Flujo diario con Git
+
+### Guardar y subir tus cambios
+
+Hacé esto cada vez que terminás algo que funciona:
+
+```bash
+git add .
+git commit -m "descripción de lo que hiciste"
+git push origin tuCarnet
+```
+
+Ejemplos de mensajes de commit:
+- `agrego endpoint registrar cobro`
+- `implemento validacion orden FINALIZADO`
+- `agrego pagina arqueo de caja`
+
+---
+
+### Bajar cambios de develop a tu rama
+
+Hacé esto mínimo una vez al día para no quedarte desactualizado:
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout tuCarnet
+git merge develop
+```
+
+Si hay conflictos, IntelliJ los muestra visualmente. Resolvelos y luego:
+
+```bash
+git add .
+git commit -m "merge con develop"
+```
+
+---
+
+### Cuando terminás tu módulo — Pull Request
+
+```bash
+git add .
+git commit -m "modulo X completo"
+git push origin tuCarnet
+```
+
+Luego en GitHub:
+1. Click en **Compare & pull request**
+2. Base: `develop` ← Compare: `tuCarnet`
+3. Describís lo que implementaste
+4. Click en **Create pull request**
+5. Avisás al equipo para que aprueben el merge
+
+---
+
+### Comandos útiles
+
+```bash
+git branch              # ver en qué rama estás
+git status              # ver archivos modificados
+git log --oneline       # ver historial de commits
+git diff                # ver cambios antes de hacer commit
+```
 
 ---
 
 ## Endpoints disponibles en la base
-
-Estos endpoints ya están implementados y podés usarlos:
 
 | Método | URL | Descripción |
 |--------|-----|-------------|
@@ -249,9 +328,36 @@ Estos endpoints ya están implementados y podés usarlos:
 
 ---
 
+## Módulos por implementar
+
+| Módulo | HUs | Endpoints a crear |
+|--------|-----|-------------------|
+| Cobros | HU-17, HU-19, HU-22 | POST /cobros/registrar, GET /cobros/arqueo, GET /cobros/historial |
+| Cierres | HU-20, HU-21 | POST /cierres/diario, POST /cierres/mensual |
+| Reportes | HU-23, HU-24, HU-25, HU-26 | GET /reportes/diario, GET /reportes/mensual, GET /reportes/ranking, GET /reportes/pdf |
+
+---
+
+## Estructura del proyecto
+
+```
+com.taller
+├── auth          → login y JWT
+├── cobros        → HU-17, HU-19, HU-22
+├── cierres       → HU-20, HU-21
+├── reportes      → HU-23, HU-24, HU-25, HU-26
+├── ordenes       → gestión de órdenes
+├── model         → entidades JPA (tablas de la BD)
+├── dto           → objetos de transferencia de datos
+├── config        → configuración de seguridad
+└── exception     → manejo de errores
+```
+
+---
+
 ## Manejo de errores
 
-Cuando algo falla el sistema devuelve siempre este formato:
+Cuando algo falla el sistema devuelve siempre:
 
 ```json
 {
@@ -261,159 +367,24 @@ Cuando algo falla el sistema devuelve siempre este formato:
 }
 ```
 
-En el frontend manejás los errores así:
+En React manejás los errores así:
 
 ```javascript
 try {
   const res = await registrarCobro(idOrden, monto);
-  // éxito
 } catch (error) {
   const mensaje = error.response?.data?.mensaje || 'Error inesperado';
-  // mostrar mensaje al usuario
+  // mostrás el mensaje al usuario
 }
 ```
 
 ---
 
-## Flujo de trabajo con Git
+## Archivos que NO debés modificar sin avisar al equipo
 
-### Estructura de ramas
+- `SecurityConfig.java`
+- `GlobalExceptionHandler.java`
+- Cualquier entidad en `model/`
+- `TallerAlfaroApplication.java`
 
-```
-main        ← solo cuando el sistema esté completamente terminado
-└── develop ← rama principal de desarrollo, de aquí parten todas las ramas
-    ├── feature/cobros
-    ├── feature/cierres
-    ├── feature/reportes
-    └── feature/auth
-```
-
-Nunca trabajés directamente en `main` ni en `develop`.
-Cada integrante trabaja en su propia rama `feature/`.
-
----
-
-### Primera vez — clonar el proyecto
-
-```bash
-git clone https://github.com/tu-usuario/Taller-Alfaro-DSI.git
-cd Taller-Alfaro-DSI
-git checkout develop
-```
-
----
-
-### Crear tu rama de trabajo
-
-Siempre creás tu rama partiendo desde `develop`:
-
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feature/nombre-de-tu-modulo
-```
-
-Ejemplos de nombres de rama:
-- `feature/cobros`
-- `feature/cierres`
-- `feature/reportes`
-- `feature/historial`
-
----
-
-### Guardar y subir tus cambios
-
-Cada vez que terminás algo que funciona lo guardás y subís:
-
-```bash
-git add .
-git commit -m "descripción clara de lo que hiciste"
-git push origin feature/nombre-de-tu-modulo
-```
-
-Ejemplos de mensajes de commit:
-- `agrego CobrosController con endpoint registrar cobro`
-- `implemento validacion de orden en estado FINALIZADO`
-- `agrego pagina de arqueo de caja en React`
-
----
-
-### Bajar cambios de develop a tu rama
-
-Cuando otro integrante termina su parte y lo mergea a `develop`,
-vos necesitás traer esos cambios a tu rama para no quedarte desactualizado.
-Hacés esto regularmente, mínimo una vez al día:
-
-```bash
-git checkout develop
-git pull origin develop
-git checkout feature/nombre-de-tu-modulo
-git merge develop
-```
-
-Si hay conflictos IntelliJ te muestra un editor visual para resolverlos.
-Resolvés los conflictos, guardás y hacés un commit:
-
-```bash
-git add .
-git commit -m "merge con develop"
-```
-
----
-
-### Cuando terminás tu módulo — Pull Request
-
-Cuando tu módulo está completo y probado en Insomnia:
-
-1. Subís todos tus cambios:
-```bash
-git add .
-git commit -m "modulo cobros completo"
-git push origin feature/nombre-de-tu-modulo
-```
-
-2. Entrás a GitHub → tu repositorio
-3. Click en **Compare & pull request**
-4. Base: `develop` ← Compare: `feature/tu-rama`
-5. Escribís una descripción de lo que implementaste
-6. Click en **Create pull request**
-7. Avisás al equipo para que revisen y aprueben el merge
-
----
-
-### Comandos útiles del día a día
-
-```bash
-# Ver en qué rama estás
-git branch
-
-# Ver el estado de tus archivos
-git status
-
-# Ver el historial de commits
-git log --oneline
-
-# Descartar cambios en un archivo (cuidado, no se puede deshacer)
-git checkout -- nombre-del-archivo
-
-# Ver diferencias antes de hacer commit
-git diff
-```
-
----
-
-## Módulos por implementar
-
-| Módulo | HUs | Endpoints necesarios |
-|--------|-----|----------------------|
-| Cobros | HU-17, HU-19, HU-22 | POST /cobros/registrar, GET /cobros/arqueo, GET /cobros/historial |
-| Cierres | HU-20, HU-21 | POST /cierres/diario, POST /cierres/mensual |
-| Reportes | HU-23, HU-24, HU-25, HU-26 | GET /reportes/diario, GET /reportes/mensual, GET /reportes/ranking, GET /reportes/pdf |
-
----
-
-## Contacto
-
-Cualquier duda sobre la base del proyecto consultá con el integrante
-que configuró el proyecto inicial antes de modificar archivos compartidos
-como SecurityConfig, GlobalExceptionHandler o las entidades en model/.
+Cualquier duda consultá con el integrante que configuró la base del proyecto.
