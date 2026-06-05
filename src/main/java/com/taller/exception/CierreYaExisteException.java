@@ -1,7 +1,7 @@
 package com.taller.exception;
 
 public class CierreYaExisteException extends RuntimeException {
-    public CierreYaExisteException(String mensaje) {
-        super(mensaje);
+    public CierreYaExisteException(String fecha) {
+        super("Ya existe un cierre para el día " + fecha);
     }
 }
