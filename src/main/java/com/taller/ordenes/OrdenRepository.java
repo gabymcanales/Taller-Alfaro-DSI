@@ -2,6 +2,7 @@ package com.taller.ordenes;
 
 import com.taller.model.Orden;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -14,5 +15,6 @@ public interface OrdenRepository extends JpaRepository<Orden, Long> {
 
     boolean existsByNumOrden(String numOrden);
 
+    @Query("SELECT COUNT(o) FROM Orden o WHERE o.fechaHoraOrden BETWEEN :inicio AND :fin")
     long countByFechaHoraOrdenBetween(LocalDateTime inicio, LocalDateTime fin);
 }

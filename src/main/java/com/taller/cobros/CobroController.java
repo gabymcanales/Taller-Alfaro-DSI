@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.taller.dto.ArqueoDiarioDTO;
 
 import java.util.List;
 
@@ -20,8 +21,7 @@ public class CobroController {
     @PostMapping("/registrar")
     public ResponseEntity<RegistroCobroResponse> registrarCobro(
             @RequestBody RegistroCobroRequest request,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         String username = authentication.getName();
         RegistroCobroResponse response = cobrosService.registrarCobro(request, username);
         return ResponseEntity.ok(response);
@@ -30,5 +30,10 @@ public class CobroController {
     @GetMapping("/servicios")
     public ResponseEntity<List<Servicio>> listarServicios() {
         return ResponseEntity.ok(cobrosService.listarServicios());
+    }
+
+    @GetMapping("/arqueo")
+    public ResponseEntity<ArqueoDiarioDTO> getArqueoDiario() {
+        return ResponseEntity.ok(cobrosService.getArqueoDiario());
     }
 }
