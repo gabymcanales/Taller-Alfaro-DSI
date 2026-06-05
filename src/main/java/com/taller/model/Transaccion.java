@@ -34,4 +34,7 @@ public class Transaccion {
 
     @Column(name = "fecha_hora_transaccion", nullable = false)
     private LocalDateTime fechaHoraTransaccion;
+
+    @Column(name = "cierre_asociado", nullable = false)
+    private Boolean cierreAsociado = false;
 }

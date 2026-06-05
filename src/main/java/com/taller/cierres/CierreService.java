@@ -2,14 +2,19 @@ package com.taller.cierres;
 
 import com.taller.cobros.TransaccionRepository;
 import com.taller.exception.CierreYaExisteException;
+import com.taller.exception.SinTransaccionesException;
 import com.taller.model.CierreDiario;
 import com.taller.model.CierreMensual;
 import com.taller.model.Empleado;
+import com.taller.model.Transaccion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +24,7 @@ public class CierreService {
     private final CierreMensualRepository cierreMensualRepository;
     private final TransaccionRepository transaccionRepository;
 
+    @Transactional
     public CierreDiario realizarCierreDiario(BigDecimal montoFisico, Empleado empleado) {
 
         LocalDate hoy = LocalDate.now();
@@ -30,10 +36,15 @@ public class CierreService {
         LocalDateTime inicioDia = hoy.atStartOfDay();
         LocalDateTime finDia = hoy.atTime(23, 59, 59);
 
-        BigDecimal montoEsperado = transaccionRepository
-                .findByFechaHoraTransaccionBetween(inicioDia, finDia)
-                .stream()
-                .map(t -> t.getMontoTotal())
+        List<Transaccion> transacciones = transaccionRepository
+                .findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(inicioDia, finDia);
+
+        if (transacciones.isEmpty()) {
+            throw new SinTransaccionesException("No hay transacciones para cerrar hoy");
+        }
+
+        BigDecimal montoEsperado = transacciones.stream()
+                .map(Transaccion::getMontoTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal diferencia = montoFisico.subtract(montoEsperado);
@@ -47,9 +58,17 @@ public class CierreService {
         cierre.setCerrado(true);
         cierre.setEmpleado(empleado);
 
-        return cierreDiarioRepository.save(cierre);
+        cierre = cierreDiarioRepository.save(cierre);
+
+        for (Transaccion t : transacciones) {
+            t.setCierreAsociado(true);
+            transaccionRepository.save(t);
+        }
+
+        return cierre;
     }
 
+    @Transactional
     public CierreMensual realizarCierreMensual(Integer mes, Integer anio, Empleado empleado) {
 
         if (cierreMensualRepository.existsByMesAndAnio(mes, anio)) {
@@ -63,7 +82,7 @@ public class CierreService {
         BigDecimal montoTotal = transaccionRepository
                 .findByFechaHoraTransaccionBetween(inicio, fin)
                 .stream()
-                .map(t -> t.getMontoTotal())
+                .map(Transaccion::getMontoTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         CierreMensual cierre = new CierreMensual();

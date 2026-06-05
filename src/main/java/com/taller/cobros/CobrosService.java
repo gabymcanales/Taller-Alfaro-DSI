@@ -94,11 +94,16 @@ public class CobrosService {
     }
 
     private String generarNumeroOrden() {
-        long count = ordenRepository.countByFechaHoraOrdenBetween(
-                LocalDate.now().atStartOfDay(),
-                LocalDate.now().atTime(23, 59, 59));
-        return String.format("ORD-%03d", count + 1);
-    }
+    LocalDate hoy = LocalDate.now();
+    LocalDateTime inicioDia = hoy.atStartOfDay();
+    LocalDateTime finDia = hoy.atTime(23, 59, 59);
+    
+    
+    long count = ordenRepository.countByFechaHoraOrdenBetween(inicioDia, finDia);
+    
+    
+    return String.format("ORD-%03d", count + 1);
+}
 
     private RegistroCobroResponse mapearARespuesta(Transaccion transaccion, Orden orden,
             Cliente cliente, Servicio servicio,
@@ -125,7 +130,7 @@ public class CobrosService {
         LocalDateTime inicioDia = LocalDate.now().atStartOfDay();
         LocalDateTime finDia = LocalDate.now().atTime(23, 59, 59);
 
-        List<Transaccion> transacciones = transaccionRepository.findByFechaHoraTransaccionBetween(inicioDia, finDia);
+        List<Transaccion> transacciones = transaccionRepository.findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(inicioDia, finDia);
 
         BigDecimal totalIngresos = transacciones.stream()
                 .map(Transaccion::getMontoTotal)
