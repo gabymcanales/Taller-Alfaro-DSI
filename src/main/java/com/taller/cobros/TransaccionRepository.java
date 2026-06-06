@@ -20,4 +20,11 @@ public interface TransaccionRepository extends JpaRepository<Transaccion, Long> 
         List<Transaccion> findByFechaHoraTransaccionBetweenAndCierreMensualAsociadoFalse(
                         LocalDateTime inicio,
                         LocalDateTime fin);
+    
+        List<Transaccion> findByOrdenNumOrdenContainingIgnoreCase(String numOrden);
+   
+        List<Transaccion> findByOrdenNumOrdenContainingIgnoreCaseAndFechaHoraTransaccionBetween(
+                        String numOrden,
+                        LocalDateTime inicio,
+                        LocalDateTime fin);
 }

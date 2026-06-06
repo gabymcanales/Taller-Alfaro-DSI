@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.taller.dto.ArqueoDiarioDTO;
+import com.taller.dto.HistorialTransaccionDTO;
+
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import com.taller.cierres.CierreDiarioRepository;
@@ -17,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -182,6 +185,71 @@ public class CobrosService {
         response.setTransacciones(transaccionesDTO);
 
         return response;
+    }
+
+    public List<HistorialTransaccionDTO> getHistorialTransacciones(
+            String numOrden,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta) {
+
+        List<Transaccion> transacciones;
+        LocalDateTime inicio = fechaDesde != null ? fechaDesde.atStartOfDay() : null;
+        LocalDateTime fin = fechaHasta != null ? fechaHasta.atTime(23, 59, 59) : null;
+
+        // Búsqueda por número de orden y fechas
+        if (numOrden != null && !numOrden.isEmpty() && inicio != null && fin != null) {
+            transacciones = transaccionRepository
+                    .findByOrdenNumOrdenContainingIgnoreCaseAndFechaHoraTransaccionBetween(
+                            numOrden, inicio, fin);
+        }
+        // Búsqueda solo por número de orden
+        else if (numOrden != null && !numOrden.isEmpty()) {
+            transacciones = transaccionRepository
+                    .findByOrdenNumOrdenContainingIgnoreCase(numOrden);
+        }
+        // Búsqueda solo por fechas
+        else if (inicio != null && fin != null) {
+            transacciones = transaccionRepository
+                    .findByFechaHoraTransaccionBetween(inicio, fin);
+        }
+        // Sin filtros
+        else {
+            transacciones = transaccionRepository.findAll();
+        }
+
+        // Convertir a DTO
+        return transacciones.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    private HistorialTransaccionDTO convertirADTO(Transaccion t) {
+        HistorialTransaccionDTO dto = new HistorialTransaccionDTO();
+
+        dto.setFecha(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
+        dto.setNumOrden(t.getOrden().getNumOrden());
+
+        // Obtener nombres de servicios
+        String nombresServicios = "";
+        if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
+            nombresServicios = t.getOrden().getOrdenServicios().stream()
+                    .map(os -> os.getServicio().getNombreServicio())
+                    .collect(Collectors.joining(" + "));
+        }
+        dto.setServicios(nombresServicios);
+
+        dto.setMonto(t.getMontoTotal());
+        dto.setEmpleadoUsername(t.getEmpleado().getUsername());
+
+        // Determinar estado (si tiene cierre asociado)
+        if (t.getCierreAsociado() != null && t.getCierreAsociado()) {
+            dto.setEstado("Cerrado");
+        } else {
+            dto.setEstado("Entregado");
+        }
+
+        return dto;
     }
 
 }
