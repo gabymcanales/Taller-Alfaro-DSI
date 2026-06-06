@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.taller.dto.ArqueoDiarioDTO;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-
+import com.taller.cierres.CierreDiarioRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,11 +28,17 @@ public class CobrosService {
     private final ClienteRepository clienteRepository;
     private final EmpleadoRepository empleadoRepository;
     private final OrdenServicioRepository ordenServicioRepository;
+    private final CierreDiarioRepository cierreDiarioRepository;
 
     private static final Long CLIENTE_FIJO_ID = 1L;
 
     @Transactional
     public RegistroCobroResponse registrarCobro(RegistroCobroRequest request, String usernameEmpleado) {
+
+        LocalDate hoy = LocalDate.now();
+        if (cierreDiarioRepository.existsByFechaCierre(hoy)) {
+            throw new RuntimeException("No se pueden registrar cobros: el día " + hoy + " ya está cerrado.");
+        }
 
         // 1. Validar servicio
         Servicio servicio = servicioRepository.findById(request.getIdServicio())
@@ -94,16 +100,14 @@ public class CobrosService {
     }
 
     private String generarNumeroOrden() {
-    LocalDate hoy = LocalDate.now();
-    LocalDateTime inicioDia = hoy.atStartOfDay();
-    LocalDateTime finDia = hoy.atTime(23, 59, 59);
-    
-    
-    long count = ordenRepository.countByFechaHoraOrdenBetween(inicioDia, finDia);
-    
-    
-    return String.format("ORD-%03d", count + 1);
-}
+        LocalDate hoy = LocalDate.now();
+        LocalDateTime inicioDia = hoy.atStartOfDay();
+        LocalDateTime finDia = hoy.atTime(23, 59, 59);
+
+        long count = ordenRepository.countByFechaHoraOrdenBetween(inicioDia, finDia);
+
+        return String.format("ORD-%03d", count + 1);
+    }
 
     private RegistroCobroResponse mapearARespuesta(Transaccion transaccion, Orden orden,
             Cliente cliente, Servicio servicio,
@@ -130,7 +134,8 @@ public class CobrosService {
         LocalDateTime inicioDia = LocalDate.now().atStartOfDay();
         LocalDateTime finDia = LocalDate.now().atTime(23, 59, 59);
 
-        List<Transaccion> transacciones = transaccionRepository.findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(inicioDia, finDia);
+        List<Transaccion> transacciones = transaccionRepository
+                .findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(inicioDia, finDia);
 
         BigDecimal totalIngresos = transacciones.stream()
                 .map(Transaccion::getMontoTotal)

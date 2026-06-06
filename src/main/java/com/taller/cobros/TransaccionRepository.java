@@ -9,11 +9,15 @@ import java.util.List;
 @Repository
 public interface TransaccionRepository extends JpaRepository<Transaccion, Long> {
 
-    List<Transaccion> findByFechaHoraTransaccionBetween(
-            LocalDateTime inicio,
-            LocalDateTime fin);
+        List<Transaccion> findByFechaHoraTransaccionBetween(
+                        LocalDateTime inicio,
+                        LocalDateTime fin);
 
-    List<Transaccion> findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(
-            LocalDateTime inicio,
-            LocalDateTime fin);
+        List<Transaccion> findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(
+                        LocalDateTime inicio,
+                        LocalDateTime fin);
+
+        List<Transaccion> findByFechaHoraTransaccionBetweenAndCierreMensualAsociadoFalse(
+                        LocalDateTime inicio,
+                        LocalDateTime fin);
 }
