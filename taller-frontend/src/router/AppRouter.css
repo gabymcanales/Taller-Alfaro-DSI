@@ -1,0 +1,14 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.layout-content {
+    flex: 1;
+    margin-left: 260px;
+    background: #0a0a0a;
+}
+
+.layout-content-inner {
+    padding: 24px 28px;
+}
