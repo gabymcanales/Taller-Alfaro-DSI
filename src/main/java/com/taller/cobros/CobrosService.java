@@ -103,13 +103,15 @@ public class CobrosService {
     }
 
     private String generarNumeroOrden() {
-        LocalDate hoy = LocalDate.now();
-        LocalDateTime inicioDia = hoy.atStartOfDay();
-        LocalDateTime finDia = hoy.atTime(23, 59, 59);
+        Orden ultimaOrden = ordenRepository.findTopByOrderByIdOrdenDesc();
 
-        long count = ordenRepository.countByFechaHoraOrdenBetween(inicioDia, finDia);
+        int nuevoNumero = 1;
+        if (ultimaOrden != null) {
+            String ultimoNum = ultimaOrden.getNumOrden().replace("ORD-", "");
+            nuevoNumero = Integer.parseInt(ultimoNum) + 1;
+        }
 
-        return String.format("ORD-%03d", count + 1);
+        return String.format("ORD-%03d", nuevoNumero);
     }
 
     private RegistroCobroResponse mapearARespuesta(Transaccion transaccion, Orden orden,
