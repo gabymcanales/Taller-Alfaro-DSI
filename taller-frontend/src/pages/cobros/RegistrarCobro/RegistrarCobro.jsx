@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { registrarCobro, getServicios } from '../../services/cobroService';
-import ModalRegistrarCobro from '../../components/common/ModalRegistrarCobro';
-import CobrosTabs from '../../components/common/CobrosTabs';
+import { registrarCobro, getServicios } from '../../../services/cobroService';
+import ModalRegistrarCobro from '../../../components/common/ModalRegistrarCobro/ModalRegistrarCobro';
+import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
 import './RegistrarCobro.css';
 
 const RegistrarCobro = () => {

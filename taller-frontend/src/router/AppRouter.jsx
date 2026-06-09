@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import RegistrarCobro from '../pages/cobros/RegistrarCobro';
-import Sidebar from '../components/common/Sidebar';
+import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
+import Sidebar from '../components/common/Siderbar/Sidebar';
 import './AppRouter.css';
 
 // Página de inicio simple
