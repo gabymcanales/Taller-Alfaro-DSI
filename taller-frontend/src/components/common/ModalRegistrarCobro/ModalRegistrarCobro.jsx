@@ -58,50 +58,45 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
 
                 {/* ========== DATOS DEL COBRO ========== */}
                 <div className="modal-data">
-                    {/* Fila 1: Orden */}
-                    <div className="data-row">
-                        <span className="label">Orden</span>
-                        <span className="value">{numOrdenTemp}</span>
-                    </div>
 
-                    {/* Fila 2: Servicio */}
+
                     <div className="data-row">
                         <span className="label">Servicio</span>
                         <span className="value">{data?.servicioNombre || '—'}</span>
                     </div>
 
-                    {/* Fila 3: Total a pagar (color naranja) */}
+
                     <div className="data-row">
                         <span className="label">Total a pagar</span>
                         <span className="value orange">${total.toFixed(2)}</span>
                     </div>
 
-                    {/* Fila 4: Monto recibido */}
+
                     <div className="data-row">
                         <span className="label">Monto recibido</span>
                         <span className="value">${recibido.toFixed(2)}</span>
                     </div>
 
-                    {/* Fila 5: Cambio a entregar (color verde) */}
+
                     <div className="data-row">
                         <span className="label">Cambio a entregar</span>
                         <span className="value green">${cambio.toFixed(2)}</span>
                     </div>
 
-                    {/* Fila 6: Empleado */}
+
                     <div className="data-row">
                         <span className="label">Empleado</span>
                         <span className="value">Admin</span>
                     </div>
                 </div>
 
-                {/* ========== BOTONES ========== */}
+
                 <div className="modal-footer">
-                    {/* Botón Cancelar - cierra el modal sin hacer nada */}
+
                     <button className="btn-outline" onClick={onClose}>
                         Cancelar
                     </button>
-                    {/* Botón Confirmar - ejecuta la función onConfirm */}
+
                     <button className="btn-primary" onClick={onConfirm}>
                         Confirmar cobro
                     </button>

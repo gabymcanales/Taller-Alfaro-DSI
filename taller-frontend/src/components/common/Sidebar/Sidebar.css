@@ -85,7 +85,7 @@
     flex: 1;
 }
 .nav-item {
-    text-decoration: none;  /* ← Agrega esta línea */
+    text-decoration: none;  
 }
 
 .sidebar-footer {

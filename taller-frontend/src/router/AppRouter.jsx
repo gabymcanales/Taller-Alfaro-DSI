@@ -1,19 +1,14 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from '../pages/auth/Login/Login';
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
 import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
 import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
 import Sidebar from '../components/common/Sidebar/Sidebar';
-import './AppRouter.css';
 
-// Página de inicio simple
-const Dashboard = () => {
-    return (
-        <div>
-            <h1>Bienvenido a Taller Alfaro</h1>
-            <p>Sistema de Gestión</p>
-            <p>Selecciona una opción del menú lateral</p>
-        </div>
-    );
+// Componente para rutas protegidas
+const PrivateRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    return token ? children : <Navigate to="/login" />;
 };
 
 const Layout = () => {
@@ -23,7 +18,6 @@ const Layout = () => {
             <main className="layout-content">
                 <div className="layout-content-inner">
                     <Routes>
-                        <Route path="/" element={<Dashboard />} />
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
                         <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
                         <Route path="/cierres/diario" element={<CierreCaja />} />
@@ -39,7 +33,12 @@ const AppRouter = () => {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/*" element={<Layout />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/*" element={
+                    <PrivateRoute>
+                        <Layout />
+                    </PrivateRoute>
+                } />
             </Routes>
         </BrowserRouter>
     );

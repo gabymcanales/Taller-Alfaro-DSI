@@ -1,48 +1,35 @@
 .cobros-container {
     width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .page-header {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .page-header h1 {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 600;
     margin-bottom: 4px;
     color: #fff;
 }
 
-.page-header p {
-    font-size: 13px;
-    color: #a0a0a0;
-    margin-bottom: 12px;
-}
-
-.badge {
-    display: inline-block;
-    background: rgba(185, 116, 23, 0.2);
-    color: #ef9f27;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
 .form-panel {
     background: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
+    width: 100%;
 }
 
 .form-header {
-    padding: 14px 20px;
+    padding: 20px 24px;
     border-bottom: 1px solid #333;
 }
 
 .form-header h3 {
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 600;
     color: #fff;
 }
@@ -50,24 +37,24 @@
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    padding: 20px;
+    gap: 32px;
+    padding: 28px;
 }
 
 .form-col {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 .field {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 .field label {
-    font-size: 12px;
+    font-size: 14px;
     color: #a0a0a0;
     font-weight: 500;
 }
@@ -77,10 +64,11 @@
     background: #111;
     border: 1px solid #333;
     color: #fff;
-    padding: 10px 14px;
-    border-radius: 7px;
-    font-size: 13px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 15px;
     outline: none;
+    width: 100%;
 }
 
 .field input:focus,
@@ -88,86 +76,90 @@
     border-color: #ff4000;
 }
 
+
 .change-box {
     background: rgba(99, 153, 34, 0.1);
     border: 1px solid rgba(99, 153, 34, 0.3);
-    border-radius: 8px;
-    padding: 14px 16px;
+    border-radius: 10px;
+    padding: 18px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .change-label {
-    font-size: 12px;
+    font-size: 14px;
     color: #a0a0a0;
 }
 
 .change-val {
-    font-size: 22px;
+    font-size: 28px;
     font-weight: 700;
     color: #97c459;
 }
 
 .change-icon {
-    font-size: 28px;
+    font-size: 32px;
 }
+
 
 .alert-error {
     background: rgba(226, 75, 74, 0.1);
     border: 1px solid rgba(226, 75, 74, 0.3);
     color: #f09595;
-    padding: 12px 14px;
-    border-radius: 7px;
-    font-size: 13px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .alert-success {
     background: rgba(99, 153, 34, 0.1);
     border: 1px solid rgba(99, 153, 34, 0.3);
-    border-radius: 8px;
-    padding: 14px;
+    border-radius: 10px;
+    padding: 18px;
 }
 
 .success-title {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     color: #97c459;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .success-details {
-    font-size: 12px;
+    font-size: 13px;
     color: #ccc;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 10px;
 }
 
 .success-details strong {
     color: #fff;
 }
 
+
 .form-actions {
-    padding: 16px 20px;
+    padding: 20px 28px;
     border-top: 1px solid #333;
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 16px;
 }
 
 .btn-primary {
     background: #ff4000;
     color: #fff;
-    padding: 10px 20px;
-    border-radius: 7px;
-    font-size: 13px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
     border: none;
     cursor: pointer;
+    transition: background 0.15s;
 }
 
 .btn-primary:hover {
@@ -183,12 +175,14 @@
     background: transparent;
     color: #ccc;
     border: 1px solid #444;
-    padding: 10px 20px;
-    border-radius: 7px;
-    font-size: 13px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 14px;
     cursor: pointer;
+    transition: all 0.15s;
 }
 
 .btn-outline:hover {
     background: #2a2a2a;
+    color: #fff;
 }
