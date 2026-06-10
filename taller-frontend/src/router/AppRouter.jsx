@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
 import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
+import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
 import Sidebar from '../components/common/Sidebar/Sidebar';
 import './AppRouter.css';
 
@@ -25,6 +26,8 @@ const Layout = () => {
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
                         <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
+                        <Route path="/cierres/diario" element={<CierreCaja />} />
+                        
                     </Routes>
                 </div>
             </main>
