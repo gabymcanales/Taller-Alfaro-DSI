@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
-import Sidebar from '../components/common/Siderbar/Sidebar';
+import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
+import Sidebar from '../components/common/Sidebar/Sidebar';
 import './AppRouter.css';
 
 // Página de inicio simple
@@ -23,6 +24,7 @@ const Layout = () => {
                     <Routes>
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
+                        <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
                     </Routes>
                 </div>
             </main>

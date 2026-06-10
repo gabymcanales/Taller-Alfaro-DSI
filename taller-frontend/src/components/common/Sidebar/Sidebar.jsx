@@ -8,7 +8,7 @@ const Sidebar = () => {
         { id: 'clientes', label: 'Clientes', path: '/clientes', icon: 'users' },
         { id: 'ordenes', label: 'Órdenes de Trabajo', path: '/ordenes', icon: 'clipboard' },
         { id: 'inventario', label: 'Inventario', path: '/inventario', icon: 'package' },
-        { id: 'facturacion', label: 'Facturación', path: '/facturacion', icon: 'credit-card' },
+        { id: 'facturacion', label: 'Facturación',  path:'/cobros/registrar', icon: 'credit-card' },
         { id: 'reportes', label: 'Informes', path: '/reportes', icon: 'bar-chart' },
         { id: 'empleados', label: 'Empleados', path: '/empleados', icon: 'briefcase' },
         { id: 'servicios', label: 'Servicios', path: '/servicios', icon: 'wrench' },

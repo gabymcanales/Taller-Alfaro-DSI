@@ -9,6 +9,7 @@ import axiosInstance from '../api/axiosInstance';
 ];*/
 // Registrar cobro (real)
 export const registrarCobro = (data) => axiosInstance.post('/cobros/registrar', data);
+export const getArqueoDiario = () => axiosInstance.get('/cobros/arqueo');
 
 // Obtener servicios (con simulación si falla)
 export const getServicios = async () => {
