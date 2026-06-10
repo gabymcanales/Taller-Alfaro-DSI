@@ -201,7 +201,7 @@ const RegistrarCobro = () => {
                                         <div className="change-label">Cambio a entregar</div>
                                         <div className="change-val">${cambio.toFixed(2)}</div>
                                     </div>
-                                    <span className="change-icon">💰</span>
+                                    <span className="change-icon"></span>
                                 </div>
                             )}
 
