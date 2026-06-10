@@ -1,0 +1,44 @@
+.cobros-tabs {
+    display: flex;
+    gap: 4px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 4px;
+    border: 1px solid #333;
+    margin-bottom: 24px;
+}
+
+.cobros-tab {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 7px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #a0a0a0;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+}
+
+.cobros-tab:hover {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.cobros-tab.active {
+    background: #ff4000;
+    color: #fff;
+}
+
+.tab-icon {
+    font-size: 14px;
+}
+
+.tab-label {
+    font-size: 12px;
+}

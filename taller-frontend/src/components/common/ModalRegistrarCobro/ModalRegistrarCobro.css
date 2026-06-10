@@ -1,0 +1,187 @@
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+
+
+.modal-content {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 460px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+
+.modal-header {
+    padding: 20px 20px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Icono del modal */
+.modal-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 64, 0, 0.15);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Botón de cerrar (X) */
+.modal-close {
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.modal-close:hover {
+    color: #ff4000;
+}
+
+/* PASO 2.4: TÍTULO */
+.modal-title {
+    padding: 0 20px;
+}
+
+.modal-title h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+
+.modal-warning {
+    margin: 20px;
+    padding: 12px 14px;
+    background: rgba(239, 159, 39, 0.1);
+    border: 1px solid rgba(239, 159, 39, 0.25);
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #ef9f27;
+    line-height: 1.5;
+}
+
+.modal-warning svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.modal-warning strong {
+    font-weight: 600;
+}
+
+
+.modal-data {
+    margin: 0 20px 20px 20px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+/* Cada fila de datos */
+.data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #1e1e1e;
+}
+
+/* La última fila no tiene borde */
+.data-row:last-child {
+    border-bottom: none;
+}
+
+/* Etiqueta (ej: "Servicio") */
+.data-row .label {
+    color: #888;
+    font-weight: 400;
+}
+
+/* Valor (ej: "Cambio de aceite") */
+.data-row .value {
+    color: #fff;
+    font-weight: 500;
+}
+
+/* Valor con color naranja (Total a pagar) */
+.data-row .value.orange {
+    color: #ff8c42;
+    font-weight: 600;
+}
+
+/* Valor con color verde (Cambio) */
+.data-row .value.green {
+    color: #97c459;
+    font-weight: 600;
+}
+
+/* PASO 2.7: PIE DEL MODAL (BOTONES) */
+.modal-footer {
+    padding: 16px 20px 20px 20px;
+    border-top: 1px solid #333;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Botón Cancelar */
+.modal-footer .btn-outline {
+    background: transparent;
+    color: #ccc;
+    border: 1px solid #444;
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.modal-footer .btn-outline:hover {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+/* Botón Confirmar cobro */
+.modal-footer .btn-primary {
+    background: #ff4000;
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.modal-footer .btn-primary:hover {
+    background: #e03800;
+}

@@ -1,19 +1,25 @@
 package com.taller.cobros;
 
-
-import com.taller.exception.CierreYaExisteException;
-import com.taller.exception.MontoInsuficienteException;
-import com.taller.exception.OrdenNoFinalizadaException;
-import com.taller.exception.OrdenYaCobradaException;
-import com.taller.model.Orden;
-import com.taller.model.Transaccion;
+import com.taller.dto.RegistroCobroRequest;
+import com.taller.dto.RegistroCobroResponse;
+import com.taller.exception.*;
+import com.taller.model.*;
 import com.taller.ordenes.OrdenRepository;
+import com.taller.ordenes.EmpleadoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.taller.dto.ArqueoDiarioDTO;
+import com.taller.dto.HistorialTransaccionDTO;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import com.taller.cierres.CierreDiarioRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,48 +27,231 @@ public class CobrosService {
 
     private final TransaccionRepository transaccionRepository;
     private final OrdenRepository ordenRepository;
+    private final ServicioRepository servicioRepository;
+    private final ClienteRepository clienteRepository;
+    private final EmpleadoRepository empleadoRepository;
+    private final OrdenServicioRepository ordenServicioRepository;
+    private final CierreDiarioRepository cierreDiarioRepository;
 
-    public Transaccion registrarCobro(Long idOrden, BigDecimal montoRecibido) {
+    private static final Long CLIENTE_FIJO_ID = 1L;
 
-        Orden orden = ordenRepository.findById(idOrden)
-                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+    @Transactional
+    public RegistroCobroResponse registrarCobro(RegistroCobroRequest request, String usernameEmpleado) {
 
-        if (!orden.getEstadoOrden().equals("FINALIZADO")) {
-            throw new OrdenNoFinalizadaException(orden.getNumOrden());
+        LocalDate hoy = LocalDate.now();
+        if (cierreDiarioRepository.existsByFechaCierre(hoy)) {
+            throw new RuntimeException("No se pueden registrar cobros: el día " + hoy + " ya está cerrado.");
         }
 
-        if (montoRecibido.compareTo(orden.getTotalCalculadoOrden()) < 0) {
+        // 1. Validar servicio
+        Servicio servicio = servicioRepository.findById(request.getIdServicio())
+                .orElseThrow(() -> new ServicioNoEncontradoException(request.getIdServicio()));
+
+        // 2. Validar cliente fijo
+        Cliente cliente = clienteRepository.findById(CLIENTE_FIJO_ID)
+                .orElseThrow(() -> new ClienteNoEncontradoException(CLIENTE_FIJO_ID));
+
+        // 3. Validar monto
+        if (request.getMontoRecibido().compareTo(request.getMontoTotal()) < 0) {
             throw new MontoInsuficienteException();
         }
 
-        BigDecimal cambio = montoRecibido.subtract(orden.getTotalCalculadoOrden());
+        // 4. Validar empleado
+        Empleado empleado = empleadoRepository.findByUsername(usernameEmpleado)
+                .orElseThrow(() -> new EmpleadoNoEncontradoException(usernameEmpleado));
 
+        // 5. Calcular cambio
+        BigDecimal cambio = request.getMontoRecibido().subtract(request.getMontoTotal());
+
+        // 6. Crear orden
+        Orden orden = new Orden();
+        orden.setCliente(cliente);
+        orden.setEmpleado(empleado);
+        orden.setTotalCalculadoOrden(request.getMontoTotal());
+        orden.setEstadoOrden("FINALIZADO");
+        orden.setFechaHoraOrden(LocalDateTime.now());
+        orden.setNumOrden(generarNumeroOrden());
+        orden = ordenRepository.save(orden);
+
+        // 7. Crear la relación orden-servicio
+        OrdenServicio ordenServicio = new OrdenServicio();
+        OrdenServicioId ordenServicioId = new OrdenServicioId();
+        ordenServicioId.setIdOrden(orden.getIdOrden());
+        ordenServicioId.setIdServicio(request.getIdServicio());
+        ordenServicio.setId(ordenServicioId);
+        ordenServicio.setOrden(orden);
+        ordenServicio.setServicio(servicio);
+        ordenServicio.setPrecioAplicado(request.getMontoTotal());
+        ordenServicioRepository.save(ordenServicio);
+
+        // 8. Crear transacción
         Transaccion transaccion = new Transaccion();
         transaccion.setOrden(orden);
-        transaccion.setMontoTotal(orden.getTotalCalculadoOrden());
-        transaccion.setMontoRecibido(montoRecibido);
+        transaccion.setMontoTotal(request.getMontoTotal());
+        transaccion.setMontoRecibido(request.getMontoRecibido());
         transaccion.setCambio(cambio);
         transaccion.setFechaHoraTransaccion(LocalDateTime.now());
+        transaccion.setEmpleado(empleado);
+        transaccion = transaccionRepository.save(transaccion);
 
+        // 9. Cambiar orden a ENTREGADO
         orden.setEstadoOrden("ENTREGADO");
         ordenRepository.save(orden);
 
-        return transaccionRepository.save(transaccion);
+        // 10. Retornar respuesta
+        return mapearARespuesta(transaccion, orden, cliente, servicio, empleado, cambio);
     }
 
-    public List<Transaccion> getArqueoDiario() {
+    private String generarNumeroOrden() {
+        Orden ultimaOrden = ordenRepository.findTopByOrderByIdOrdenDesc();
+
+        int nuevoNumero = 1;
+        if (ultimaOrden != null) {
+            String ultimoNum = ultimaOrden.getNumOrden().replace("ORD-", "");
+            nuevoNumero = Integer.parseInt(ultimoNum) + 1;
+        }
+
+        return String.format("ORD-%03d", nuevoNumero);
+    }
+
+    private RegistroCobroResponse mapearARespuesta(Transaccion transaccion, Orden orden,
+            Cliente cliente, Servicio servicio,
+            Empleado empleado, BigDecimal cambio) {
+        RegistroCobroResponse response = new RegistroCobroResponse();
+        response.setOrdenId(orden.getIdOrden());
+        response.setNumOrden(orden.getNumOrden());
+        response.setClienteNombre(cliente.getNombreCliente());
+        response.setServicioNombre(servicio.getNombreServicio());
+        response.setMontoTotal(transaccion.getMontoTotal());
+        response.setMontoRecibido(transaccion.getMontoRecibido());
+        response.setCambio(cambio);
+        response.setEstado(orden.getEstadoOrden());
+        response.setFechaHora(transaccion.getFechaHoraTransaccion());
+        response.setEmpleadoUsername(empleado.getUsername());
+        return response;
+    }
+
+    public List<Servicio> listarServicios() {
+        return servicioRepository.findAll();
+    }
+
+    public ArqueoDiarioDTO getArqueoDiario() {
         LocalDateTime inicioDia = LocalDate.now().atStartOfDay();
         LocalDateTime finDia = LocalDate.now().atTime(23, 59, 59);
-        return transaccionRepository.findByFechaHoraTransaccionBetween(inicioDia, finDia);
-    }
 
-    public BigDecimal getTotalDiario() {
-        return getArqueoDiario().stream()
+        List<Transaccion> transacciones = transaccionRepository
+                .findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(inicioDia, finDia);
+
+        BigDecimal totalIngresos = transacciones.stream()
                 .map(Transaccion::getMontoTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Long totalTransacciones = (long) transacciones.size();
+
+        String primerCobroHora = "";
+        String ultimoCobroHora = "";
+
+        if (!transacciones.isEmpty()) {
+            LocalDateTime primera = transacciones.get(0).getFechaHoraTransaccion();
+            LocalDateTime ultima = transacciones.get(transacciones.size() - 1).getFechaHoraTransaccion();
+
+            primerCobroHora = primera.format(DateTimeFormatter.ofPattern("hh:mm a"));
+            ultimoCobroHora = ultima.format(DateTimeFormatter.ofPattern("hh:mm a"));
+        }
+
+        List<ArqueoDiarioDTO.TransaccionArqueoDTO> transaccionesDTO = new ArrayList<>();
+        int contador = 1;
+
+        for (Transaccion t : transacciones) {
+            ArqueoDiarioDTO.TransaccionArqueoDTO dto = new ArqueoDiarioDTO.TransaccionArqueoDTO();
+            dto.setNumero(contador++);
+            dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
+            dto.setNumOrden(t.getOrden().getNumOrden());
+
+            String nombreServicio = "Sin servicio";
+            if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
+                nombreServicio = t.getOrden().getOrdenServicios().get(0).getServicio().getNombreServicio();
+            }
+            dto.setServicioNombre(nombreServicio);
+
+            dto.setMonto(t.getMontoTotal());
+            dto.setEmpleadoUsername(t.getEmpleado().getUsername());
+            transaccionesDTO.add(dto);
+        }
+
+        ArqueoDiarioDTO response = new ArqueoDiarioDTO();
+        response.setTotalIngresos(totalIngresos);
+        response.setTotalTransacciones(totalTransacciones);
+        response.setPrimerCobroHora(primerCobroHora);
+        response.setUltimoCobroHora(ultimoCobroHora);
+        response.setTransacciones(transaccionesDTO);
+
+        return response;
     }
 
-    public List<Transaccion> getHistorial(LocalDateTime inicio, LocalDateTime fin) {
-        return transaccionRepository.findByFechaHoraTransaccionBetween(inicio, fin);
+    public List<HistorialTransaccionDTO> getHistorialTransacciones(
+            String numOrden,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta) {
+
+        List<Transaccion> transacciones;
+        LocalDateTime inicio = fechaDesde != null ? fechaDesde.atStartOfDay() : null;
+        LocalDateTime fin = fechaHasta != null ? fechaHasta.atTime(23, 59, 59) : null;
+
+        // Búsqueda por número de orden y fechas
+        if (numOrden != null && !numOrden.isEmpty() && inicio != null && fin != null) {
+            transacciones = transaccionRepository
+                    .findByOrdenNumOrdenContainingIgnoreCaseAndFechaHoraTransaccionBetween(
+                            numOrden, inicio, fin);
+        }
+        // Búsqueda solo por número de orden
+        else if (numOrden != null && !numOrden.isEmpty()) {
+            transacciones = transaccionRepository
+                    .findByOrdenNumOrdenContainingIgnoreCase(numOrden);
+        }
+        // Búsqueda solo por fechas
+        else if (inicio != null && fin != null) {
+            transacciones = transaccionRepository
+                    .findByFechaHoraTransaccionBetween(inicio, fin);
+        }
+        // Sin filtros
+        else {
+            transacciones = transaccionRepository.findAll();
+        }
+
+        // Convertir a DTO
+        return transacciones.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
     }
+
+    private HistorialTransaccionDTO convertirADTO(Transaccion t) {
+        HistorialTransaccionDTO dto = new HistorialTransaccionDTO();
+
+        dto.setFecha(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
+        dto.setNumOrden(t.getOrden().getNumOrden());
+
+        // Obtener nombres de servicios
+        String nombresServicios = "";
+        if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
+            nombresServicios = t.getOrden().getOrdenServicios().stream()
+                    .map(os -> os.getServicio().getNombreServicio())
+                    .collect(Collectors.joining(" + "));
+        }
+        dto.setServicios(nombresServicios);
+
+        dto.setMonto(t.getMontoTotal());
+        dto.setEmpleadoUsername(t.getEmpleado().getUsername());
+
+        // Determinar estado (si tiene cierre asociado)
+        if (t.getCierreAsociado() != null && t.getCierreAsociado()) {
+            dto.setEstado("Cerrado");
+        } else {
+            dto.setEstado("Entregado");
+        }
+
+        return dto;
+    }
+
 }
