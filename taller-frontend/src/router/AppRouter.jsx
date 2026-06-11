@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/auth/Login/Login';
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
-import Sidebar from '../components/common/Sidebar/Sidebar';
 import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
 import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
+import Historial from '../pages/cobros/Historial/Historial';
+import Sidebar from '../components/common/Sidebar/Sidebar';
+import ReporteDiario from '../pages/reportes/ReporteDiario/ReporteDiario';
+import Dashboard from '../pages/dashboard/Dashboard';
 
-// Componente para rutas protegidas
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
     return token ? children : <Navigate to="/login" />;
@@ -21,6 +23,9 @@ const Layout = () => {
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
                         <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
                         <Route path="/cierres/diario" element={<CierreCaja />} />
+                        <Route path="/cobros/historial" element={<Historial />} />
+                        <Route path="/reportes" element={<ReporteDiario />} />
+                        <Route path="/" element={<Dashboard />} />
                     </Routes>
                 </div>
             </main>
