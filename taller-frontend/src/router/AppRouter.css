@@ -5,10 +5,12 @@
 
 .layout-content {
     flex: 1;
-    margin-left: 260px;
     background: #0a0a0a;
 }
 
 .layout-content-inner {
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 24px 28px;
+    width: 100%;
 }

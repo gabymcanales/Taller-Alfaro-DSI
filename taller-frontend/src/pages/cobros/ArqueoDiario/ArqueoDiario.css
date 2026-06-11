@@ -2,7 +2,7 @@
     width: 100%;
 }
 
-/* Cabecera */
+
 .page-header {
     display: flex;
     align-items: center;
@@ -26,7 +26,7 @@
     font-size: 13px;
 }
 
-/* Tarjetas de estadísticas */
+
 .cards-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
