@@ -96,3 +96,12 @@
 .sidebar-footer .nav-item {
     width: 100%;
 }
+
+.nav-item.active {
+    background: #ff4000;
+    color: #fff;
+}
+
+.nav-item.active .nav-icon svg {
+    stroke: #fff;
+}
