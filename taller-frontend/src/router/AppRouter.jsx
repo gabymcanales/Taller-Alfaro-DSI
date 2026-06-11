@@ -8,7 +8,6 @@ import Sidebar from '../components/common/Sidebar/Sidebar';
 import ReporteDiario from '../pages/reportes/ReporteDiario/ReporteDiario';
 import Dashboard from '../pages/dashboard/Dashboard';
 
-// Componente para rutas protegidas
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
     return token ? children : <Navigate to="/login" />;
@@ -27,7 +26,6 @@ const Layout = () => {
                         <Route path="/cobros/historial" element={<Historial />} />
                         <Route path="/reportes" element={<ReporteDiario />} />
                         <Route path="/" element={<Dashboard />} />
-
                     </Routes>
                 </div>
             </main>
