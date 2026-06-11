@@ -3,6 +3,7 @@ import Login from '../pages/auth/Login/Login';
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
 import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
 import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
+import Historial from '../pages/cobros/Historial/Historial';
 import Sidebar from '../components/common/Sidebar/Sidebar';
 
 // Componente para rutas protegidas
@@ -21,6 +22,7 @@ const Layout = () => {
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
                         <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
                         <Route path="/cierres/diario" element={<CierreCaja />} />
+                        <Route path="/cobros/historial" element={<Historial />} />
                         
                     </Routes>
                 </div>
