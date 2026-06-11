@@ -18,11 +18,11 @@ const Login = () => {
         try {
             const response = await axiosInstance.post('/auth/login', { username, password });
             const { token } = response.data;
-
-            // Guardar token en localStorage
+            
+            
             localStorage.setItem('token', token);
-
-            // Redirigir a la página principal
+            
+            
             navigate('/cobros/registrar');
         } catch (err) {
             setError('Usuario o contraseña incorrectos');
@@ -36,7 +36,7 @@ const Login = () => {
             <div className="login-card">
                 <h1>Taller Alfaro</h1>
                 <p>Sistema de Gestión</p>
-
+                
                 <form onSubmit={handleSubmit}>
                     <input
                         type="text"

@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 @RestController
 @RequestMapping("/api/cierres")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class CierreController {
 
     private final CierreService cierreService;

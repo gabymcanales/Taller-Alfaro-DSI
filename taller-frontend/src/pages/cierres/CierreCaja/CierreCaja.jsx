@@ -129,7 +129,7 @@ const CierreCaja = () => {
         <div className="cierres-container">
             <div className="page-header">
                 <h1>Cierre de Caja</h1>
-            
+
                 <span className="badge-date">{new Date().toLocaleDateString('es-ES')}</span>
             </div>
 
@@ -209,9 +209,9 @@ const CierreCaja = () => {
                             <button className="btn-outline" onClick={limpiarCierreDiario} disabled={cierreExistente}>
                                 Cancelar
                             </button>
-                            <button 
-                                className="btn-primary" 
-                                onClick={handleCierreDiario} 
+                            <button
+                                className="btn-primary"
+                                onClick={handleCierreDiario}
                                 disabled={loadingDiario || cierreExistente}
                             >
                                 {loadingDiario ? 'Procesando...' : 'Ejecutar cierre diario'}
