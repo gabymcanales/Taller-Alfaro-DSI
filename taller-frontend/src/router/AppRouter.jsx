@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/auth/Login/Login';
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
-import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';  
 import Sidebar from '../components/common/Sidebar/Sidebar';
+import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
+import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
 
 // Componente para rutas protegidas
 const PrivateRoute = ({ children }) => {
@@ -18,7 +19,8 @@ const Layout = () => {
                 <div className="layout-content-inner">
                     <Routes>
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
-                        <Route path="/cobros/arqueo" element={<ArqueoDiario />} />  
+                        <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
+                        <Route path="/cierres/diario" element={<CierreCaja />} />
                     </Routes>
                 </div>
             </main>

@@ -57,14 +57,6 @@ const ArqueoDiario = () => {
         </svg>
     );
 
-    if (loading) {
-        return (
-            <div className="arqueo-container">
-                <CobrosTabs />
-                <div className="loading">Cargando arqueo...</div>
-            </div>
-        );
-    }
 
     return (
         <div className="arqueo-container">
