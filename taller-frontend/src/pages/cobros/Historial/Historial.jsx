@@ -94,14 +94,6 @@ const Historial = () => {
         </svg>
     );
 
-    if (loading) {
-        return (
-            <div className="historial-container">
-                <CobrosTabs />
-                <div className="loading">Cargando historial...</div>
-            </div>
-        );
-    }
 
     return (
         <div className="historial-container">
