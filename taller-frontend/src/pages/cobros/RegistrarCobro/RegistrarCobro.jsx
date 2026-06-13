@@ -1,13 +1,27 @@
 import { useState, useEffect } from 'react';
 import { registrarCobro, getServicios } from '../../../services/cobroService';
 import ModalRegistrarCobro from '../../../components/common/ModalRegistrarCobro/ModalRegistrarCobro';
+import ModalExitoCobro from '../../../components/common/ModalExitoCobro/ModalExitoCobro';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
 import './RegistrarCobro.css';
+
+
+const ChangeIcon = () => (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#97c459" strokeWidth="1.5">
+        <path d="M7 20l10 0" />
+        <path d="M6 6l6 -1l6 1" />
+        <path d="M12 3l0 17" />
+        <path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0" />
+        <path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0" />
+    </svg>
+);
 
 const RegistrarCobro = () => {
     const [servicios, setServicios] = useState([]);
     const [formData, setFormData] = useState({
         idServicio: '',
+        nombreCliente: '',
+        telefonoCliente: '',
         montoTotal: '',
         montoRecibido: ''
     });
@@ -16,22 +30,22 @@ const RegistrarCobro = () => {
     const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [showModalExito, setShowModalExito] = useState(false);
     const [pendingData, setPendingData] = useState(null);
     const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
 
     useEffect(() => {
+        const cargarServicios = async () => {
+            try {
+                const response = await getServicios();
+                setServicios(response.data);
+            } catch (err) {
+                console.error('Error al cargar servicios:', err);
+                setError('No se pudieron cargar los servicios');
+            }
+        };
         cargarServicios();
     }, []);
-
-    const cargarServicios = async () => {
-        try {
-            const response = await getServicios();
-            setServicios(response.data);
-        } catch (err) {
-            console.error('Error al cargar servicios:', err);
-            setError('No se pudieron cargar los servicios');
-        }
-    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -67,6 +81,16 @@ const RegistrarCobro = () => {
             return;
         }
 
+        if (!formData.nombreCliente.trim()) {
+            setError('Ingrese el nombre del cliente');
+            return;
+        }
+
+        if (!formData.telefonoCliente.trim()) {
+            setError('Ingrese el teléfono del cliente');
+            return;
+        }
+
         if (isNaN(total) || total <= 0) {
             setError('Ingrese un monto total válido');
             return;
@@ -84,9 +108,12 @@ const RegistrarCobro = () => {
 
         setPendingData({
             idServicio: parseInt(formData.idServicio),
+            nombreCliente: formData.nombreCliente,
+            telefonoCliente: formData.telefonoCliente,
             montoTotal: total,
             montoRecibido: recibido,
-            servicioNombre: servicioSeleccionado?.nombreServicio || ''
+            servicioNombre: servicioSeleccionado?.nombreServicio || '',
+            cambio: recibido - total
         });
 
         setShowModal(true);
@@ -99,15 +126,31 @@ const RegistrarCobro = () => {
         try {
             const response = await registrarCobro({
                 idServicio: pendingData.idServicio,
+                nombreCliente: pendingData.nombreCliente,
+                telefonoCliente: pendingData.telefonoCliente,
                 montoTotal: pendingData.montoTotal,
                 montoRecibido: pendingData.montoRecibido
             });
 
-            setSuccess(response.data);
-            setCambio(response.data.cambio);
+            const exitoData = {
+                numOrden: response.data.numOrden,
+                clienteNombre: pendingData.nombreCliente,
+                telefonoCliente: pendingData.telefonoCliente,
+                montoTotal: pendingData.montoTotal,
+                montoRecibido: pendingData.montoRecibido,
+                cambio: pendingData.cambio,
+                empleadoUsername: response.data.empleadoUsername,
+                fechaHora: new Date().toLocaleString()
+            };
+
+            setSuccess(exitoData);
+            setCambio(pendingData.cambio);
+            setShowModalExito(true);
 
             setFormData({
                 idServicio: '',
+                nombreCliente: '',
+                telefonoCliente: '',
                 montoTotal: '',
                 montoRecibido: ''
             });
@@ -123,6 +166,8 @@ const RegistrarCobro = () => {
     const limpiarFormulario = () => {
         setFormData({
             idServicio: '',
+            nombreCliente: '',
+            telefonoCliente: '',
             montoTotal: '',
             montoRecibido: ''
         });
@@ -164,6 +209,31 @@ const RegistrarCobro = () => {
                                     ))}
                                 </select>
                             </div>
+
+                            <div className="field">
+                                <label>Nombre del cliente</label>
+                                <input
+                                    type="text"
+                                    name="nombreCliente"
+                                    value={formData.nombreCliente}
+                                    onChange={handleChange}
+                                    placeholder="Nombre completo"
+                                    autoComplete="off"
+                                    required
+                                />
+                            </div>
+
+                            <div className="field">
+                                <label>Teléfono del cliente</label>
+                                <input
+                                    type="tel"
+                                    name="telefonoCliente"
+                                    value={formData.telefonoCliente}
+                                    onChange={handleChange}
+                                    placeholder="0000-0000"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className="form-col">
@@ -201,27 +271,18 @@ const RegistrarCobro = () => {
                                         <div className="change-label">Cambio a entregar</div>
                                         <div className="change-val">${cambio.toFixed(2)}</div>
                                     </div>
-                                    <span className="change-icon"></span>
+                                    <span className="change-icon"><ChangeIcon /></span>
                                 </div>
                             )}
 
                             {error && (
                                 <div className="alert-error">
-                                    <span>⚠️</span>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f09595" strokeWidth="1.5">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                        <circle cx="12" cy="16" r="0.5" fill="#f09595" stroke="none" />
+                                    </svg>
                                     <span>{error}</span>
-                                </div>
-                            )}
-
-                            {success && (
-                                <div className="alert-success">
-                                    <div className="success-title">✓ Cobro registrado exitosamente</div>
-                                    <div className="success-details">
-                                        <div><strong>Orden:</strong> {success.numOrden}</div>
-                                        <div><strong>Servicio:</strong> {success.servicioNombre}</div>
-                                        <div><strong>Total:</strong> ${success.montoTotal?.toFixed(2)}</div>
-                                        <div><strong>Recibido:</strong> ${success.montoRecibido?.toFixed(2)}</div>
-                                        <div><strong>Cambio:</strong> ${success.cambio?.toFixed(2)}</div>
-                                    </div>
                                 </div>
                             )}
                         </div>
@@ -243,6 +304,12 @@ const RegistrarCobro = () => {
                 onClose={() => setShowModal(false)}
                 onConfirm={handleConfirm}
                 data={pendingData}
+            />
+
+            <ModalExitoCobro
+                isOpen={showModalExito}
+                onClose={() => setShowModalExito(false)}
+                data={success}
             />
         </div>
     );
