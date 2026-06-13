@@ -33,8 +33,6 @@ public class CobrosService {
     private final OrdenServicioRepository ordenServicioRepository;
     private final CierreDiarioRepository cierreDiarioRepository;
 
-    private static final Long CLIENTE_FIJO_ID = 1L;
-
     @Transactional
     public RegistroCobroResponse registrarCobro(RegistroCobroRequest request, String usernameEmpleado) {
 
@@ -47,9 +45,14 @@ public class CobrosService {
         Servicio servicio = servicioRepository.findById(request.getIdServicio())
                 .orElseThrow(() -> new ServicioNoEncontradoException(request.getIdServicio()));
 
-        // 2. Validar cliente fijo
-        Cliente cliente = clienteRepository.findById(CLIENTE_FIJO_ID)
-                .orElseThrow(() -> new ClienteNoEncontradoException(CLIENTE_FIJO_ID));
+        // 2. Crear o buscar cliente por teléfono
+        Cliente cliente = clienteRepository.findByTelefonoCliente(request.getTelefonoCliente())
+                .orElseGet(() -> {
+                    Cliente nuevoCliente = new Cliente();
+                    nuevoCliente.setNombreCliente(request.getNombreCliente());
+                    nuevoCliente.setTelefonoCliente(request.getTelefonoCliente());
+                    return clienteRepository.save(nuevoCliente);
+                });
 
         // 3. Validar monto
         if (request.getMontoRecibido().compareTo(request.getMontoTotal()) < 0) {
@@ -104,13 +107,11 @@ public class CobrosService {
 
     private String generarNumeroOrden() {
         Orden ultimaOrden = ordenRepository.findTopByOrderByIdOrdenDesc();
-
         int nuevoNumero = 1;
         if (ultimaOrden != null) {
             String ultimoNum = ultimaOrden.getNumOrden().replace("ORD-", "");
             nuevoNumero = Integer.parseInt(ultimoNum) + 1;
         }
-
         return String.format("ORD-%03d", nuevoNumero);
     }
 
@@ -121,6 +122,7 @@ public class CobrosService {
         response.setOrdenId(orden.getIdOrden());
         response.setNumOrden(orden.getNumOrden());
         response.setClienteNombre(cliente.getNombreCliente());
+        response.setTelefonoCliente(cliente.getTelefonoCliente());
         response.setServicioNombre(servicio.getNombreServicio());
         response.setMontoTotal(transaccion.getMontoTotal());
         response.setMontoRecibido(transaccion.getMontoRecibido());
