@@ -16,7 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/cobros")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class CobroController {
 
     private final CobrosService cobrosService;
