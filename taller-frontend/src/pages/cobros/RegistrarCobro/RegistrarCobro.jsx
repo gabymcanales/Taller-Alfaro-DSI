@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { registrarCobro, getServicios } from '../../../services/cobroService';
+import { registrarCobro, getServicios, buscarClientes } from '../../../services/cobroService';
 import ModalRegistrarCobro from '../../../components/common/ModalRegistrarCobro/ModalRegistrarCobro';
 import ModalExitoCobro from '../../../components/common/ModalExitoCobro/ModalExitoCobro';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
 import './RegistrarCobro.css';
-
 
 const ChangeIcon = () => (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#97c459" strokeWidth="1.5">
@@ -33,6 +32,11 @@ const RegistrarCobro = () => {
     const [showModalExito, setShowModalExito] = useState(false);
     const [pendingData, setPendingData] = useState(null);
     const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
+    
+    // Estados para buscador de clientes
+    const [clientesSugeridos, setClientesSugeridos] = useState([]);
+    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+    const [buscando, setBuscando] = useState(false);
 
     useEffect(() => {
         const cargarServicios = async () => {
@@ -47,6 +51,36 @@ const RegistrarCobro = () => {
         cargarServicios();
     }, []);
 
+    const buscarClientesPorNombre = async (nombre) => {
+        if (!nombre || nombre.length < 2) {
+            setClientesSugeridos([]);
+            setMostrarSugerencias(false);
+            return;
+        }
+        
+        setBuscando(true);
+        try {
+            const response = await buscarClientes(nombre);
+            setClientesSugeridos(response.data);
+            setMostrarSugerencias(response.data.length > 0);
+        } catch (err) {
+            console.error('Error al buscar clientes:', err);
+            setClientesSugeridos([]);
+        } finally {
+            setBuscando(false);
+        }
+    };
+
+    const seleccionarCliente = (cliente) => {
+        setFormData(prev => ({
+            ...prev,
+            nombreCliente: cliente.nombreCliente,
+            telefonoCliente: cliente.telefonoCliente || ''
+        }));
+        setMostrarSugerencias(false);
+        setClientesSugeridos([]);
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -54,6 +88,10 @@ const RegistrarCobro = () => {
         if (name === 'idServicio') {
             const servicio = servicios.find(s => s.idServicio === parseInt(value));
             setServicioSeleccionado(servicio);
+        }
+
+        if (name === 'nombreCliente') {
+            buscarClientesPorNombre(value);
         }
 
         if (name === 'montoRecibido' && formData.montoTotal) {
@@ -124,10 +162,12 @@ const RegistrarCobro = () => {
         setLoading(true);
 
         try {
+            const telefonoNormalizado = pendingData.telefonoCliente.replace(/[^0-9]/g, '');
+            
             const response = await registrarCobro({
                 idServicio: pendingData.idServicio,
                 nombreCliente: pendingData.nombreCliente,
-                telefonoCliente: pendingData.telefonoCliente,
+                telefonoCliente: telefonoNormalizado,
                 montoTotal: pendingData.montoTotal,
                 montoRecibido: pendingData.montoRecibido
             });
@@ -156,6 +196,8 @@ const RegistrarCobro = () => {
             });
             setServicioSeleccionado(null);
             setPendingData(null);
+            setClientesSugeridos([]);
+            setMostrarSugerencias(false);
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al registrar el cobro');
         } finally {
@@ -175,6 +217,8 @@ const RegistrarCobro = () => {
         setError('');
         setSuccess(null);
         setServicioSeleccionado(null);
+        setClientesSugeridos([]);
+        setMostrarSugerencias(false);
     };
 
     return (
@@ -212,15 +256,28 @@ const RegistrarCobro = () => {
 
                             <div className="field">
                                 <label>Nombre del cliente</label>
-                                <input
-                                    type="text"
-                                    name="nombreCliente"
-                                    value={formData.nombreCliente}
-                                    onChange={handleChange}
-                                    placeholder="Nombre completo"
-                                    autoComplete="off"
-                                    required
-                                />
+                                <div className="registrar-cobro-buscador-container">
+                                    <input
+                                        type="text"
+                                        name="nombreCliente"
+                                        value={formData.nombreCliente}
+                                        onChange={handleChange}
+                                        placeholder="Nombre completo"
+                                        autoComplete="off"
+                                        required
+                                    />
+                                    {buscando && <span className="registrar-cobro-buscando-icon"></span>}
+                                    {mostrarSugerencias && clientesSugeridos.length > 0 && (
+                                        <ul className="registrar-cobro-sugerencias-lista">
+                                            {clientesSugeridos.map(cliente => (
+                                                <li key={cliente.idCliente} onClick={() => seleccionarCliente(cliente)}>
+                                                    <strong>{cliente.nombreCliente}</strong>
+                                                    <span>{cliente.telefonoCliente || 'Sin teléfono'}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="field">
@@ -231,6 +288,7 @@ const RegistrarCobro = () => {
                                     value={formData.telefonoCliente}
                                     onChange={handleChange}
                                     placeholder="0000-0000"
+                                    autoComplete="off"
                                     required
                                 />
                             </div>

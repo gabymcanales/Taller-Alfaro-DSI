@@ -256,4 +256,11 @@ public class CobrosService {
         return dto;
     }
 
+    public List<Cliente> buscarClientesPorNombre(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return List.of();
+        }
+        return clienteRepository.findByNombreClienteContainingIgnoreCase(nombre);
+    }
+
 }
