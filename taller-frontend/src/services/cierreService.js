@@ -6,5 +6,5 @@ export const getCierreDiario = () => axiosInstance.get('/cierres/diario');
 
 // Cierre mensual
 export const cerrarMensual = (data) => axiosInstance.post('/cierres/mensual', data);
-export const getCierreMensual = (mes, anio) => axiosInstance.get(`/cierres/mensual ? mes = ${ mes } & anio=${ anio }`);
-export const getTotalVentasMes = (mes, anio) => axiosInstance.get(`/cierres/mensual / total ? mes = ${ mes } & anio=${ anio }`);
+export const getCierreMensual = (mes, anio) => axiosInstance.get(`/cierres/mensual?mes=${mes}&anio=${anio}`);
+export const getTotalVentasMes = (mes, anio) => axiosInstance.get(`/cierres/mensual/total?mes=${mes}&anio=${anio}`);

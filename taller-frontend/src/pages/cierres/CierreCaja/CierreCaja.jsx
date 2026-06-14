@@ -1,60 +1,41 @@
 import { useState, useEffect } from 'react';
-import { cerrarDiario, getCierreDiario, getTotalVentasMes, cerrarMensual } from '../../../services/cierreService';
+import { cerrarDiario, getCierreDiario, cerrarMensual, getCierreMensual, getTotalVentasMes } from '../../../services/cierreService';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
+import ModalConfirmarCierreDiario from '../../../components/common/ModalConfirmarCierreDiario/ModalConfirmarCierreDiario';
+import ModalConfirmarCierreMensual from '../../../components/common/ModalConfirmarCierreMensual/ModalConfirmarCierreMensual';
 import './CierreCaja.css';
 
 const CierreCaja = () => {
-    // Estado para cierre diario
+    // ========== ESTADOS CIERRE DIARIO ==========
     const [montoFisico, setMontoFisico] = useState('');
     const [totalEsperado, setTotalEsperado] = useState(0);
-    const [totalTransacciones, setTotalTransacciones] = useState(0);
     const [diferencia, setDiferencia] = useState(null);
     const [loadingDiario, setLoadingDiario] = useState(false);
-    const [mensajeDiario, setMensajeDiario] = useState('');
-    const [errorDiario, setErrorDiario] = useState('');
     const [cierreExistente, setCierreExistente] = useState(false);
+    const [showModalDiario, setShowModalDiario] = useState(false);
+    const [datosCierreDiario, setDatosCierreDiario] = useState(null);
+    const [errorDiario, setErrorDiario] = useState('');
 
-    // Estado para cierre mensual
-    const [mes, setMes] = useState(new Date().getMonth() + 1);
-    const [anio, setAnio] = useState(new Date().getFullYear());
+    // ========== ESTADOS CIERRE MENSUAL ==========
     const [totalVentasMes, setTotalVentasMes] = useState(0);
+    const [cierreMensualExistente, setCierreMensualExistente] = useState(false);
     const [loadingMensual, setLoadingMensual] = useState(false);
-    const [mensajeMensual, setMensajeMensual] = useState('');
-    const [errorMensual, setErrorMensual] = useState('');
+    const [showModalMensual, setShowModalMensual] = useState(false);
+    const [datosCierreMensual, setDatosCierreMensual] = useState(null);
 
-    // Cargar datos al iniciar
-    useEffect(() => {
-        cargarCierreDiario();
-        cargarTotalVentasMes();
-    }, []);
-
-    // Cargar cierre diario existente
+    // ========== FUNCIONES CIERRE DIARIO ==========
     const cargarCierreDiario = async () => {
         try {
             const response = await getCierreDiario();
             if (response.data) {
                 setTotalEsperado(response.data.montoEsperado);
-                setTotalTransacciones(4); // Esto debería venir del backend
                 setCierreExistente(true);
-                setMensajeDiario(`Ya existe un cierre para hoy. Total: $${response.data.montoEsperado}`);
             }
-        } catch (err) {
-            // No hay cierre aún, es normal
+        } catch {
             setCierreExistente(false);
         }
     };
 
-    // Cargar total de ventas del mes
-    const cargarTotalVentasMes = async () => {
-        try {
-            const response = await getTotalVentasMes(mes, anio);
-            setTotalVentasMes(response.data);
-        } catch (err) {
-            console.error('Error al cargar total del mes:', err);
-        }
-    };
-
-    // Calcular diferencia en tiempo real
     const calcularDiferencia = (fisico) => {
         if (fisico && totalEsperado) {
             const dif = parseFloat(fisico) - totalEsperado;
@@ -69,10 +50,30 @@ const CierreCaja = () => {
         setMontoFisico(valor);
         calcularDiferencia(valor);
         setErrorDiario('');
-        setMensajeDiario('');
     };
 
-    // Ejecutar cierre diario
+    const cargarDatosParaModalDiario = async () => {
+        try {
+            const response = await getCierreDiario();
+            if (response.data) {
+                setCierreExistente(true);
+                return;
+            }
+        } catch {
+            // No hay cierre, continuar
+        }
+
+        setDatosCierreDiario({
+            fecha: new Date().toLocaleDateString('es-ES'),
+            totalEsperado: totalEsperado,
+            montoFisico: parseFloat(montoFisico),
+            diferencia: diferencia,
+            usuario: 'Admin',
+            horaCierre: new Date().toLocaleTimeString('es-ES')
+        });
+        setShowModalDiario(true);
+    };
+
     const handleCierreDiario = async () => {
         if (!montoFisico || parseFloat(montoFisico) <= 0) {
             setErrorDiario('Ingrese el monto físico contado');
@@ -80,35 +81,16 @@ const CierreCaja = () => {
         }
 
         setLoadingDiario(true);
-        setErrorDiario('');
-        setMensajeDiario('');
-
         try {
             const response = await cerrarDiario({ montoFisico: parseFloat(montoFisico) });
-            setMensajeDiario(response.data.mensaje || 'Cierre diario completado exitosamente');
             setCierreExistente(true);
             setTotalEsperado(response.data.montoEsperado);
+            setShowModalDiario(false);
+            alert(response.data.mensaje || 'Cierre diario completado exitosamente');
         } catch (err) {
-            setErrorDiario(err.response?.data?.mensaje || 'Error al realizar el cierre diario');
+            alert(err.response?.data?.mensaje || 'Error al realizar el cierre diario');
         } finally {
             setLoadingDiario(false);
-        }
-    };
-
-    // Ejecutar cierre mensual
-    const handleCierreMensual = async () => {
-        setLoadingMensual(true);
-        setErrorMensual('');
-        setMensajeMensual('');
-
-        try {
-            const response = await cerrarMensual({ mes, anio });
-            setMensajeMensual(response.data.mensaje || 'Cierre mensual completado exitosamente');
-            setTotalVentasMes(response.data.montoTotal);
-        } catch (err) {
-            setErrorMensual(err.response?.data?.mensaje || 'Error al realizar el cierre mensual');
-        } finally {
-            setLoadingMensual(false);
         }
     };
 
@@ -116,10 +98,83 @@ const CierreCaja = () => {
         setMontoFisico('');
         setDiferencia(null);
         setErrorDiario('');
-        setMensajeDiario('');
     };
 
-    // Nombres de los meses
+    const cargarDatosMensuales = async () => {
+        const mes = new Date().getMonth() + 1;
+        const anio = new Date().getFullYear();
+
+        try {
+            const response = await getCierreMensual(mes, anio);
+            if (response.data) {
+                setCierreMensualExistente(true);
+                setTotalVentasMes(response.data.montoTotal);
+                return;
+            }
+        } catch {
+            setCierreMensualExistente(false);
+        }
+
+        try {
+            const response = await getTotalVentasMes(mes, anio);
+            setTotalVentasMes(response.data);
+        } catch {
+            console.error('Error al cargar datos mensuales');
+        }
+    };
+
+    const cargarDatosParaModalMensual = async () => {
+        const mes = new Date().getMonth() + 1;
+        const anio = new Date().getFullYear();
+
+        try {
+            const response = await getCierreMensual(mes, anio);
+            if (response.data) {
+                setCierreMensualExistente(true);
+                return;
+            }
+        } catch {
+            // No hay cierre, continuar
+        }
+
+        setDatosCierreMensual({
+            mes: mes,
+            anio: anio,
+            totalMes: totalVentasMes,
+            diasTrabajados: 0,
+            totalTransacciones: 0,
+            usuario: 'Admin'
+        });
+        setShowModalMensual(true);
+    };
+
+    const handleCierreMensual = async () => {
+        setLoadingMensual(true);
+        try {
+            const response = await cerrarMensual({
+                mes: new Date().getMonth() + 1,
+                anio: new Date().getFullYear()
+            });
+            setCierreMensualExistente(true);
+            setTotalVentasMes(response.data.montoTotal);
+            setShowModalMensual(false);
+            alert(response.data.mensaje || 'Cierre mensual completado exitosamente');
+        } catch (err) {
+            alert(err.response?.data?.mensaje || 'Error al realizar el cierre mensual');
+        } finally {
+            setLoadingMensual(false);
+        }
+    };
+
+
+    useEffect(() => {
+        const inicializarDatos = async () => {
+            await cargarCierreDiario();
+            await cargarDatosMensuales();
+        };
+        inicializarDatos();
+    }, []);
+
     const meses = [
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -129,14 +184,12 @@ const CierreCaja = () => {
         <div className="cierres-container">
             <div className="page-header">
                 <h1>Cierre de Caja</h1>
-
                 <span className="badge-date">{new Date().toLocaleDateString('es-ES')}</span>
             </div>
 
             <CobrosTabs />
 
             <div className="two-panels">
-                {/* Panel de Cierre Diario */}
                 <div className="panel">
                     <div className="panel-header">
                         <h3>
@@ -154,7 +207,6 @@ const CierreCaja = () => {
                             <div className="info-card">
                                 <div className="ic-label">Total esperado (sistema)</div>
                                 <div className="ic-val orange">${totalEsperado.toFixed(2)}</div>
-                                <div className="ic-sub">{totalTransacciones} transacciones</div>
                             </div>
                             <div className={`info-card ${diferencia !== null ? (diferencia >= 0 ? 'positive' : 'negative') : ''}`}>
                                 <div className="ic-label">Diferencia</div>
@@ -184,15 +236,20 @@ const CierreCaja = () => {
                             />
                         </div>
 
-                        {mensajeDiario && (
-                            <div className="alert-success">
-                                <span>✓</span> {mensajeDiario}
-                            </div>
-                        )}
-
                         {errorDiario && (
                             <div className="alert-warn">
                                 <span>⚠</span> {errorDiario}
+                            </div>
+                        )}
+
+                        {cierreExistente && (
+                            <div className="alert-info">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85b7eb" strokeWidth="1.5">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                <span>El día ya ha sido cerrado. No se puede realizar otro cierre.</span>
                             </div>
                         )}
 
@@ -211,8 +268,8 @@ const CierreCaja = () => {
                             </button>
                             <button
                                 className="btn-primary"
-                                onClick={handleCierreDiario}
-                                disabled={loadingDiario || cierreExistente}
+                                onClick={cargarDatosParaModalDiario}
+                                disabled={loadingDiario || cierreExistente || !montoFisico}
                             >
                                 {loadingDiario ? 'Procesando...' : 'Ejecutar cierre diario'}
                             </button>
@@ -220,7 +277,6 @@ const CierreCaja = () => {
                     </div>
                 </div>
 
-                {/* Panel de Cierre Mensual */}
                 <div className="panel">
                     <div className="panel-header">
                         <h3>
@@ -234,36 +290,20 @@ const CierreCaja = () => {
                             </svg>
                             Cierre mensual
                         </h3>
-                        <span className="status-pill pill-yellow">{meses[mes - 1]} {anio}</span>
+                        <span className="status-pill pill-yellow">{meses[new Date().getMonth()]} {new Date().getFullYear()}</span>
                     </div>
                     <div className="panel-body">
                         <div className="close-info">
                             <div className="info-card">
                                 <div className="ic-label">Total ventas del mes</div>
                                 <div className="ic-val orange">${totalVentasMes.toFixed(2)}</div>
-                                <div className="ic-sub">Transacciones del mes</div>
+                                <div className="ic-sub">Total acumulado</div>
                             </div>
                             <div className="info-card">
-                                <div className="ic-label">Mes seleccionado</div>
-                                <div className="ic-val">{meses[mes - 1]}</div>
-                                <div className="ic-sub">{anio}</div>
+                                <div className="ic-label">Mes actual</div>
+                                <div className="ic-val">{meses[new Date().getMonth()]}</div>
+                                <div className="ic-sub">{new Date().getFullYear()}</div>
                             </div>
-                        </div>
-
-                        <div className="selector-mes">
-                            <select value={mes} onChange={(e) => setMes(parseInt(e.target.value))}>
-                                {meses.map((m, idx) => (
-                                    <option key={idx} value={idx + 1}>{m}</option>
-                                ))}
-                            </select>
-                            <select value={anio} onChange={(e) => setAnio(parseInt(e.target.value))}>
-                                <option value={2025}>2025</option>
-                                <option value={2026}>2026</option>
-                                <option value={2027}>2027</option>
-                            </select>
-                            <button className="btn-ghost" onClick={cargarTotalVentasMes}>
-                                Actualizar
-                            </button>
                         </div>
 
                         <div className="summary-row">
@@ -271,12 +311,15 @@ const CierreCaja = () => {
                             <span style={{ color: '#ff8c42', fontWeight: 'bold' }}>${totalVentasMes.toFixed(2)}</span>
                         </div>
 
-                        {mensajeMensual && (
-                            <div className="alert-success">{mensajeMensual}</div>
-                        )}
-
-                        {errorMensual && (
-                            <div className="alert-warn">{errorMensual}</div>
+                        {cierreMensualExistente && (
+                            <div className="alert-info">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85b7eb" strokeWidth="1.5">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                <span>El mes ya ha sido cerrado. No se puede realizar otro cierre.</span>
+                            </div>
                         )}
 
                         <div className="alert-warn">
@@ -289,19 +332,34 @@ const CierreCaja = () => {
                         </div>
 
                         <div className="btn-row">
-                            <button className="btn-outline" onClick={() => {
-                                setMensajeMensual('');
-                                setErrorMensual('');
-                            }}>
+                            <button className="btn-outline" onClick={() => { }}>
                                 Cancelar
                             </button>
-                            <button className="btn-primary" onClick={handleCierreMensual} disabled={loadingMensual}>
+                            <button
+                                className="btn-primary"
+                                onClick={cargarDatosParaModalMensual}
+                                disabled={loadingMensual || cierreMensualExistente}
+                            >
                                 {loadingMensual ? 'Procesando...' : 'Cerrar mes'}
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <ModalConfirmarCierreDiario
+                isOpen={showModalDiario}
+                onClose={() => setShowModalDiario(false)}
+                onConfirm={handleCierreDiario}
+                data={datosCierreDiario}
+            />
+
+            <ModalConfirmarCierreMensual
+                isOpen={showModalMensual}
+                onClose={() => setShowModalMensual(false)}
+                onConfirm={handleCierreMensual}
+                data={datosCierreMensual}
+            />
         </div>
     );
 };
