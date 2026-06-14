@@ -3,10 +3,34 @@ import { getHistorial } from '../../../services/cobroService';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
 import './Historial.css';
 
+const SearchIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+        <path d="M21 21l-6 -6" />
+    </svg>
+);
+
+const ClearIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+    </svg>
+);
+
+const ListIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff8c42" strokeWidth="1.5" style={{ marginRight: '8px' }}>
+        <path d="M9 6l11 0" />
+        <path d="M9 12l11 0" />
+        <path d="M9 18l11 0" />
+        <path d="M5 6l0 .01" />
+        <path d="M5 12l0 .01" />
+        <path d="M5 18l0 .01" />
+    </svg>
+);
+
 const Historial = () => {
     const [transacciones, setTransacciones] = useState([]);
     const [filteredTransacciones, setFilteredTransacciones] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({
         numOrden: '',
         fechaDesde: '',
@@ -14,20 +38,14 @@ const Historial = () => {
         estado: ''
     });
 
-    useEffect(() => {
-        cargarHistorial();
-    }, []);
-
+    
     const cargarHistorial = async () => {
-        setLoading(true);
         try {
             const response = await getHistorial();
             setTransacciones(response.data);
             setFilteredTransacciones(response.data);
         } catch (err) {
             console.error('Error al cargar historial:', err);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -37,7 +55,6 @@ const Historial = () => {
     };
 
     const aplicarFiltros = async () => {
-        setLoading(true);
         try {
             const params = {};
             if (filters.numOrden) params.numOrden = filters.numOrden;
@@ -49,8 +66,6 @@ const Historial = () => {
             setFilteredTransacciones(response.data);
         } catch (err) {
             console.error('Error al aplicar filtros:', err);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -64,42 +79,17 @@ const Historial = () => {
         setFilteredTransacciones(transacciones);
     };
 
+
+    useEffect(() => {
+        cargarHistorial();
+    }, []);
+
     const totalMonto = filteredTransacciones.reduce((sum, t) => sum + t.monto, 0);
-
-    // Icono de búsqueda
-    const SearchIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
-            <path d="M21 21l-6 -6" />
-        </svg>
-    );
-
-    // Icono de limpiar
-    const ClearIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
-            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
-        </svg>
-    );
-
-    // Icono de lista (panel header)
-    const ListIcon = () => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff8c42" strokeWidth="1.5" style={{ marginRight: '8px' }}>
-            <path d="M9 6l11 0" />
-            <path d="M9 12l11 0" />
-            <path d="M9 18l11 0" />
-            <path d="M5 6l0 .01" />
-            <path d="M5 12l0 .01" />
-            <path d="M5 18l0 .01" />
-        </svg>
-    );
-
 
     return (
         <div className="historial-container">
             <div className="page-header">
                 <h1>Historial de Transacciones</h1>
-              
                 <span className="badge-readonly">Solo lectura</span>
             </div>
 
@@ -136,11 +126,6 @@ const Historial = () => {
                         onChange={handleFilterChange}
                         placeholder="Hasta"
                     />
-                    <select name="estado" value={filters.estado} onChange={handleFilterChange}>
-                        <option value="">Todos los estados</option>
-                        <option value="entregado">Entregado</option>
-                        <option value="cerrado">Cierre diario</option>
-                    </select>
                     <button className="btn-ghost" onClick={aplicarFiltros}>
                         <SearchIcon />
                         Buscar

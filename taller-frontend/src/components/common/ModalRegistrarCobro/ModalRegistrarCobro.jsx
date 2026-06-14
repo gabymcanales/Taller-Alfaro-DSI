@@ -11,14 +11,13 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
     const cambio = recibido - total;  // cambio = recibido - total
 
 
-    const numOrdenTemp = `ORD-${Math.floor(Math.random() * 10000)}`;
+
 
 
     return (
-        // Fondo oscuro (overlay) - al hacer clic aquí se cierra el modal
+
         <div className="modal-overlay" onClick={onClose}>
 
-            {/* Contenedor del modal - evita que el clic dentro cierre el modal */}
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
 
                 {/* ========== CABECERA DEL MODAL ========== */}
@@ -34,7 +33,7 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                             <path d="M13 16l2 0" />
                         </svg>
                     </div>
-                    {/* Botón para cerrar el modal (X) */}
+                    {/* Botón para cerrar el modal  */}
                     <button className="modal-close" onClick={onClose}>×</button>
                 </div>
 

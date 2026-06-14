@@ -41,14 +41,6 @@ const ModalConfirmarCierreMensual = ({ isOpen, onClose, onConfirm, data }) => {
                         <span className="value orange">${data.totalMes.toFixed(2)}</span>
                     </div>
                     <div className="data-row">
-                        <span className="label">Días trabajados</span>
-                        <span className="value">{data.diasTrabajados} días</span>
-                    </div>
-                    <div className="data-row">
-                        <span className="label">Total transacciones</span>
-                        <span className="value">{data.totalTransacciones} cobros</span>
-                    </div>
-                    <div className="data-row">
                         <span className="label">Usuario</span>
                         <span className="value">{data.usuario}</span>
                     </div>

@@ -142,4 +142,8 @@ public class CierreService {
                 .map(Transaccion::getMontoTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+    public CierreDiario getCierrePorFechaSinExcepcion(LocalDate fecha) {
+        return cierreDiarioRepository.findByFechaCierre(fecha).orElse(null);
+    }
 }
