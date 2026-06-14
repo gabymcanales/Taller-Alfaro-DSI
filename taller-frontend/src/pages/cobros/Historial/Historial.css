@@ -1,5 +1,8 @@
 .historial-container {
-    width: 100%;
+    padding: 24px;
+    background: #111;
+    min-height: 100vh;
+    color: #fff;
 }
 
 .page-header {
@@ -74,6 +77,7 @@
 .filters-bar select:focus {
     border-color: #ff4000;
 }
+
 .btn-ghost {
     background: transparent;
     color: #888;
@@ -100,6 +104,7 @@
 .btn-ghost:hover svg {
     stroke: #ff8c42;
 }
+
 /* Tabla */
 .table-container {
     overflow-x: auto;

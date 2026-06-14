@@ -25,7 +25,7 @@
 }
 
 .btn-exportar {
-    background: #f59e0b;
+    background: #ff4000;
     color: #000;
     border: none;
     padding: 10px 20px;
@@ -168,7 +168,7 @@
 
 .ranking-barra-fill {
     height: 4px;
-    background: #f59e0b;
+    background: #ff4000;;
     border-radius: 4px;
 }
 

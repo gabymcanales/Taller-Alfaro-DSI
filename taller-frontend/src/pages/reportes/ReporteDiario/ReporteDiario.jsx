@@ -9,6 +9,40 @@ import {
 } from '../../../services/reporteService';
 import './ReporteDiario.css';
 
+// Iconos SVG
+const MoneyIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2" />
+        <path d="M12 3v3m0 12v3" />
+    </svg>
+);
+
+const OrdersIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2" />
+        <path d="M14 8h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3h-2.5m2 0v1.5m0 -9v1.5" />
+    </svg>
+);
+
+const ServicesIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M3 21h4l13 -13a1.5 1.5 0 0 0 -4 -4l-13 13v4" />
+        <path d="M14.5 5.5l4 4" />
+        <path d="M12 8l-5 -5l-4 4l5 5" />
+        <path d="M7 8l-1.5 1.5" />
+        <path d="M16 12l5 5l-4 4l-5 -5" />
+        <path d="M16 17l-1.5 1.5" />
+    </svg>
+);
+
+const ExportIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M7 15h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v3" />
+        <path d="M7 10a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -8" />
+        <path d="M12 14a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+    </svg>
+);
+
 const ReporteDiario = () => {
     const hoy = new Date().toISOString().split('T')[0];
     const mesActual = new Date().getMonth() + 1;
@@ -69,15 +103,20 @@ const ReporteDiario = () => {
         ingresos: parseFloat(s.totalIngresos)
     }));
 
+    if (loading) {
+        return <div className="loading">Cargando reportes...</div>;
+    }
+
     return (
         <div className="reportes-container">
             <div className="reportes-header">
                 <div>
-                    <h1>📊 Reportes y Estadísticas</h1>
+                    <h1>Reportes y Estadísticas</h1>
                     <p>Análisis del desempeño del taller</p>
                 </div>
                 <button className="btn-exportar" onClick={() => descargarPdf('diario')}>
-                    ⬇ Exportar
+                    <ExportIcon />
+                    Exportar
                 </button>
             </div>
 
@@ -103,19 +142,23 @@ const ReporteDiario = () => {
             {/* Cards resumen */}
             <div className="cards-row">
                 <div className="card-stat">
-                    <div className="card-icon naranja">💲</div>
+                    <div className="card-icon naranja">
+                        <MoneyIcon />
+                    </div>
                     <div className="card-info">
                         <span className="card-label">Ingresos del Mes</span>
                         <span className="card-value">
-                            ${reporteMensual?.totalIngresos ?? 0}
+                            ${reporteMensual?.totalIngresos?.toFixed(2) ?? '0.00'}
                         </span>
                         <span className="card-sub">
-                            vs anterior: ${reporteMensual?.totalMesAnterior ?? 0}
+                            vs anterior: ${reporteMensual?.totalMesAnterior?.toFixed(2) ?? '0.00'}
                         </span>
                     </div>
                 </div>
                 <div className="card-stat">
-                    <div className="card-icon naranja">📋</div>
+                    <div className="card-icon naranja">
+                        <OrdersIcon />
+                    </div>
                     <div className="card-info">
                         <span className="card-label">Órdenes del Mes</span>
                         <span className="card-value">
@@ -125,11 +168,13 @@ const ReporteDiario = () => {
                     </div>
                 </div>
                 <div className="card-stat">
-                    <div className="card-icon naranja">🔧</div>
+                    <div className="card-icon naranja">
+                        <ServicesIcon />
+                    </div>
                     <div className="card-info">
                         <span className="card-label">Servicios Realizados</span>
                         <span className="card-value">
-                            {ranking.reduce((acc, s) => acc + s.cantidadSolicitado, 0)}
+                            {ranking.reduce((acc, s) => acc + (s.cantidadSolicitado || 0), 0)}
                         </span>
                         <span className="card-sub">en el período</span>
                     </div>
@@ -180,34 +225,34 @@ const ReporteDiario = () => {
                 <div className="tabla-header">
                     <h3>Resumen del Día — {fecha}</h3>
                     <span className="total-badge">
-                        Total: ${reporteDiario?.totalIngresos ?? 0}
+                        Total: ${reporteDiario?.totalIngresos?.toFixed(2) ?? '0.00'}
                     </span>
                 </div>
                 <table className="tabla-reportes">
                     <thead>
-                    <tr>
-                        <th>N° Orden</th>
-                        <th>Cliente</th>
-                        <th>Monto Total</th>
-                        <th>Recibido</th>
-                        <th>Cambio</th>
-                        <th>Hora</th>
-                    </tr>
+                        <tr>
+                            <th>N° Orden</th>
+                            <th>Cliente</th>
+                            <th>Monto Total</th>
+                            <th>Recibido</th>
+                            <th>Cambio</th>
+                            <th>Hora</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {reporteDiario?.transacciones?.length > 0
-                        ? reporteDiario.transacciones.map((t, i) => (
-                            <tr key={i}>
-                                <td>{t.numOrden}</td>
-                                <td>{t.nombreCliente}</td>
-                                <td className="monto">${t.montoTotal}</td>
-                                <td className="monto">${t.montoRecibido}</td>
-                                <td className="monto">${t.cambio}</td>
-                                <td>{t.fechaHoraTransaccion?.substring(11, 16)}</td>
-                            </tr>
-                        ))
-                        : <tr><td colSpan="6" className="sin-datos">Sin transacciones en esta fecha</td></tr>
-                    }
+                        {reporteDiario?.transacciones?.length > 0
+                            ? reporteDiario.transacciones.map((t, i) => (
+                                <tr key={i}>
+                                    <td className="order-highlight">{t.numOrden}</td>
+                                    <td>{t.nombreCliente}</td>
+                                    <td className="monto">${t.montoTotal}</td>
+                                    <td className="monto">${t.montoRecibido}</td>
+                                    <td className="monto">${t.cambio}</td>
+                                    <td>{t.fechaHoraTransaccion?.substring(11, 16)}</td>
+                                </tr>
+                            ))
+                            : <tr><td colSpan="6" className="sin-datos">Sin transacciones en esta fecha</td></tr>
+                        }
                     </tbody>
                 </table>
             </div>

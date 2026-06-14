@@ -33,7 +33,7 @@ const Dashboard = () => {
                     <p>Bienvenido al sistema de gestión</p>
                 </div>
                 <div className="ingresos-badge">
-                    <span>📈 Ingresos del día: ${datos?.ingresosDia ?? 0}</span>
+                    <span>Ingresos del día: ${datos?.ingresosDia ?? 0}</span>
                 </div>
             </div>
 
