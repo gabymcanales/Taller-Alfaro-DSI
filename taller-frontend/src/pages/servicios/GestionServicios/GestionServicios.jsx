@@ -22,6 +22,7 @@ const GestionServicios = () => {
         estadoServicio: 'ACTIVO'
     });
     const [servicios, setServicios] = useState([]);
+    const [busqueda, setBusqueda] = useState('');
 
     useEffect(() => {
 
@@ -142,7 +143,27 @@ const GestionServicios = () => {
 
     };
 
-    const serviciosPorArea = servicios.reduce((acc, servicio) => {
+    const serviciosFiltrados = servicios.filter(servicio =>
+
+        servicio.nombreServicio
+            .toLowerCase()
+            .includes(busqueda.toLowerCase())
+
+        ||
+
+        servicio.descripcionServicio
+            .toLowerCase()
+            .includes(busqueda.toLowerCase())
+
+        ||
+
+        servicio.areaServicio
+            .toLowerCase()
+            .includes(busqueda.toLowerCase())
+
+    );
+
+    const serviciosPorArea = serviciosFiltrados.reduce((acc, servicio) => {
 
         if (!acc[servicio.areaServicio]) {
             acc[servicio.areaServicio] = [];
@@ -176,6 +197,10 @@ const GestionServicios = () => {
             <input
                 className="buscador"
                 placeholder="Buscar servicios..."
+                value={busqueda}
+                onChange={(e) =>
+                    setBusqueda(e.target.value)
+                }
             />
 
             {Object.entries(serviciosPorArea).map(([area, lista]) => (
@@ -208,6 +233,9 @@ const GestionServicios = () => {
                                                 cursor: 'pointer',
                                                 marginRight: '10px'
                                             }}
+                                            onClick={() =>
+                                                editarServicioHandler(servicio)
+                                            }
                                         >
                                             ✏️
                                         </span>
@@ -266,7 +294,11 @@ const GestionServicios = () => {
 
                     <div className="modal-servicio">
 
-                        <h2>Nuevo Servicio</h2>
+                        <h2>
+                            {modoEdicion
+                                ? 'Editar Servicio'
+                                : 'Nuevo Servicio'}
+                        </h2>
 
                         <input
                             placeholder="Nombre"
@@ -335,7 +367,9 @@ const GestionServicios = () => {
                             </button>
 
                             <button onClick={guardarServicio}>
-                                Guardar
+                                {modoEdicion
+                                    ? 'Actualizar'
+                                    : 'Guardar'}
                             </button>
 
                         </div>
