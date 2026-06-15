@@ -5,6 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 @Data
 @Entity
@@ -26,4 +27,13 @@ public class Servicio {
     @NotNull(message = "El precio del servicio es obligatorio")
     @Column(name = "precio_servicio", nullable = false, precision = 10, scale = 2)
     private BigDecimal precioServicio;
+
+    @NotNull(message = "La duración del servicio es obligatoria")
+    @Column(name = "duracion_servicio", nullable = false)
+    private Integer duracionServicio;
+
+    @NotBlank(message = "El estado del servicio es obligatorio")
+    @Pattern(regexp = "ACTIVO|INACTIVO", message = "El estado del servicio debe ser ACTIVO o INACTIVO")
+    @Column(name = "estado_servicio", nullable = false, length = 8)
+    private String estadoServicio;
 }
