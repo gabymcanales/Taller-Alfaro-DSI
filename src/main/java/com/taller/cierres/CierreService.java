@@ -146,4 +146,8 @@ public class CierreService {
     public CierreDiario getCierrePorFechaSinExcepcion(LocalDate fecha) {
         return cierreDiarioRepository.findByFechaCierre(fecha).orElse(null);
     }
+
+    public CierreMensual getCierrePorMesSinExcepcion(Integer mes, Integer anio) {
+        return cierreMensualRepository.findByMesAndAnio(mes, anio).orElse(null);
+    }
 }

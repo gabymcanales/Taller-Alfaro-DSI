@@ -62,11 +62,9 @@ public class CierreController {
     public ResponseEntity<CierreDiarioResponse> obtenerCierreDelDia() {
         LocalDate hoy = LocalDate.now();
 
-        // Buscar si existe un cierre para hoy
         var cierreExistente = cierreService.getCierrePorFechaSinExcepcion(hoy);
 
         if (cierreExistente != null) {
-            // Si existe cierre, devolver los datos del cierre
             CierreDiarioResponse response = new CierreDiarioResponse();
             response.setIdCierreDiario(cierreExistente.getIdCierreDiario());
             response.setFechaCierre(cierreExistente.getFechaCierre());
@@ -81,13 +79,10 @@ public class CierreController {
             response.setEmpleadoUsername(cierreExistente.getEmpleado().getUsername());
             return ResponseEntity.ok(response);
         } else {
-            // Si no hay cierre, devolver solo el total esperado del día
             BigDecimal totalEsperado = cierreService.calcularTotalEsperadoDelDia(hoy);
-
             CierreDiarioResponse response = new CierreDiarioResponse();
             response.setMontoEsperado(totalEsperado);
             response.setCerrado(false);
-            response.setMensaje("Aún no hay cierre para hoy. Total esperado: $" + totalEsperado);
             return ResponseEntity.ok(response);
         }
     }
@@ -119,7 +114,15 @@ public class CierreController {
     public ResponseEntity<CierreMensualResponse> obtenerCierrePorMes(
             @RequestParam Integer mes,
             @RequestParam Integer anio) {
-        var cierre = cierreService.getCierrePorMes(mes, anio);
+
+        var cierre = cierreService.getCierrePorMesSinExcepcion(mes, anio);
+
+        if (cierre == null) {
+            CierreMensualResponse response = new CierreMensualResponse();
+            response.setCerrado(false);
+            response.setMontoTotal(BigDecimal.ZERO);
+            return ResponseEntity.ok(response);
+        }
 
         CierreMensualResponse response = new CierreMensualResponse();
         response.setIdCierreMensual(cierre.getIdCierreMensual());

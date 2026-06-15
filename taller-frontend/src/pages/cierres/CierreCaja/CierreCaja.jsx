@@ -29,7 +29,8 @@ const CierreCaja = () => {
             const response = await getCierreDiario();
             if (response.data) {
                 setTotalEsperado(response.data.montoEsperado);
-                setCierreExistente(true);
+                // ✅ Solo marcar como cerrado si realmente está cerrado
+                setCierreExistente(response.data.cerrado === true);
             }
         } catch {
             setCierreExistente(false);
@@ -55,7 +56,7 @@ const CierreCaja = () => {
     const cargarDatosParaModalDiario = async () => {
         try {
             const response = await getCierreDiario();
-            if (response.data) {
+            if (response.data && response.data.cerrado === true) {
                 setCierreExistente(true);
                 return;
             }
@@ -86,9 +87,8 @@ const CierreCaja = () => {
             setCierreExistente(true);
             setTotalEsperado(response.data.montoEsperado);
             setShowModalDiario(false);
-            alert(response.data.mensaje || 'Cierre diario completado exitosamente');
         } catch (err) {
-            alert(err.response?.data?.mensaje || 'Error al realizar el cierre diario');
+            setErrorDiario(err.response?.data?.mensaje || 'Error al realizar el cierre diario');
         } finally {
             setLoadingDiario(false);
         }
@@ -100,16 +100,19 @@ const CierreCaja = () => {
         setErrorDiario('');
     };
 
+    // ========== FUNCIONES CIERRE MENSUAL ==========
     const cargarDatosMensuales = async () => {
         const mes = new Date().getMonth() + 1;
         const anio = new Date().getFullYear();
 
         try {
             const response = await getCierreMensual(mes, anio);
-            if (response.data) {
+            if (response.data && response.data.cerrado === true) {
                 setCierreMensualExistente(true);
                 setTotalVentasMes(response.data.montoTotal);
                 return;
+            } else {
+                setCierreMensualExistente(false);
             }
         } catch {
             setCierreMensualExistente(false);
@@ -120,6 +123,7 @@ const CierreCaja = () => {
             setTotalVentasMes(response.data);
         } catch {
             console.error('Error al cargar datos mensuales');
+            setTotalVentasMes(0);
         }
     };
 
@@ -129,7 +133,7 @@ const CierreCaja = () => {
 
         try {
             const response = await getCierreMensual(mes, anio);
-            if (response.data) {
+            if (response.data && response.data.cerrado === true) {
                 setCierreMensualExistente(true);
                 return;
             }
@@ -158,15 +162,14 @@ const CierreCaja = () => {
             setCierreMensualExistente(true);
             setTotalVentasMes(response.data.montoTotal);
             setShowModalMensual(false);
-            alert(response.data.mensaje || 'Cierre mensual completado exitosamente');
         } catch (err) {
-            alert(err.response?.data?.mensaje || 'Error al realizar el cierre mensual');
+            console.error('Error al realizar cierre mensual:', err);
         } finally {
             setLoadingMensual(false);
         }
     };
 
-
+    // ========== EFECTO INICIAL ==========
     useEffect(() => {
         const inicializarDatos = async () => {
             await cargarCierreDiario();
@@ -190,6 +193,7 @@ const CierreCaja = () => {
             <CobrosTabs />
 
             <div className="two-panels">
+                {/* Panel Cierre Diario */}
                 <div className="panel">
                     <div className="panel-header">
                         <h3>
@@ -277,6 +281,7 @@ const CierreCaja = () => {
                     </div>
                 </div>
 
+                {/* Panel Cierre Mensual */}
                 <div className="panel">
                     <div className="panel-header">
                         <h3>
@@ -347,6 +352,7 @@ const CierreCaja = () => {
                 </div>
             </div>
 
+            {/* Modales */}
             <ModalConfirmarCierreDiario
                 isOpen={showModalDiario}
                 onClose={() => setShowModalDiario(false)}
