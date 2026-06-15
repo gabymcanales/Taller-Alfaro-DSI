@@ -12,13 +12,16 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOS
 
 ### Crear servicio
 POST http://localhost:8080/api/servicios
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NTk0NjcsImV4cCI6MTc4MTU0NTg2N30.87GqYSFZ7oFDtbkIT6vdN8kNqGe_5L-oy_BWGoBWHbE
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0OTYwOTcsImV4cCI6MTc4MTU4MjQ5N30.y0H9UODFm3OYgajJnttviNQgPNYYoQN9m-zdEo57gO0
 Content-Type: application/json
 
 {
-  "nombreServicio": "Lavado Premium",
-  "areaServicio": "Carwash",
-  "precioServicio": 15.00
+  "nombreServicio": "Cambio de aceite",
+  "descripcionServicio": "Cambio de aceite y filtro",
+  "areaServicio": "Mantenimiento",
+  "precioServicio": 450,
+  "duracionServicio": 30,
+  "estadoServicio": "ACTIVO"
 }
 
 ### Prueba
@@ -26,16 +29,18 @@ POST http://localhost:8080/api/servicios/prueba
 Authorization: Bearer TU_TOKEN
 
 ### Actualizar servicio
-PUT http://localhost:8080/api/servicios/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NjA2MTYsImV4cCI6MTc4MTU0NzAxNn0.6HbVwkH4w0n-oWPLkglRPZw7dFVE9p0Qo_wVS8K_8uI
+PUT http://localhost:8080/api/servicios/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0OTQ0MjgsImV4cCI6MTc4MTU4MDgyOH0.Shtmew9TLy8aigdPzlMPP1n4H5AYwsTYR6M_DdjCDQQ
 Content-Type: application/json
 
 {
-  "nombreServicio": "Lavado VIP actualizado",
+  "nombreServicio": "Lavado Premium Plus actualizado",
   "areaServicio": "Carwash",
-  "precioServicio": 20.00
+  "precioServicio": 20.00,
+  "duracionServicio": 60,
+  "estadoServicio": "INACTIVO"
 }
 
 ### Eliminar servicio
-DELETE http://localhost:8080/api/servicios/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NjA2MTYsImV4cCI6MTc4MTU0NzAxNn0.6HbVwkH4w0n-oWPLkglRPZw7dFVE9p0Qo_wVS8K_8uI
+DELETE http://localhost:8080/api/servicios/3
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0OTU0MjUsImV4cCI6MTc4MTU4MTgyNX0.KA49cMQGtgig4NkwbfrGaGGQlbcIRP8cdeka0_qWNbE

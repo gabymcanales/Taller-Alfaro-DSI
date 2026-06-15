@@ -28,6 +28,7 @@ public class ServicioService {
 
         servicio.setNombreServicio(servicioActualizado.getNombreServicio());
         servicio.setAreaServicio(servicioActualizado.getAreaServicio());
+        servicio.setDescripcionServicio(servicioActualizado.getDescripcionServicio());
         servicio.setPrecioServicio(servicioActualizado.getPrecioServicio());
         servicio.setDuracionServicio(servicioActualizado.getDuracionServicio());
         servicio.setEstadoServicio(servicioActualizado.getEstadoServicio());

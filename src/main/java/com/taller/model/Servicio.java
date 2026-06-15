@@ -21,6 +21,10 @@ public class Servicio {
     @Column(name = "nombre_servicio", nullable = false, length = 100)
     private String nombreServicio;
 
+    @NotBlank(message = "La descripción del servicio es obligatoria")
+    @Column(name = "descripcion_servicio", nullable = false, length = 255)
+    private String descripcionServicio;
+    
     @Column(name = "area_servicio", nullable = false, length = 50)
     private String areaServicio;
 
@@ -36,4 +40,5 @@ public class Servicio {
     @Pattern(regexp = "ACTIVO|INACTIVO", message = "El estado del servicio debe ser ACTIVO o INACTIVO")
     @Column(name = "estado_servicio", nullable = false, length = 8)
     private String estadoServicio;
+
 }
