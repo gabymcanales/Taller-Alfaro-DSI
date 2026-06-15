@@ -1,0 +1,41 @@
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Obtener catálogo de servicios
+GET http://localhost:8080/api/servicios
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NTk0NjcsImV4cCI6MTc4MTU0NTg2N30.87GqYSFZ7oFDtbkIT6vdN8kNqGe_5L-oy_BWGoBWHbE
+
+### Crear servicio
+POST http://localhost:8080/api/servicios
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NTk0NjcsImV4cCI6MTc4MTU0NTg2N30.87GqYSFZ7oFDtbkIT6vdN8kNqGe_5L-oy_BWGoBWHbE
+Content-Type: application/json
+
+{
+  "nombreServicio": "Lavado Premium",
+  "areaServicio": "Carwash",
+  "precioServicio": 15.00
+}
+
+### Prueba
+POST http://localhost:8080/api/servicios/prueba
+Authorization: Bearer TU_TOKEN
+
+### Actualizar servicio
+PUT http://localhost:8080/api/servicios/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NjA2MTYsImV4cCI6MTc4MTU0NzAxNn0.6HbVwkH4w0n-oWPLkglRPZw7dFVE9p0Qo_wVS8K_8uI
+Content-Type: application/json
+
+{
+  "nombreServicio": "Lavado VIP actualizado",
+  "areaServicio": "Carwash",
+  "precioServicio": 20.00
+}
+
+### Eliminar servicio
+DELETE http://localhost:8080/api/servicios/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NjA2MTYsImV4cCI6MTc4MTU0NzAxNn0.6HbVwkH4w0n-oWPLkglRPZw7dFVE9p0Qo_wVS8K_8uI

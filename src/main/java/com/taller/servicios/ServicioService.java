@@ -1,9 +1,9 @@
 package com.taller.servicios;
 
 import com.taller.model.Servicio;
+import com.taller.cobros.ServicioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.taller.cobros.ServicioRepository;
 
 import java.util.List;
 
@@ -15,5 +15,29 @@ public class ServicioService {
 
     public List<Servicio> obtenerTodos() {
         return servicioRepository.findAll();
+    }
+
+    public Servicio guardar(Servicio servicio) {
+        return servicioRepository.save(servicio);
+    }
+
+    public Servicio actualizar(Long id, Servicio servicioActualizado) {
+
+        Servicio servicio = servicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+        servicio.setNombreServicio(servicioActualizado.getNombreServicio());
+        servicio.setAreaServicio(servicioActualizado.getAreaServicio());
+        servicio.setPrecioServicio(servicioActualizado.getPrecioServicio());
+
+        return servicioRepository.save(servicio);
+    }
+
+    public void eliminar(Long id) {
+
+        Servicio servicio = servicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+        servicioRepository.delete(servicio);
     }
 }

@@ -20,10 +20,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> handleException(Exception ex) {
+
+        ex.printStackTrace();
+
         ErrorDTO error = new ErrorDTO(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Error interno del servidor"
+                ex.getMessage()
         );
+
         return ResponseEntity.internalServerError().body(error);
     }
 }
