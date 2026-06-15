@@ -8,7 +8,7 @@ Content-Type: application/json
 
 ### Obtener catálogo de servicios
 GET http://localhost:8080/api/servicios
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0NTk0NjcsImV4cCI6MTc4MTU0NTg2N30.87GqYSFZ7oFDtbkIT6vdN8kNqGe_5L-oy_BWGoBWHbE
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE1MDIzOTUsImV4cCI6MTc4MTU4ODc5NX0.k7sqxUQDK7JyrCzeNVhg5nEsyXHVdEA7SYqLC8V-LRg
 
 ### Crear servicio
 POST http://localhost:8080/api/servicios

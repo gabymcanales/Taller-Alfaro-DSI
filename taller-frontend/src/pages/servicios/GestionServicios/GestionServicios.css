@@ -1,0 +1,134 @@
+.gestion-servicios {
+    padding: 24px;
+    color: white;
+}
+
+.servicios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.servicios-header h1 {
+    margin: 0;
+}
+
+.servicios-header p {
+    color: #b0b0b0;
+    margin-top: 4px;
+}
+
+.btn-nuevo {
+    background-color: #ff7a00;
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.buscador {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background-color: #1e1e1e;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.area-titulo {
+    margin-top: 32px;
+    margin-bottom: 16px;
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.servicio-card {
+    background-color: #1f2937;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #374151;
+}
+
+.servicio-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.servicio-card-header h3 {
+    margin: 0;
+}
+
+.servicio-descripcion {
+    color: #c0c0c0;
+    margin: 12px 0;
+}
+
+.servicio-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.estado {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.estado.activo {
+    background-color: #14532d;
+    color: #86efac;
+}
+
+.estado.inactivo {
+    background-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-servicio {
+    background: #1f2937;
+    padding: 24px;
+    border-radius: 12px;
+    width: 500px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-servicio input,
+.modal-servicio textarea {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #111827;
+    color: white;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}

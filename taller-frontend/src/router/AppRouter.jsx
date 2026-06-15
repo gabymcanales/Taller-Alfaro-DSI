@@ -4,6 +4,7 @@ import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
 import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
 import Sidebar from '../components/common/Sidebar/Sidebar';
 import './AppRouter.css';
+import GestionServicios from '../pages/servicios/GestionServicios/GestionServicios';
 
 // Página de inicio simple
 const Dashboard = () => {
@@ -27,7 +28,7 @@ const Layout = () => {
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
                         <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
                         <Route path="/cierres/diario" element={<CierreCaja />} />
-                        
+                        <Route path="/servicios" element={<GestionServicios />} />
                     </Routes>
                 </div>
             </main>
