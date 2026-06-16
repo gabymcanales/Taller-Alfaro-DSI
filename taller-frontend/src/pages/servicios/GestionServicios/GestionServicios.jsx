@@ -6,12 +6,17 @@ import {
     actualizarServicio
 } from '../../../services/servicioService';
 import './GestionServicios.css';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GestionServicios = () => {
 
     const [mostrarModal, setMostrarModal] = useState(false);
     const [modoEdicion, setModoEdicion] = useState(false);
     const [idEditar, setIdEditar] = useState(null);
+    const [mostrarEliminar, setMostrarEliminar] = useState(false);
+    const [servicioEliminar, setServicioEliminar] = useState(null);
 
     const [nuevoServicio, setNuevoServicio] = useState({
         nombreServicio: '',
@@ -42,7 +47,20 @@ const GestionServicios = () => {
     const guardarServicio = async () => {
 
         try {
+            if (
+                !nuevoServicio.nombreServicio ||
+                !nuevoServicio.areaServicio ||
+                !nuevoServicio.descripcionServicio ||
+                !nuevoServicio.precioServicio ||
+                !nuevoServicio.duracionServicio
+            ) {
 
+                toast.error(
+                    'Complete todos los campos'
+                );
+
+                return;
+            }
             const datosServicio = {
                 nombreServicio: nuevoServicio.nombreServicio,
                 descripcionServicio: nuevoServicio.descripcionServicio,
@@ -58,13 +76,16 @@ const GestionServicios = () => {
                     idEditar,
                     datosServicio
                 );
+                toast.success(
+                    'Servicio actualizado correctamente'
+                );
 
             } else {
 
                 await crearServicio(
                     datosServicio
                 );
-
+                toast.success('Servicio guardado correctamente');
             }
 
             const response = await getServicios();
@@ -90,36 +111,47 @@ const GestionServicios = () => {
 
             console.error(error);
 
-            alert('Error al guardar servicio');
+            toast.error('Error al guardar servicio');
 
         }
 
     };
 
-    const eliminarServicioHandler = async (id) => {
+    const eliminarServicioHandler = (servicio) => {
 
-        const confirmar = window.confirm(
-            '¿Eliminar este servicio?'
-        );
+        setServicioEliminar(servicio);
 
-        if (!confirmar) {
-            return;
-        }
+        setMostrarEliminar(true);
+
+    };
+
+    const confirmarEliminar = async () => {
 
         try {
 
-            await eliminarServicio(id);
+            await eliminarServicio(
+                servicioEliminar.idServicio
+            );
+
+            toast.success(
+                'Servicio eliminado correctamente'
+            );
 
             const response = await getServicios();
 
             setServicios(response.data);
 
+            setMostrarEliminar(false);
+
+            setServicioEliminar(null);
+
         } catch (error) {
 
             console.error(error);
 
-            alert('Error al eliminar');
-
+            toast.error(
+                'Error al eliminar servicio'
+            );
         }
 
     };
@@ -140,7 +172,7 @@ const GestionServicios = () => {
         });
 
         setMostrarModal(true);
-
+ 
     };
 
     const serviciosFiltrados = servicios.filter(servicio =>
@@ -228,30 +260,25 @@ const GestionServicios = () => {
 
                                     <div>
 
-                                        <span
-                                            style={{
-                                                cursor: 'pointer',
-                                                marginRight: '10px'
-                                            }}
-                                            onClick={() =>
-                                                editarServicioHandler(servicio)
-                                            }
-                                        >
-                                            ✏️
-                                        </span>
+                                        <div className="acciones-servicio">
 
-                                        <span
-                                            style={{
-                                                cursor: 'pointer'
-                                            }}
-                                            onClick={() =>
-                                                eliminarServicioHandler(
-                                                    servicio.idServicio
-                                                )
-                                            }
-                                        >
-                                            🗑️
-                                        </span>
+                                            <FaEdit
+                                                className="icono-editar"
+                                                onClick={() =>
+                                                    editarServicioHandler(servicio)
+                                                }
+                                            />
+
+                                            <FaTrash
+                                                className="icono-eliminar"
+                                                onClick={() =>
+                                                    eliminarServicioHandler(
+                                                        servicio
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
 
                                     </div>
 
@@ -379,6 +406,61 @@ const GestionServicios = () => {
                 </div>
 
             )}
+
+            {mostrarEliminar && (
+
+                <div className="modal-overlay">
+
+                    <div className="modal-servicio">
+
+                        <h2>Eliminar servicio</h2>
+
+                        <p>
+
+                            ¿Desea eliminar el servicio
+
+                            <strong>
+                                {' '}
+                                {servicioEliminar?.nombreServicio}
+                            </strong>
+
+                            ?
+
+                        </p>
+
+                        <div className="modal-buttons">
+
+                            <button
+                                onClick={() => {
+
+                                    setMostrarEliminar(false);
+
+                                    setServicioEliminar(null);
+
+                                }}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                onClick={confirmarEliminar}
+                            >
+                                Eliminar
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            <ToastContainer
+                position="bottom-right"
+                autoClose={2500}
+                theme="dark"
+            />
 
         </div>
     );
