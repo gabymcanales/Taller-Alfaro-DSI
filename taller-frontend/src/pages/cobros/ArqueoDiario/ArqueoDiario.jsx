@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getArqueoDiario } from '../../../services/cobroService';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
+import Pagination from '../../../components/common/Pagination/Pagination';
 import './ArqueoDiario.css';
+
+const ITEMS_PER_PAGE = 10;
 
 const ArqueoDiario = () => {
     const [arqueo, setArqueo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         cargarArqueo();
@@ -17,6 +21,7 @@ const ArqueoDiario = () => {
         try {
             const response = await getArqueoDiario();
             setArqueo(response.data);
+            setCurrentPage(1);
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al cargar el arqueo');
         } finally {
@@ -24,7 +29,14 @@ const ArqueoDiario = () => {
         }
     };
 
-    // Icono de dinero (total ingresos)
+    // Obtener transacciones paginadas
+    const totalItems = arqueo?.transacciones?.length || 0;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const currentData = arqueo?.transacciones?.slice(startIndex, endIndex) || [];
+
+    // Icono de dinero
     const MoneyIcon = () => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2" />
@@ -32,7 +44,6 @@ const ArqueoDiario = () => {
         </svg>
     );
 
-    // Icono de transacciones (lista)
     const TransactionsIcon = () => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2" />
@@ -40,7 +51,6 @@ const ArqueoDiario = () => {
         </svg>
     );
 
-    // Icono de reloj (primer cobro)
     const ClockIcon = () => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
@@ -48,7 +58,6 @@ const ArqueoDiario = () => {
         </svg>
     );
 
-    // Icono de reloj último (último cobro)
     const LastClockIcon = () => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
@@ -56,7 +65,6 @@ const ArqueoDiario = () => {
             <path d="M12 7v5" />
         </svg>
     );
-
 
     return (
         <div className="arqueo-container">
@@ -67,48 +75,33 @@ const ArqueoDiario = () => {
 
             <CobrosTabs />
 
-            {/* Tarjetas de estadísticas */}
             <div className="cards-row">
                 <div className="stat-card">
-                    <div className="icon-box blue">
-                        <MoneyIcon />
-                    </div>
+                    <div className="icon-box blue"><MoneyIcon /></div>
                     <div className="label">Total ingresos del día</div>
-                    <div className="value orange">
-                        ${arqueo?.totalIngresos?.toFixed(2) || '0.00'}
-                    </div>
+                    <div className="value orange">${arqueo?.totalIngresos?.toFixed(2) || '0.00'}</div>
                     <div className="sub">Actualizado en tiempo real</div>
                 </div>
-
                 <div className="stat-card">
-                    <div className="icon-box green">
-                        <TransactionsIcon />
-                    </div>
+                    <div className="icon-box green"><TransactionsIcon /></div>
                     <div className="label">Transacciones</div>
                     <div className="value">{arqueo?.totalTransacciones || 0}</div>
                     <div className="sub">Cobros registrados</div>
                 </div>
-
                 <div className="stat-card">
-                    <div className="icon-box red">
-                        <ClockIcon />
-                    </div>
+                    <div className="icon-box red"><ClockIcon /></div>
                     <div className="label">Primer cobro</div>
                     <div className="value small">{arqueo?.primerCobroHora || '—'}</div>
                     <div className="sub">Inicio del día</div>
                 </div>
-
                 <div className="stat-card">
-                    <div className="icon-box orange">
-                        <LastClockIcon />
-                    </div>
+                    <div className="icon-box orange"><LastClockIcon /></div>
                     <div className="label">Último cobro</div>
                     <div className="value small">{arqueo?.ultimoCobroHora || '—'}</div>
                     <div className="sub">Más reciente</div>
                 </div>
             </div>
 
-            {/* Tabla de transacciones */}
             <div className="panel">
                 <div className="panel-header">
                     <h3>
@@ -138,16 +131,14 @@ const ArqueoDiario = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {!arqueo?.transacciones || arqueo.transacciones.length === 0 ? (
+                            {currentData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="no-data">
-                                        No hay transacciones registradas hoy
-                                    </td>
+                                    <td colSpan="6" className="no-data">No hay transacciones registradas hoy</td>
                                 </tr>
                             ) : (
-                                arqueo.transacciones.map((t, index) => (
+                                currentData.map((t, index) => (
                                     <tr key={index}>
-                                        <td style={{ color: '#a0a0a0' }}>{t.numero || index + 1}</td>
+                                        <td style={{ color: '#a0a0a0' }}>{t.numero || startIndex + index + 1}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.hora}</td>
                                         <td style={{ color: '#ff8c42', fontWeight: '600' }}>{t.numOrden}</td>
                                         <td>{t.servicioNombre}</td>
@@ -161,11 +152,15 @@ const ArqueoDiario = () => {
                 </div>
 
                 <div className="table-footer">
-                    <span>{arqueo?.totalTransacciones || 0} transacciones registradas hoy</span>
-                    <span className="total-highlight">
-                        Total: ${arqueo?.totalIngresos?.toFixed(2) || '0.00'}
-                    </span>
+                    <span>{currentData.length} transacciones registradas hoy</span>
+                    <span className="total-highlight">Total: ${arqueo?.totalIngresos?.toFixed(2) || '0.00'}</span>
                 </div>
+
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </div>
         </div>
     );

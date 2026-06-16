@@ -38,6 +38,16 @@ const RegistrarCobro = () => {
     const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
     const [buscando, setBuscando] = useState(false);
 
+    const validarNombre = (nombre) => {
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        return regex.test(nombre);
+    };
+
+    const validarTelefono = (telefono) => {
+        const soloNumeros = telefono.replace(/[^0-9]/g, '');
+        return soloNumeros.length === 8;
+    };
+
     useEffect(() => {
         const cargarServicios = async () => {
             try {
@@ -83,15 +93,30 @@ const RegistrarCobro = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === 'nombreCliente') {
+            const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            setFormData(prev => ({ ...prev, [name]: soloLetras }));
+            buscarClientesPorNombre(soloLetras);
+            setError('');
+            return;
+        }
+
+        if (name === 'telefonoCliente') {
+            const soloNumeros = value.replace(/[^0-9]/g, '');
+            if (soloNumeros.length <= 8) {
+                setFormData(prev => ({ ...prev, [name]: soloNumeros }));
+            }
+            setError('');
+            return;
+        }
+
+        // Resto de campos
         setFormData(prev => ({ ...prev, [name]: value }));
 
         if (name === 'idServicio') {
             const servicio = servicios.find(s => s.idServicio === parseInt(value));
             setServicioSeleccionado(servicio);
-        }
-
-        if (name === 'nombreCliente') {
-            buscarClientesPorNombre(value);
         }
 
         if (name === 'montoRecibido' && formData.montoTotal) {
@@ -123,9 +148,17 @@ const RegistrarCobro = () => {
             setError('Ingrese el nombre del cliente');
             return;
         }
+        if (!validarNombre(formData.nombreCliente)) {
+            setError('El nombre solo debe contener letras y espacios');
+            return;
+        }
 
         if (!formData.telefonoCliente.trim()) {
             setError('Ingrese el teléfono del cliente');
+            return;
+        }
+        if (!validarTelefono(formData.telefonoCliente)) {
+            setError('El teléfono debe tener exactamente 8 dígitos');
             return;
         }
 

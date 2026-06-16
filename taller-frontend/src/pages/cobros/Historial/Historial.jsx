@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getHistorial } from '../../../services/cobroService';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
+import Pagination from '../../../components/common/Pagination/Pagination';
 import './Historial.css';
 
 const SearchIcon = () => (
@@ -28,6 +29,8 @@ const ListIcon = () => (
     </svg>
 );
 
+const ITEMS_PER_PAGE = 10;
+
 const Historial = () => {
     const [transacciones, setTransacciones] = useState([]);
     const [filteredTransacciones, setFilteredTransacciones] = useState([]);
@@ -37,13 +40,14 @@ const Historial = () => {
         fechaHasta: '',
         estado: ''
     });
+    const [currentPage, setCurrentPage] = useState(1);
 
-    
     const cargarHistorial = async () => {
         try {
             const response = await getHistorial();
             setTransacciones(response.data);
             setFilteredTransacciones(response.data);
+            setCurrentPage(1);
         } catch (err) {
             console.error('Error al cargar historial:', err);
         }
@@ -61,9 +65,10 @@ const Historial = () => {
             if (filters.fechaDesde) params.fechaDesde = filters.fechaDesde;
             if (filters.fechaHasta) params.fechaHasta = filters.fechaHasta;
             if (filters.estado) params.estado = filters.estado;
-            
+
             const response = await getHistorial(params);
             setFilteredTransacciones(response.data);
+            setCurrentPage(1);
         } catch (err) {
             console.error('Error al aplicar filtros:', err);
         }
@@ -77,14 +82,21 @@ const Historial = () => {
             estado: ''
         });
         setFilteredTransacciones(transacciones);
+        setCurrentPage(1);
     };
-
 
     useEffect(() => {
         cargarHistorial();
     }, []);
 
-    const totalMonto = filteredTransacciones.reduce((sum, t) => sum + t.monto, 0);
+    // Obtener datos de la página actual
+    const totalItems = filteredTransacciones.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const currentData = filteredTransacciones.slice(startIndex, endIndex);
+
+    const totalMonto = currentData.reduce((sum, t) => sum + t.monto, 0);
 
     return (
         <div className="historial-container">
@@ -150,7 +162,7 @@ const Historial = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredTransacciones.length === 0 ? (
+                            {currentData.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="no-data">
                                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1" style={{ marginBottom: '16px' }}>
@@ -161,7 +173,7 @@ const Historial = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredTransacciones.map((t, index) => (
+                                currentData.map((t, index) => (
                                     <tr key={index}>
                                         <td style={{ color: '#a0a0a0' }}>{t.fecha}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.hora}</td>
@@ -182,9 +194,16 @@ const Historial = () => {
                 </div>
 
                 <div className="table-footer">
-                    <span>Mostrando {filteredTransacciones.length} de {transacciones.length} transacciones</span>
+                    <span>Mostrando {currentData.length} de {filteredTransacciones.length} transacciones</span>
                     <span className="total-highlight">Subtotal: ${totalMonto.toFixed(2)}</span>
                 </div>
+
+                {/* Paginación */}
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </div>
         </div>
     );
