@@ -6,11 +6,17 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     const getPageNumbers = () => {
         const pages = [];
         const maxVisible = 5;
-        let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-        let end = Math.min(totalPages, start + maxVisible - 1);
+        const half = Math.floor(maxVisible / 2);
 
-        if (end - start < maxVisible - 1) {
-            start = Math.max(1, end - maxVisible + 1);
+        let start = Math.max(1, currentPage - half);
+        let end = Math.min(totalPages, currentPage + half);
+
+        if (end - start + 1 < maxVisible) {
+            if (currentPage < totalPages / 2) {
+                end = Math.min(totalPages, start + maxVisible - 1);
+            } else {
+                start = Math.max(1, end - maxVisible + 1);
+            }
         }
 
         for (let i = start; i <= end; i++) {
@@ -19,6 +25,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         return pages;
     };
 
+    const pages = getPageNumbers();
+
     return (
         <div className="pagination">
             <button
@@ -26,19 +34,18 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                 disabled={currentPage === 1}
                 className="pagination-btn"
             >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <polyline points="15 18 9 12 15 6" />
-                </svg>
+                ‹
             </button>
 
-            {currentPage > 3 && (
+            {/* Mostrar siempre la primera página si no está visible */}
+            {!pages.includes(1) && (
                 <>
                     <button onClick={() => onPageChange(1)} className="pagination-btn">1</button>
-                    {currentPage > 4 && <span className="pagination-dots">…</span>}
+                    {pages[0] > 2 && <span className="pagination-dots">…</span>}
                 </>
             )}
 
-            {getPageNumbers().map(num => (
+            {pages.map(num => (
                 <button
                     key={num}
                     onClick={() => onPageChange(num)}
@@ -48,9 +55,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                 </button>
             ))}
 
-            {currentPage < totalPages - 2 && (
+            {/* Mostrar siempre la última página si no está visible */}
+            {!pages.includes(totalPages) && (
                 <>
-                    {currentPage < totalPages - 3 && <span className="pagination-dots">…</span>}
+                    {pages[pages.length - 1] < totalPages - 1 && <span className="pagination-dots">…</span>}
                     <button onClick={() => onPageChange(totalPages)} className="pagination-btn">
                         {totalPages}
                     </button>
@@ -62,12 +70,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                 disabled={currentPage === totalPages}
                 className="pagination-btn"
             >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <polyline points="9 18 15 12 9 6" />
-                </svg>
+                ›
             </button>
         </div>
     );
 };
+
 
 export default Pagination;

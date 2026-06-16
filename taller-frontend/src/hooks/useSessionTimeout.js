@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos
-const WARNING_TIME = 2 * 60 * 1000; // 2 minutos antes (se muestra el modal)
+const SESSION_TIMEOUT = 30 * 60 * 1000; 
+const WARNING_TIME = 2 * 60 * 1000; 
 
 export const useSessionTimeout = () => {
     const [showWarning, setShowWarning] = useState(false);
@@ -14,17 +14,14 @@ export const useSessionTimeout = () => {
     const { logout } = useAuth();
 
     const resetTimer = () => {
-        // Limpiar timers existentes
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         if (warningRef.current) clearTimeout(warningRef.current);
         setShowWarning(false);
         setIsActive(true);
 
-        // Configurar el timer de advertencia (2 minutos antes de expirar)
         const sessionTimeout = SESSION_TIMEOUT;
         const warningTimeout = SESSION_TIMEOUT - WARNING_TIME;
 
-        // Advertencia: mostrar modal
         if (warningTimeout > 0) {
             warningRef.current = setTimeout(() => {
                 setShowWarning(true);
