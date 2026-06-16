@@ -160,7 +160,8 @@
 }
 
 .modal-servicio input,
-.modal-servicio textarea {
+.modal-servicio textarea,
+.modal-servicio select {
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #444;
@@ -169,6 +170,7 @@
     font-family: inherit;
     font-size: 14px;
 }
+
 
 .modal-buttons {
     display: flex;

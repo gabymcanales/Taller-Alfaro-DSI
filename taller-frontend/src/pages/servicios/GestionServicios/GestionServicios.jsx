@@ -385,6 +385,24 @@ const GestionServicios = () => {
                             }
                         />
 
+                        <select
+                            value={nuevoServicio.estadoServicio}
+                            onChange={(e) =>
+                                setNuevoServicio({
+                                    ...nuevoServicio,
+                                    estadoServicio: e.target.value
+                                })
+                            }
+                        >
+                            <option value="ACTIVO">
+                                ACTIVO
+                            </option>
+
+                            <option value="INACTIVO">
+                                INACTIVO
+                            </option>
+                        </select>
+
                         <div className="modal-buttons">
 
                             <button
