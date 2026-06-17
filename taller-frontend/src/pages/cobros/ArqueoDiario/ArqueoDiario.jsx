@@ -20,7 +20,25 @@ const ArqueoDiario = () => {
         setLoading(true);
         try {
             const response = await getArqueoDiario();
-            setArqueo(response.data);
+
+            const transaccionesOrdenadas = response.data.transacciones?.sort((a, b) => {
+                
+                const numA = parseInt(a.numOrden?.replace('ORD-', '') || 0);
+                const numB = parseInt(b.numOrden?.replace('ORD-', '') || 0);
+                if (numA !== numB) {
+                    return numB - numA; 
+                }
+
+
+                const horaA = new Date('1970-01-01T' + (a.hora || '00:00'));
+                const horaB = new Date('1970-01-01T' + (b.hora || '00:00'));
+                return horaB - horaA;
+            }) || [];
+
+            setArqueo({
+                ...response.data,
+                transacciones: transaccionesOrdenadas
+            });
             setCurrentPage(1);
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al cargar el arqueo');
@@ -29,14 +47,13 @@ const ArqueoDiario = () => {
         }
     };
 
-    // Obtener transacciones paginadas
     const totalItems = arqueo?.transacciones?.length || 0;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const currentData = arqueo?.transacciones?.slice(startIndex, endIndex) || [];
 
-    // Icono de dinero
+    // Iconos
     const MoneyIcon = () => (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2" />
@@ -138,7 +155,7 @@ const ArqueoDiario = () => {
                             ) : (
                                 currentData.map((t, index) => (
                                     <tr key={index}>
-                                        <td style={{ color: '#a0a0a0' }}>{t.numero || startIndex + index + 1}</td>
+                                        <td style={{ color: '#a0a0a0' }}>{startIndex + index + 1}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.hora}</td>
                                         <td style={{ color: '#ff8c42', fontWeight: '600' }}>{t.numOrden}</td>
                                         <td>{t.servicioNombre}</td>

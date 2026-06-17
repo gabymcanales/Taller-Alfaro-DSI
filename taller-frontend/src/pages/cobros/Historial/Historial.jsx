@@ -35,18 +35,26 @@ const Historial = () => {
     const [transacciones, setTransacciones] = useState([]);
     const [filteredTransacciones, setFilteredTransacciones] = useState([]);
     const [filters, setFilters] = useState({
-        numOrden: '',
+        search: '',
         fechaDesde: '',
-        fechaHasta: '',
-        estado: ''
+        fechaHasta: ''
     });
     const [currentPage, setCurrentPage] = useState(1);
+
+    const ordenarPorNumeroOrden = (data) => {
+        return [...data].sort((a, b) => {
+            const numA = parseInt(a.numOrden.replace('ORD-', ''));
+            const numB = parseInt(b.numOrden.replace('ORD-', ''));
+            return numB - numA;
+        });
+    };
 
     const cargarHistorial = async () => {
         try {
             const response = await getHistorial();
-            setTransacciones(response.data);
-            setFilteredTransacciones(response.data);
+            const datosOrdenados = ordenarPorNumeroOrden(response.data);
+            setTransacciones(datosOrdenados);
+            setFilteredTransacciones(datosOrdenados);
             setCurrentPage(1);
         } catch (err) {
             console.error('Error al cargar historial:', err);
@@ -58,16 +66,36 @@ const Historial = () => {
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleSearchChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            aplicarFiltros();
+        }
+    };
+
     const aplicarFiltros = async () => {
         try {
             const params = {};
-            if (filters.numOrden) params.numOrden = filters.numOrden;
+
+            if (filters.search) {
+                const esNumeroOrden = filters.search.match(/^ORD-\d+$/i);
+                if (esNumeroOrden) {
+                    params.numOrden = filters.search;
+                } else {
+                    params.cliente = filters.search;
+                }
+            }
+
             if (filters.fechaDesde) params.fechaDesde = filters.fechaDesde;
             if (filters.fechaHasta) params.fechaHasta = filters.fechaHasta;
-            if (filters.estado) params.estado = filters.estado;
 
             const response = await getHistorial(params);
-            setFilteredTransacciones(response.data);
+            const datosOrdenados = ordenarPorNumeroOrden(response.data);
+            setFilteredTransacciones(datosOrdenados);
             setCurrentPage(1);
         } catch (err) {
             console.error('Error al aplicar filtros:', err);
@@ -76,10 +104,9 @@ const Historial = () => {
 
     const limpiarFiltros = () => {
         setFilters({
-            numOrden: '',
+            search: '',
             fechaDesde: '',
-            fechaHasta: '',
-            estado: ''
+            fechaHasta: ''
         });
         setFilteredTransacciones(transacciones);
         setCurrentPage(1);
@@ -89,7 +116,13 @@ const Historial = () => {
         cargarHistorial();
     }, []);
 
-    // Obtener datos de la página actual
+    useEffect(() => {
+        if (filters.search === '' && filters.fechaDesde === '' && filters.fechaHasta === '') {
+            setFilteredTransacciones(transacciones);
+            setCurrentPage(1);
+        }
+    }, [filters.search, filters.fechaDesde, filters.fechaHasta, transacciones]);
+
     const totalItems = filteredTransacciones.length;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -119,10 +152,12 @@ const Historial = () => {
                 <div className="filters-bar">
                     <input
                         type="text"
-                        name="numOrden"
-                        placeholder="N° de orden o cliente..."
-                        value={filters.numOrden}
-                        onChange={handleFilterChange}
+                        name="search"
+                        placeholder="Buscar..."
+                        value={filters.search}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleKeyDown}
+                        style={{ flex: 2, minWidth: '200px' }}
                     />
                     <input
                         type="date"
@@ -156,9 +191,9 @@ const Historial = () => {
                                 <th>Hora</th>
                                 <th>Orden</th>
                                 <th>Servicios</th>
+                                <th>Cliente</th>
                                 <th>Monto</th>
                                 <th>Empleado</th>
-                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -179,13 +214,9 @@ const Historial = () => {
                                         <td style={{ color: '#a0a0a0' }}>{t.hora}</td>
                                         <td className="order-highlight">{t.numOrden}</td>
                                         <td>{t.servicios}</td>
+                                        <td style={{ color: '#fff' }}>{t.clienteNombre || '—'}</td>
                                         <td className="monto-highlight">${t.monto.toFixed(2)}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.empleadoUsername}</td>
-                                        <td>
-                                            <span className={`status-pill ${t.estado === 'Cerrado' ? 'pill-yellow' : 'pill-green'}`}>
-                                                {t.estado}
-                                            </span>
-                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -198,7 +229,6 @@ const Historial = () => {
                     <span className="total-highlight">Subtotal: ${totalMonto.toFixed(2)}</span>
                 </div>
 
-                {/* Paginación */}
                 <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}

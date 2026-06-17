@@ -193,6 +193,7 @@ public class CobrosService {
 
     public List<HistorialTransaccionDTO> getHistorialTransacciones(
             String numOrden,
+            String cliente, // 👈 NUEVO
             LocalDate fechaDesde,
             LocalDate fechaHasta) {
 
@@ -200,28 +201,47 @@ public class CobrosService {
         LocalDateTime inicio = fechaDesde != null ? fechaDesde.atStartOfDay() : null;
         LocalDateTime fin = fechaHasta != null ? fechaHasta.atTime(23, 59, 59) : null;
 
-        // Búsqueda por número de orden y fechas
-        if (numOrden != null && !numOrden.isEmpty() && inicio != null && fin != null) {
+        boolean tieneNumOrden = numOrden != null && !numOrden.isEmpty();
+        boolean tieneCliente = cliente != null && !cliente.isEmpty();
+        boolean tieneFechas = inicio != null && fin != null;
+
+        if (tieneCliente && tieneNumOrden && tieneFechas) {
+            transacciones = transaccionRepository
+                    .findByClienteAndNumOrdenAndFechaHoraTransaccionBetween(
+                            cliente, numOrden, inicio, fin);
+        }
+
+        else if (tieneCliente && tieneFechas) {
+            transacciones = transaccionRepository
+                    .findByClienteNombreContainingIgnoreCaseAndFechaHoraTransaccionBetween(
+                            cliente, inicio, fin);
+        }
+
+        else if (tieneCliente) {
+            transacciones = transaccionRepository
+                    .findByClienteNombreContainingIgnoreCase(cliente);
+        }
+
+        else if (tieneNumOrden && tieneFechas) {
             transacciones = transaccionRepository
                     .findByOrdenNumOrdenContainingIgnoreCaseAndFechaHoraTransaccionBetween(
                             numOrden, inicio, fin);
         }
-        // Búsqueda solo por número de orden
-        else if (numOrden != null && !numOrden.isEmpty()) {
+
+        else if (tieneNumOrden) {
             transacciones = transaccionRepository
                     .findByOrdenNumOrdenContainingIgnoreCase(numOrden);
         }
-        // Búsqueda solo por fechas
-        else if (inicio != null && fin != null) {
+
+        else if (tieneFechas) {
             transacciones = transaccionRepository
                     .findByFechaHoraTransaccionBetween(inicio, fin);
         }
-        // Sin filtros
+
         else {
             transacciones = transaccionRepository.findAll();
         }
 
-        // Convertir a DTO
         return transacciones.stream()
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
@@ -234,7 +254,6 @@ public class CobrosService {
         dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
         dto.setNumOrden(t.getOrden().getNumOrden());
 
-        // Obtener nombres de servicios
         String nombresServicios = "";
         if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
             nombresServicios = t.getOrden().getOrdenServicios().stream()
@@ -243,15 +262,14 @@ public class CobrosService {
         }
         dto.setServicios(nombresServicios);
 
+        if (t.getOrden().getCliente() != null) {
+            dto.setClienteNombre(t.getOrden().getCliente().getNombreCliente());
+        } else {
+            dto.setClienteNombre("—");
+        }
+
         dto.setMonto(t.getMontoTotal());
         dto.setEmpleadoUsername(t.getEmpleado().getUsername());
-
-        // Determinar estado (si tiene cierre asociado)
-        if (t.getCierreAsociado() != null && t.getCierreAsociado()) {
-            dto.setEstado("Cerrado");
-        } else {
-            dto.setEstado("Entregado");
-        }
 
         return dto;
     }

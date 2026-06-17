@@ -43,10 +43,11 @@ public class CobroController {
     @GetMapping("/historial")
     public ResponseEntity<List<HistorialTransaccionDTO>> getHistorial(
             @RequestParam(required = false) String numOrden,
+            @RequestParam(required = false) String cliente,
             @RequestParam(required = false) LocalDate fechaDesde,
             @RequestParam(required = false) LocalDate fechaHasta) {
         List<HistorialTransaccionDTO> historial = cobrosService.getHistorialTransacciones(
-                numOrden, fechaDesde, fechaHasta);
+                numOrden, cliente, fechaDesde, fechaHasta);
         return ResponseEntity.ok(historial);
     }
 

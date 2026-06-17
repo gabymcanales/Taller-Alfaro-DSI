@@ -53,7 +53,7 @@
     color: #fff;
 }
 
-/* Filtros */
+
 .filters-bar {
     padding: 16px 20px;
     display: flex;
@@ -76,6 +76,11 @@
 .filters-bar input:focus,
 .filters-bar select:focus {
     border-color: #ff4000;
+}
+
+.filters-bar input[type="text"] {
+    flex: 2;
+    min-width: 200px;
 }
 
 .btn-ghost {
@@ -105,7 +110,7 @@
     stroke: #ff8c42;
 }
 
-/* Tabla */
+
 .table-container {
     overflow-x: auto;
 }
