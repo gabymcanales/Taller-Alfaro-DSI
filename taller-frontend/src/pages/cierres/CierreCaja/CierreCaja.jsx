@@ -29,7 +29,7 @@ const CierreCaja = () => {
             const response = await getCierreDiario();
             if (response.data) {
                 setTotalEsperado(response.data.montoEsperado);
-                // ✅ Solo marcar como cerrado si realmente está cerrado
+                
                 setCierreExistente(response.data.cerrado === true);
             }
         } catch {
@@ -169,7 +169,6 @@ const CierreCaja = () => {
         }
     };
 
-    // ========== EFECTO INICIAL ==========
     useEffect(() => {
         const inicializarDatos = async () => {
             await cargarCierreDiario();
