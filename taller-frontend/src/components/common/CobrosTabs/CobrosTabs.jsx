@@ -31,7 +31,7 @@ const CobrosTabs = () => {
         { 
             id: 'cierre', 
             label: 'Cierre de caja', 
-            path: '/cierres/diario',
+            path: '/cobros/cierres',
             icon: (
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M8 12a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1l0 -3" />

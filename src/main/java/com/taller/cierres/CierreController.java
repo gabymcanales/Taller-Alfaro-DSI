@@ -12,11 +12,11 @@ import com.taller.dto.CierreMensualRequest;
 import com.taller.dto.CierreMensualResponse;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/cierres")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class CierreController {
 
     private final CierreService cierreService;
@@ -60,22 +60,31 @@ public class CierreController {
 
     @GetMapping("/diario")
     public ResponseEntity<CierreDiarioResponse> obtenerCierreDelDia() {
-        var cierre = cierreService.getCierrePorFecha(java.time.LocalDate.now());
+        LocalDate hoy = LocalDate.now();
 
-        CierreDiarioResponse response = new CierreDiarioResponse();
-        response.setIdCierreDiario(cierre.getIdCierreDiario());
-        response.setFechaCierre(cierre.getFechaCierre());
-        response.setHoraCierre(cierre.getHoraCierre());
-        response.setMontoEsperado(cierre.getMontoEsperado());
-        response.setMontoFisico(cierre.getMontoFisico());
-        response.setDiferencia(cierre.getDiferencia().abs());
-        response.setTipoDiferencia(
-                cierre.getDiferencia().compareTo(BigDecimal.ZERO) > 0 ? "SOBRANTE"
-                        : cierre.getDiferencia().compareTo(BigDecimal.ZERO) < 0 ? "FALTANTE" : "IGUAL");
-        response.setCerrado(cierre.getCerrado());
-        response.setEmpleadoUsername(cierre.getEmpleado().getUsername());
+        var cierreExistente = cierreService.getCierrePorFechaSinExcepcion(hoy);
 
-        return ResponseEntity.ok(response);
+        if (cierreExistente != null) {
+            CierreDiarioResponse response = new CierreDiarioResponse();
+            response.setIdCierreDiario(cierreExistente.getIdCierreDiario());
+            response.setFechaCierre(cierreExistente.getFechaCierre());
+            response.setHoraCierre(cierreExistente.getHoraCierre());
+            response.setMontoEsperado(cierreExistente.getMontoEsperado());
+            response.setMontoFisico(cierreExistente.getMontoFisico());
+            response.setDiferencia(cierreExistente.getDiferencia().abs());
+            response.setTipoDiferencia(
+                    cierreExistente.getDiferencia().compareTo(BigDecimal.ZERO) > 0 ? "SOBRANTE"
+                            : cierreExistente.getDiferencia().compareTo(BigDecimal.ZERO) < 0 ? "FALTANTE" : "IGUAL");
+            response.setCerrado(cierreExistente.getCerrado());
+            response.setEmpleadoUsername(cierreExistente.getEmpleado().getUsername());
+            return ResponseEntity.ok(response);
+        } else {
+            BigDecimal totalEsperado = cierreService.calcularTotalEsperadoDelDia(hoy);
+            CierreDiarioResponse response = new CierreDiarioResponse();
+            response.setMontoEsperado(totalEsperado);
+            response.setCerrado(false);
+            return ResponseEntity.ok(response);
+        }
     }
 
     @PostMapping("/mensual")
@@ -105,7 +114,15 @@ public class CierreController {
     public ResponseEntity<CierreMensualResponse> obtenerCierrePorMes(
             @RequestParam Integer mes,
             @RequestParam Integer anio) {
-        var cierre = cierreService.getCierrePorMes(mes, anio);
+
+        var cierre = cierreService.getCierrePorMesSinExcepcion(mes, anio);
+
+        if (cierre == null) {
+            CierreMensualResponse response = new CierreMensualResponse();
+            response.setCerrado(false);
+            response.setMontoTotal(BigDecimal.ZERO);
+            return ResponseEntity.ok(response);
+        }
 
         CierreMensualResponse response = new CierreMensualResponse();
         response.setIdCierreMensual(cierre.getIdCierreMensual());

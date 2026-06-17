@@ -1,33 +1,63 @@
 import { useState, useEffect } from 'react';
 import { getHistorial } from '../../../services/cobroService';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
+import Pagination from '../../../components/common/Pagination/Pagination';
 import './Historial.css';
+
+const SearchIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+        <path d="M21 21l-6 -6" />
+    </svg>
+);
+
+const ClearIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+    </svg>
+);
+
+const ListIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff8c42" strokeWidth="1.5" style={{ marginRight: '8px' }}>
+        <path d="M9 6l11 0" />
+        <path d="M9 12l11 0" />
+        <path d="M9 18l11 0" />
+        <path d="M5 6l0 .01" />
+        <path d="M5 12l0 .01" />
+        <path d="M5 18l0 .01" />
+    </svg>
+);
+
+const ITEMS_PER_PAGE = 10;
 
 const Historial = () => {
     const [transacciones, setTransacciones] = useState([]);
     const [filteredTransacciones, setFilteredTransacciones] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({
-        numOrden: '',
+        search: '',
         fechaDesde: '',
-        fechaHasta: '',
-        estado: ''
+        fechaHasta: ''
     });
+    const [currentPage, setCurrentPage] = useState(1);
 
-    useEffect(() => {
-        cargarHistorial();
-    }, []);
+    const ordenarPorNumeroOrden = (data) => {
+        return [...data].sort((a, b) => {
+            const numA = parseInt(a.numOrden.replace('ORD-', ''));
+            const numB = parseInt(b.numOrden.replace('ORD-', ''));
+            return numB - numA;
+        });
+    };
 
     const cargarHistorial = async () => {
-        setLoading(true);
         try {
             const response = await getHistorial();
-            setTransacciones(response.data);
-            setFilteredTransacciones(response.data);
+            const datosOrdenados = ordenarPorNumeroOrden(response.data);
+            setTransacciones(datosOrdenados);
+            setFilteredTransacciones(datosOrdenados);
+            setCurrentPage(1);
         } catch (err) {
             console.error('Error al cargar historial:', err);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -36,78 +66,75 @@ const Historial = () => {
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleSearchChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            aplicarFiltros();
+        }
+    };
+
     const aplicarFiltros = async () => {
-        setLoading(true);
         try {
             const params = {};
-            if (filters.numOrden) params.numOrden = filters.numOrden;
+
+            if (filters.search) {
+                const esNumeroOrden = filters.search.match(/^ORD-\d+$/i);
+                if (esNumeroOrden) {
+                    params.numOrden = filters.search;
+                } else {
+                    params.cliente = filters.search;
+                }
+            }
+
             if (filters.fechaDesde) params.fechaDesde = filters.fechaDesde;
             if (filters.fechaHasta) params.fechaHasta = filters.fechaHasta;
-            if (filters.estado) params.estado = filters.estado;
-            
+
             const response = await getHistorial(params);
-            setFilteredTransacciones(response.data);
+            const datosOrdenados = ordenarPorNumeroOrden(response.data);
+            setFilteredTransacciones(datosOrdenados);
+            setCurrentPage(1);
         } catch (err) {
             console.error('Error al aplicar filtros:', err);
-        } finally {
-            setLoading(false);
         }
     };
 
     const limpiarFiltros = () => {
         setFilters({
-            numOrden: '',
+            search: '',
             fechaDesde: '',
-            fechaHasta: '',
-            estado: ''
+            fechaHasta: ''
         });
         setFilteredTransacciones(transacciones);
+        setCurrentPage(1);
     };
 
-    const totalMonto = filteredTransacciones.reduce((sum, t) => sum + t.monto, 0);
+    useEffect(() => {
+        cargarHistorial();
+    }, []);
 
-    // Icono de búsqueda
-    const SearchIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
-            <path d="M21 21l-6 -6" />
-        </svg>
-    );
+    useEffect(() => {
+        if (filters.search === '' && filters.fechaDesde === '' && filters.fechaHasta === '') {
+            setFilteredTransacciones(transacciones);
+            setCurrentPage(1);
+        }
+    }, [filters.search, filters.fechaDesde, filters.fechaHasta, transacciones]);
 
-    // Icono de limpiar
-    const ClearIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
-            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
-        </svg>
-    );
+    const totalItems = filteredTransacciones.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const currentData = filteredTransacciones.slice(startIndex, endIndex);
 
-    // Icono de lista (panel header)
-    const ListIcon = () => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff8c42" strokeWidth="1.5" style={{ marginRight: '8px' }}>
-            <path d="M9 6l11 0" />
-            <path d="M9 12l11 0" />
-            <path d="M9 18l11 0" />
-            <path d="M5 6l0 .01" />
-            <path d="M5 12l0 .01" />
-            <path d="M5 18l0 .01" />
-        </svg>
-    );
-
-    if (loading) {
-        return (
-            <div className="historial-container">
-                <CobrosTabs />
-                <div className="loading">Cargando historial...</div>
-            </div>
-        );
-    }
+    const totalMonto = currentData.reduce((sum, t) => sum + t.monto, 0);
 
     return (
         <div className="historial-container">
             <div className="page-header">
                 <h1>Historial de Transacciones</h1>
-              
                 <span className="badge-readonly">Solo lectura</span>
             </div>
 
@@ -125,10 +152,12 @@ const Historial = () => {
                 <div className="filters-bar">
                     <input
                         type="text"
-                        name="numOrden"
-                        placeholder="N° de orden o cliente..."
-                        value={filters.numOrden}
-                        onChange={handleFilterChange}
+                        name="search"
+                        placeholder="Buscar..."
+                        value={filters.search}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleKeyDown}
+                        style={{ flex: 2, minWidth: '200px' }}
                     />
                     <input
                         type="date"
@@ -144,11 +173,6 @@ const Historial = () => {
                         onChange={handleFilterChange}
                         placeholder="Hasta"
                     />
-                    <select name="estado" value={filters.estado} onChange={handleFilterChange}>
-                        <option value="">Todos los estados</option>
-                        <option value="entregado">Entregado</option>
-                        <option value="cerrado">Cierre diario</option>
-                    </select>
                     <button className="btn-ghost" onClick={aplicarFiltros}>
                         <SearchIcon />
                         Buscar
@@ -167,13 +191,13 @@ const Historial = () => {
                                 <th>Hora</th>
                                 <th>Orden</th>
                                 <th>Servicios</th>
+                                <th>Cliente</th>
                                 <th>Monto</th>
                                 <th>Empleado</th>
-                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredTransacciones.length === 0 ? (
+                            {currentData.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="no-data">
                                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1" style={{ marginBottom: '16px' }}>
@@ -184,19 +208,15 @@ const Historial = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredTransacciones.map((t, index) => (
+                                currentData.map((t, index) => (
                                     <tr key={index}>
                                         <td style={{ color: '#a0a0a0' }}>{t.fecha}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.hora}</td>
                                         <td className="order-highlight">{t.numOrden}</td>
                                         <td>{t.servicios}</td>
+                                        <td style={{ color: '#fff' }}>{t.clienteNombre || '—'}</td>
                                         <td className="monto-highlight">${t.monto.toFixed(2)}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.empleadoUsername}</td>
-                                        <td>
-                                            <span className={`status-pill ${t.estado === 'Cerrado' ? 'pill-yellow' : 'pill-green'}`}>
-                                                {t.estado}
-                                            </span>
-                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -205,9 +225,15 @@ const Historial = () => {
                 </div>
 
                 <div className="table-footer">
-                    <span>Mostrando {filteredTransacciones.length} de {transacciones.length} transacciones</span>
+                    <span>Mostrando {currentData.length} de {filteredTransacciones.length} transacciones</span>
                     <span className="total-highlight">Subtotal: ${totalMonto.toFixed(2)}</span>
                 </div>
+
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </div>
         </div>
     );

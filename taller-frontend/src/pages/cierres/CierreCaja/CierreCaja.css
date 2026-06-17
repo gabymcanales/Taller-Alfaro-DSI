@@ -1,5 +1,8 @@
 .cierres-container {
-    width: 100%;
+    padding: 24px;
+    background: #111;
+    min-height: 100vh;
+    color: #fff;
 }
 
 .page-header {

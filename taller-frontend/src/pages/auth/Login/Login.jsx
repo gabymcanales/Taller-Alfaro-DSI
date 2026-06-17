@@ -23,7 +23,7 @@ const Login = () => {
             localStorage.setItem('token', token);
             
             
-            navigate('/cobros/registrar');
+            navigate('/');
         } catch (err) {
             setError('Usuario o contraseña incorrectos');
         } finally {
