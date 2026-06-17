@@ -1,8 +1,8 @@
 spring.application.name=Taller-Alfaro
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/taller_db
+spring.datasource.url=jdbc:postgresql://localhost:5432/NOMBRE_DE_TU_BD
 spring.datasource.username=postgres
-spring.datasource.password=1234
+spring.datasource.password=TU_CONTRASEÑA
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
