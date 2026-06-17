@@ -193,7 +193,7 @@ public class CobrosService {
 
     public List<HistorialTransaccionDTO> getHistorialTransacciones(
             String numOrden,
-            String cliente, // 👈 NUEVO
+            String cliente, 
             LocalDate fechaDesde,
             LocalDate fechaHasta) {
 
