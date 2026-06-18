@@ -180,7 +180,7 @@ const GestionServicios = () => {
                                     <span>${servicio.precioServicio}</span>
                                     <span>⏱ {servicio.duracionServicio} min</span>
                                 </div>
-                                <div className={`estado ${servicio.estadoServicio.toLowerCase()}`}>
+                                <div className={`estado ${servicio.nombre?.toLowerCase() || ""}`}>
                                     {servicio.estadoServicio}
                                 </div>
                             </div>
