@@ -123,10 +123,12 @@ const GestionServicios = () => {
         setMostrarModal(true);
     };
 
+    const textoBusqueda = busqueda.toLowerCase();
+
     const serviciosFiltrados = servicios.filter(servicio =>
-        servicio.nombreServicio.toLowerCase().includes(busqueda.toLowerCase()) ||
-        servicio.descripcionServicio.toLowerCase().includes(busqueda.toLowerCase()) ||
-        servicio.areaServicio.toLowerCase().includes(busqueda.toLowerCase())
+        servicio.nombreServicio?.toLowerCase().includes(textoBusqueda) ||
+        servicio.descripcionServicio?.toLowerCase().includes(textoBusqueda) ||
+        servicio.areaServicio?.toLowerCase().includes(textoBusqueda)
     );
 
     const serviciosPorArea = serviciosFiltrados.reduce((acc, servicio) => {
