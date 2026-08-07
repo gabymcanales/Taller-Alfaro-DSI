@@ -33,7 +33,6 @@ const RegistrarCobro = () => {
     const [pendingData, setPendingData] = useState(null);
     const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
     
-    // Estados para buscador de clientes
     const [clientesSugeridos, setClientesSugeridos] = useState([]);
     const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
     const [buscando, setBuscando] = useState(false);
@@ -101,7 +100,7 @@ const RegistrarCobro = () => {
             setError('');
             return;
         }
-
+  
         if (name === 'telefonoCliente') {
             const soloNumeros = value.replace(/[^0-9]/g, '');
             if (soloNumeros.length <= 8) {
@@ -111,18 +110,38 @@ const RegistrarCobro = () => {
             return;
         }
 
-        // Resto de campos
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'montoTotal' || name === 'montoRecibido') {
+          
+            if (value === '') {
+                setFormData(prev => ({ ...prev, [name]: value }));
+                setError('');
+                if (name === 'montoRecibido') {
+                    setCambio(null);
+                }
+                return;
+            }
+
+            const numValue = parseFloat(value);
+
+            if (!isNaN(numValue) && numValue <= 0) {
+                return;
+            }
+
+            setFormData(prev => ({ ...prev, [name]: value }));
+            setError('');
+        }
 
         if (name === 'idServicio') {
+            setFormData(prev => ({ ...prev, [name]: value }));
             const servicio = servicios.find(s => s.idServicio === parseInt(value));
             setServicioSeleccionado(servicio);
+            setError('');
         }
 
         if (name === 'montoRecibido' && formData.montoTotal) {
             const total = parseFloat(formData.montoTotal);
             const recibido = parseFloat(value);
-            if (!isNaN(total) && !isNaN(recibido) && recibido >= total) {
+            if (!isNaN(total) && !isNaN(recibido) && recibido >= total && recibido > 0) {
                 setCambio(recibido - total);
             } else {
                 setCambio(null);
@@ -153,6 +172,7 @@ const RegistrarCobro = () => {
             return;
         }
 
+        // Validar teléfono
         if (!formData.telefonoCliente.trim()) {
             setError('Ingrese el teléfono del cliente');
             return;
@@ -163,12 +183,12 @@ const RegistrarCobro = () => {
         }
 
         if (isNaN(total) || total <= 0) {
-            setError('Ingrese un monto total válido');
+            setError('Ingrese un monto total válido (mayor a 0)');
             return;
         }
 
         if (isNaN(recibido) || recibido <= 0) {
-            setError('Ingrese el monto recibido');
+            setError('Ingrese un monto recibido válido (mayor a 0)');
             return;
         }
 
@@ -337,7 +357,7 @@ const RegistrarCobro = () => {
                                     onChange={handleChange}
                                     placeholder="0.00"
                                     step="0.01"
-                                    min="0"
+                                    min="0.01"
                                     required
                                 />
                             </div>
@@ -351,7 +371,7 @@ const RegistrarCobro = () => {
                                     onChange={handleChange}
                                     placeholder="0.00"
                                     step="0.01"
-                                    min="0"
+                                    min="0.01"
                                     required
                                 />
                             </div>
