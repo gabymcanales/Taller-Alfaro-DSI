@@ -22,6 +22,13 @@ public class OrdenServicio {
     @JoinColumn(name = "id_servicio")
     private Servicio servicio;
 
-    @Column(name = "precio_aplicado", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precioAplicado;
+    @ManyToOne
+    @JoinColumn(name = "id_empleado")
+    private Empleado empleado;
+
+    @Column(name = "precio_aplicado", precision = 10, scale = 2)
+    private BigDecimal precioAplicado; 
+
+    @Column(name = "estado_servicio_orden", length = 20)
+    private String estadoServicioOrden;  // "PENDIENTE", "EN_PROCESO", "FINALIZADO"
 }

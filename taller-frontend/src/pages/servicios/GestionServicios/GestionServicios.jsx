@@ -22,8 +22,8 @@ const GestionServicios = () => {
         nombreServicio: '',
         descripcionServicio: '',
         areaServicio: '',
-        precioServicio: '',
-        duracionServicio: '',
+        precioSugerido: '',       
+        tipoPrecio: 'FIJO',       
         estadoServicio: 'ACTIVO'
     });
     const [servicios, setServicios] = useState([]);
@@ -47,19 +47,29 @@ const GestionServicios = () => {
                 !nuevoServicio.nombreServicio ||
                 !nuevoServicio.areaServicio ||
                 !nuevoServicio.descripcionServicio ||
-                !nuevoServicio.precioServicio ||
-                !nuevoServicio.duracionServicio
+                !nuevoServicio.tipoPrecio
             ) {
                 toast.error('Complete todos los campos');
                 return;
+            }
+
+            
+            if (nuevoServicio.tipoPrecio === 'FIJO') {
+                const precio = Number(nuevoServicio.precioSugerido);
+                if (!nuevoServicio.precioSugerido || precio <= 0) {
+                    toast.error('Los servicios fijos deben tener un precio sugerido mayor a 0');
+                    return;
+                }
             }
 
             const datosServicio = {
                 nombreServicio: nuevoServicio.nombreServicio,
                 descripcionServicio: nuevoServicio.descripcionServicio,
                 areaServicio: nuevoServicio.areaServicio,
-                precioServicio: Number(nuevoServicio.precioServicio),
-                duracionServicio: Number(nuevoServicio.duracionServicio),
+                precioSugerido: nuevoServicio.tipoPrecio === 'FIJO' 
+                    ? Number(nuevoServicio.precioSugerido) 
+                    : null,
+                tipoPrecio: nuevoServicio.tipoPrecio,
                 estadoServicio: nuevoServicio.estadoServicio
             };
 
@@ -80,13 +90,13 @@ const GestionServicios = () => {
                 nombreServicio: '',
                 descripcionServicio: '',
                 areaServicio: '',
-                precioServicio: '',
-                duracionServicio: '',
+                precioSugerido: '',
+                tipoPrecio: 'FIJO',
                 estadoServicio: 'ACTIVO'
             });
         } catch (error) {
             console.error(error);
-            toast.error('Error al guardar servicio');
+            toast.error(error.response?.data || 'Error al guardar servicio');
         }
     };
 
@@ -114,11 +124,11 @@ const GestionServicios = () => {
         setIdEditar(servicio.idServicio);
         setNuevoServicio({
             nombreServicio: servicio.nombreServicio,
-            descripcionServicio: servicio.descripcionServicio,
-            areaServicio: servicio.areaServicio,
-            precioServicio: servicio.precioServicio,
-            duracionServicio: servicio.duracionServicio,
-            estadoServicio: servicio.estadoServicio
+            descripcionServicio: servicio.descripcionServicio || '',
+            areaServicio: servicio.areaServicio || '',
+            precioSugerido: servicio.precioSugerido || '',
+            tipoPrecio: servicio.tipoPrecio || 'FIJO',
+            estadoServicio: servicio.estadoServicio || 'ACTIVO'
         });
         setMostrarModal(true);
     };
@@ -179,10 +189,18 @@ const GestionServicios = () => {
                                 </div>
                                 <p className="servicio-descripcion">{servicio.descripcionServicio}</p>
                                 <div className="servicio-info">
-                                    <span>${servicio.precioServicio}</span>
-                                    <span>⏱ {servicio.duracionServicio} min</span>
+                                    
+                                    {servicio.tipoPrecio === 'FIJO' ? (
+                                        <span className="precio-fijo">${servicio.precioSugerido?.toFixed(2)}</span>
+                                    ) : (
+                                        <span className="precio-variable">Variable</span>
+                                    )}
+                                    
+                                    <span className={`tipo-precio-badge ${servicio.tipoPrecio?.toLowerCase()}`}>
+                                        {servicio.tipoPrecio || 'FIJO'}
+                                    </span>
                                 </div>
-                                <div className={`estado ${servicio.nombre?.toLowerCase() || ""}`}>
+                                <div className={`estado ${servicio.estadoServicio?.toLowerCase() || ""}`}>
                                     {servicio.estadoServicio}
                                 </div>
                             </div>
@@ -210,18 +228,44 @@ const GestionServicios = () => {
                             value={nuevoServicio.descripcionServicio}
                             onChange={(e) => setNuevoServicio({ ...nuevoServicio, descripcionServicio: e.target.value })}
                         />
-                        <input
-                            type="number"
-                            placeholder="Precio"
-                            value={nuevoServicio.precioServicio}
-                            onChange={(e) => setNuevoServicio({ ...nuevoServicio, precioServicio: e.target.value })}
-                        />
-                        <input
-                            type="number"
-                            placeholder="Duración (minutos)"
-                            value={nuevoServicio.duracionServicio}
-                            onChange={(e) => setNuevoServicio({ ...nuevoServicio, duracionServicio: e.target.value })}
-                        />
+
+                  
+                        <select
+                            value={nuevoServicio.tipoPrecio}
+                            onChange={(e) => {
+                                setNuevoServicio({ 
+                                    ...nuevoServicio, 
+                                    tipoPrecio: e.target.value,
+                                    precioSugerido: e.target.value === 'VARIABLE' ? '' : nuevoServicio.precioSugerido
+                                });
+                            }}
+                        >
+                            <option value="FIJO">Fijo</option>
+                            <option value="VARIABLE">Variable</option>
+                        </select>
+
+                      
+                        {nuevoServicio.tipoPrecio === 'FIJO' ? (
+                            <input
+                                type="number"
+                                placeholder="Precio sugerido ($)"
+                                value={nuevoServicio.precioSugerido}
+                                onChange={(e) => setNuevoServicio({ ...nuevoServicio, precioSugerido: e.target.value })}
+                                step="0.01"
+                                min="0.01"
+                            />
+                        ) : (
+                            <input
+                                type="text"
+                                placeholder="Precio variable (se define al finalizar)"
+                                value="Se define al finalizar"
+                                disabled
+                                style={{ color: '#ff8c42' }}
+                            />
+                        )}
+
+                        
+
                         <select
                             value={nuevoServicio.estadoServicio}
                             onChange={(e) => setNuevoServicio({ ...nuevoServicio, estadoServicio: e.target.value })}
@@ -238,8 +282,8 @@ const GestionServicios = () => {
                                     nombreServicio: '',
                                     descripcionServicio: '',
                                     areaServicio: '',
-                                    precioServicio: '',
-                                    duracionServicio: '',
+                                    precioSugerido: '',
+                                    tipoPrecio: 'FIJO',
                                     estadoServicio: 'ACTIVO'
                                 });
                             }}>
