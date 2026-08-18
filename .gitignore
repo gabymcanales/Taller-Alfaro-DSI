@@ -34,3 +34,4 @@ build/
 
 ### Configuración local sensible ###
 src/main/resources/application.properties
+application.properties
