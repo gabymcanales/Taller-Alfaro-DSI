@@ -8,6 +8,7 @@ import Sidebar from '../components/common/Sidebar/Sidebar';
 import ReporteDiario from '../pages/reportes/ReporteDiario/ReporteDiario';
 import Dashboard from '../pages/dashboard/Dashboard';
 import GestionServicios from '../pages/servicios/GestionServicios/GestionServicios';
+//import OrdenesTrabajo from '../pages/ordenes/OrdenesTrabajo';
 
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
