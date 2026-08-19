@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getClientes, getEstadisticas } from '../../services/clienteService';
-import './Clientes.css';
+import { getVehiculos, getEstadisticasVehiculos } from '../../services/vehiculoService';
+import './Vehiculos.css';
 
-const Clientes = () => {
-    const [clientes, setClientes] = useState([]);
+const Vehiculos = () => {
+    const [vehiculos, setVehiculos] = useState([]);
     const [estadisticas, setEstadisticas] = useState({
         totalClientes: 47,
         totalVehiculos: 61,
@@ -20,19 +20,19 @@ const Clientes = () => {
     const cargarDatos = async () => {
         setLoading(true);
         try {
-            const [clientesRes, statsRes] = await Promise.all([
-                getClientes(),
-                getEstadisticas()
+            const [vehiculosRes, statsRes] = await Promise.all([
+                getVehiculos(),
+                getEstadisticasVehiculos()
             ]);
-            setClientes(clientesRes.data);
+            setVehiculos(vehiculosRes.data);
             setEstadisticas(statsRes.data);
         } catch (err) {
             console.error('Error cargando datos:', err);
             // Datos de ejemplo para mostrar la UI
-            setClientes([
-                { id: 1, nombre: 'Guadalupe Alfaro', telefono: '7412-3300', direccion: 'Col. Escalón, San Salvador', vehiculos: ['P123-456', 'P789-012'] },
-                { id: 2, nombre: 'Juan Pérez', telefono: '7890-1122', direccion: 'Soyapango', vehiculos: ['N554-091'] },
-                { id: 3, nombre: 'María García', telefono: '7654-9988', direccion: 'Antiguo Cuscatlán', vehiculos: ['H201-773'] },
+            setVehiculos([
+                { id: 1, placa: 'P123-456', marca: 'Toyota', modelo: 'Corolla', año: 2020, color: 'Gris', propietario: 'Guadalupe Alfaro' },
+                { id: 2, placa: 'N554-091', marca: 'Nissan', modelo: 'Sentra', año: 2017, color: 'Blanco', propietario: 'Juan Pérez' },
+                { id: 3, placa: 'H201-773', marca: 'Honda', modelo: 'Civic', año: 2019, color: 'Azul', propietario: 'María García' },
             ]);
         } finally {
             setLoading(false);
@@ -41,35 +41,30 @@ const Clientes = () => {
 
     const handleBuscar = (e) => {
         setBusqueda(e.target.value);
-        // Aquí puedes implementar búsqueda en tiempo real
     };
 
-    // Función para obtener iniciales del nombre
-    const getIniciales = (nombre) => {
-        return nombre.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase();
-    };
-
-    // Filtrar clientes por búsqueda
-    const clientesFiltrados = clientes.filter(cliente =>
-        cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        cliente.telefono.includes(busqueda)
+    // Filtrar vehículos por búsqueda
+    const vehiculosFiltrados = vehiculos.filter(v =>
+        v.placa.toLowerCase().includes(busqueda.toLowerCase()) ||
+        v.marca.toLowerCase().includes(busqueda.toLowerCase()) ||
+        v.modelo.toLowerCase().includes(busqueda.toLowerCase()) ||
+        v.propietario.toLowerCase().includes(busqueda.toLowerCase())
     );
 
 
-
     return (
-        <div className="clientes-container">
+        <div className="vehiculos-container">
             {/* Cabecera */}
-            <div className="clientes-header">
+            <div className="vehiculos-header">
                 <div>
-                    <h1>Clientes</h1>
-                  
+                    <h1>Vehículos</h1>
+                   
                 </div>
                 <button className="btn-registrar">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
-                    Registrar Cliente
+                    Registrar Vehículo
                 </button>
             </div>
 
@@ -88,12 +83,12 @@ const Clientes = () => {
                 <div className="stat-card">
                     <div className="stat-number">{estadisticas.nuevosEsteMes}</div>
                     <div className="stat-label">Nuevos este mes</div>
-                    <div className="stat-sub">Clientes</div>
+                    <div className="stat-sub">Vehículos</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-number">{estadisticas.ordenesActivas}</div>
-                    <div className="stat-label">Ordenes activas</div>
-                    <div className="stat-sub">Vinculadas a clientes</div>
+                    <div className="stat-label">Órdenes activas</div>
+                    <div className="stat-sub">Vinculadas a vehículos</div>
                 </div>
             </div>
 
@@ -107,47 +102,43 @@ const Clientes = () => {
                         </svg>
                         <input
                             type="text"
-                            placeholder="Buscar por nombre o teléfono..."
+                            placeholder="Buscar por placa, marca o propietario..."
                             value={busqueda}
                             onChange={handleBuscar}
                         />
                     </div>
-                    <span className="total-clientes">Todos los clientes</span>
+                    <span className="total-vehiculos">Todos los vehículos</span>
                 </div>
 
                 <div className="tabla-scroll">
-                    <table className="clientes-tabla">
+                    <table className="vehiculos-tabla">
                         <thead>
                             <tr>
-                                <th>CLIENTE</th>
-                                <th>TELÉFONO</th>
-                                <th>DIRECCIÓN</th>
-                                <th>VEHÍCULOS</th>
+                                <th>PLACA</th>
+                                <th>MARCA / MODELO</th>
+                                <th>AÑO</th>
+                                <th>COLOR</th>
+                                <th>PROPIETARIO</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {clientesFiltrados.length === 0 ? (
+                            {vehiculosFiltrados.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="sin-datos">
-                                        No se encontraron clientes
+                                    <td colSpan="5" className="sin-datos">
+                                        No se encontraron vehículos
                                     </td>
                                 </tr>
                             ) : (
-                                clientesFiltrados.map((cliente) => (
-                                    <tr key={cliente.id}>
-                                        <td className="cliente-nombre">
-                                            <div className="avatar-iniciales">
-                                                {getIniciales(cliente.nombre)}
-                                            </div>
-                                            {cliente.nombre}
+                                vehiculosFiltrados.map((v) => (
+                                    <tr key={v.id}>
+                                        <td className="placa-destacada">{v.placa}</td>
+                                        <td>{v.marca} {v.modelo}</td>
+                                        <td>{v.año}</td>
+                                        <td>
+                                            <span className="color-dot" style={{ backgroundColor: v.color.toLowerCase() }} />
+                                            {v.color}
                                         </td>
-                                        <td>{cliente.telefono}</td>
-                                        <td>{cliente.direccion}</td>
-                                        <td className="vehiculos-lista">
-                                            {cliente.vehiculos.map((v, i) => (
-                                                <span key={i} className="vehiculo-tag">{v}</span>
-                                            ))}
-                                        </td>
+                                        <td>{v.propietario}</td>
                                     </tr>
                                 ))
                             )}
@@ -159,4 +150,4 @@ const Clientes = () => {
     );
 };
 
-export default Clientes;
+export default Vehiculos;
