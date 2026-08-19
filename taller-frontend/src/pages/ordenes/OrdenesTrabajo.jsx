@@ -1,18 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getOrdenes, getMisServicios } from '../../services/ordenService';
-import TablaOrdenesAdmin from './components/TablaOrdenesAdmin';
+import { getOrdenes, getMisServicios } from '../../services/ordenService'
+import TablaOrdenesAdmin from './components/ModalNuevaOrden/TablaOrdenesAdmin';
 import TablaServiciosEmpleado from './components/TablaServiciosEmpleado';
-import ModalNuevaOrden from './components/ModalNuevaOrden';
+import ModalNuevaOrden from './components/ModalNuevaOrden/ModalNuevaOrden';
 import './OrdenesTrabajo.css';
 
-/**
- * Página principal del módulo de órdenes de trabajo.
- * Cambia su vista según el rol del usuario autenticado:
- * - Admin: Ve todas las órdenes, puede crear, asignar y cobrar
- * - Empleado: Ve solo sus servicios asignados, puede actualizar estados
- */
 const OrdenesTrabajo = () => {
+    // Obtener usuario autenticado del contexto
     const { user } = useAuth();
     const [ordenes, setOrdenes] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,34 +18,41 @@ const OrdenesTrabajo = () => {
         busqueda: ''
     });
 
+    // Determinar si el usuario es administrador
     const esAdmin = user?.rol === 'ADMINISTRADOR';
 
-    useEffect(() => {
-        cargarDatos();
-    }, []);
-
+    // FUNCIÓN PARA CARGAR DATOS - DEFINIDA UNA SOLA VEZ
     const cargarDatos = async () => {
         setLoading(true);
         try {
             if (esAdmin) {
+                // Admin: cargar todas las órdenes
                 const response = await getOrdenes();
                 setOrdenes(response.data);
             } else {
+                // Empleado: cargar solo sus servicios asignados
                 const response = await getMisServicios();
                 setOrdenes(response.data);
             }
         } catch (error) {
             console.error('Error al cargar datos:', error);
+            // Si falla la API, puedes usar datos mock para pruebas
+            // setOrdenes(mockData);
         } finally {
             setLoading(false);
         }
     };
 
+    // Cargar datos al montar el componente
+    useEffect(() => {
+        cargarDatos();
+    }, []);
+
     if (loading) return <div className="loading">Cargando...</div>;
 
     return (
         <div className="ordenes-container">
-            {/* Encabezado */}
+            {/* ===== ENCABEZADO ===== */}
             <div className="page-header">
                 <div>
                     <h1>{esAdmin ? 'Órdenes de Trabajo' : 'Mis Servicios Asignados'}</h1>
@@ -61,6 +63,7 @@ const OrdenesTrabajo = () => {
                         }
                     </p>
                 </div>
+                {/* Solo Admin puede crear nuevas órdenes */}
                 {esAdmin && (
                     <button 
                         className="btn-nuevo-orden"
@@ -71,7 +74,7 @@ const OrdenesTrabajo = () => {
                 )}
             </div>
 
-            {/* Tabs de navegación (solo para Admin) */}
+            {/* ===== TABS DE NAVEGACIÓN (SOLO ADMIN) ===== */}
             {esAdmin && (
                 <div className="ordenes-tabs">
                     <button className="tab active">Todas las órdenes</button>
@@ -82,7 +85,7 @@ const OrdenesTrabajo = () => {
                 </div>
             )}
 
-            {/* Contenido según rol */}
+            {/* ===== CONTENIDO SEGÚN ROL ===== */}
             {esAdmin ? (
                 <TablaOrdenesAdmin 
                     ordenes={ordenes}
@@ -97,7 +100,7 @@ const OrdenesTrabajo = () => {
                 />
             )}
 
-            {/* Modal Nueva Orden (solo Admin) */}
+            {/* ===== MODAL NUEVA ORDEN (SOLO ADMIN) ===== */}
             {showModalNueva && (
                 <ModalNuevaOrden
                     onClose={() => setShowModalNueva(false)}

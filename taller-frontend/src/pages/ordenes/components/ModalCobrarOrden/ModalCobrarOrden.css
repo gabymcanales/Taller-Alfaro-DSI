@@ -1,0 +1,84 @@
+/* ============================================================
+   REUTILIZA ESTILOS DE ModalDetalleOrden.css
+   ============================================================ */
+/* Aquí solo van los estilos específicos de este modal */
+
+/* ============================================================
+   INFORMACIÓN DE COBRO
+   ============================================================ */
+.info-cobro {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.info-item {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+}
+
+.info-item .label {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.info-item .value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.estado-finalizado {
+    color: #97c459 !important;
+}
+
+.estado-entregado {
+    color: #a0a0a0 !important;
+}
+
+/* ============================================================
+   ALERTAS
+   ============================================================ */
+.alert-info {
+    background: rgba(55, 138, 221, 0.1);
+    border: 1px solid rgba(55, 138, 221, 0.25);
+    color: #85b7eb;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 12px 0;
+}
+
+.alert-info p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.alert-error {
+    background: rgba(226, 75, 74, 0.1);
+    border: 1px solid rgba(226, 75, 74, 0.3);
+    color: #f09595;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 12px 0;
+}
+
+.orden-ref {
+    font-size: 15px;
+    font-weight: 600;
+    color: #ff8c42;
+    margin-bottom: 12px;
+}
