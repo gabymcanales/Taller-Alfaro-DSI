@@ -44,3 +44,78 @@ Content-Type: application/json
 ### Eliminar servicio
 DELETE http://localhost:8080/api/servicios/3
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0OTU0MjUsImV4cCI6MTc4MTU4MTgyNX0.KA49cMQGtgig4NkwbfrGaGGQlbcIRP8cdeka0_qWNbE
+
+#### Pruebas de inventario
+### Obtener productos
+GET http://localhost:8080/api/inventario/productos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+
+### Crear producto
+POST http://localhost:8080/api/inventario/productos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "nombre": "Shampoo",
+  "descripcion": "Shampoo para limpieza de vehículos",
+  "unidadMedida": "Unidad",
+  "precio": 5.00,
+  "stockActual": 20,
+  "stockMinimo": 5,
+  "estado": "ACTIVO"
+}
+
+### Registrar compra de producto
+POST http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "producto": {
+    "idProducto": 1
+  },
+  "empleado": {
+    "idEmpleado": 1
+  },
+  "tipoMovimiento": "COMPRA",
+  "cantidad": 10,
+  "fechaMovimiento": "2026-08-20T23:15:00"
+}
+
+### Registrar uso de producto
+POST http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "producto": {
+    "idProducto": 1
+  },
+  "empleado": {
+    "idEmpleado": 1
+  },
+  "tipoMovimiento": "USO",
+  "cantidad": 2,
+  "fechaMovimiento": "2026-08-21T23:20:00"
+}
+
+### Intentar uso con stock insuficiente
+POST http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "producto": {
+    "idProducto": 1
+  },
+  "empleado": {
+    "idEmpleado": 1
+  },
+  "tipoMovimiento": "USO",
+  "cantidad": 100,
+  "fechaMovimiento": "2026-08-21T23:25:00"
+}
+
+### Obtener historial de movimientos
+GET http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
