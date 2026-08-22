@@ -1,8 +1,10 @@
 package com.taller.clientes;
 
+import com.taller.dto.HistorialServicioDTO;
 import com.taller.dto.VehiculoRequestDTO;
 import com.taller.dto.VehiculoResponseDTO;
 import com.taller.model.Cliente;
+import com.taller.model.Orden;
 import com.taller.model.Vehiculo;
 import com.taller.ordenes.ClienteRepository;
 import com.taller.ordenes.VehiculoRepository;
@@ -140,6 +142,46 @@ public class VehiculoService {
             clienteDTO.setTelefonoCliente(vehiculo.getCliente().getTelefonoCliente());
             dto.setCliente(clienteDTO);
         }
+
+        return dto;
+    }
+
+    public List<HistorialServicioDTO> getHistorialServicios(Long vehiculoId) {
+       
+        Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId)
+                .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
+
+        List<Orden> ordenes = vehiculo.getOrdenes();
+
+        if (ordenes.isEmpty()) {
+            throw new RuntimeException("El vehículo no tiene historial de servicios");
+        }
+
+        return ordenes.stream()
+                .map(this::convertToHistorialDTO)
+                .sorted((o1, o2) -> o2.getFechaHoraOrden().compareTo(o1.getFechaHoraOrden()))
+                .collect(Collectors.toList());
+    }
+
+    private HistorialServicioDTO convertToHistorialDTO(Orden orden) {
+        HistorialServicioDTO dto = new HistorialServicioDTO();
+        dto.setIdOrden(orden.getIdOrden());
+        dto.setNumOrden(orden.getNumOrden());
+        dto.setFechaHoraOrden(orden.getFechaHoraOrden());
+
+        String nombreServicios = orden.getOrdenServicios().stream()
+                .map(os -> os.getServicio().getNombreServicio())
+                .collect(Collectors.joining(" + "));
+        dto.setServicio(nombreServicios);
+
+        if (!orden.getOrdenServicios().isEmpty()) {
+            dto.setEmpleado(orden.getOrdenServicios().get(0).getEmpleado().getNombreEmpleado());
+        } else {
+            dto.setEmpleado("—");
+        }
+
+        dto.setMonto(orden.getPrecioFinal() != null ? orden.getPrecioFinal() : orden.getTotalCalculadoOrden());
+        dto.setEstado(orden.getEstadoOrden());
 
         return dto;
     }
