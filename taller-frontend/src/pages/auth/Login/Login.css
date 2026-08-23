@@ -50,6 +50,31 @@
     border-color: #ff4000;
 }
 
+.password-field {
+    position: relative;
+    display: flex;
+}
+
+.password-field input {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0a0a0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+}
+
+.toggle-password:hover {
+    color: #fff;
+}
+
 .login-card button {
     width: 100%;
     padding: 12px;

@@ -41,7 +41,7 @@ public class Orden {
     private Empleado empleado;
 
     @ManyToOne
-    @JoinColumn(name = "id_vehiculo", nullable = false)
+    @JoinColumn(name = "id_vehiculo")
     private Vehiculo vehiculo;
 
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL)

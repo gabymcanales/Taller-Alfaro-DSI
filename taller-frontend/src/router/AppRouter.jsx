@@ -8,8 +8,12 @@ import Sidebar from '../components/common/Sidebar/Sidebar';
 import ReporteDiario from '../pages/reportes/ReporteDiario/ReporteDiario';
 import Dashboard from '../pages/dashboard/Dashboard';
 import GestionServicios from '../pages/servicios/GestionServicios/GestionServicios';
+<<<<<<< HEAD
 import Clientes from '../pages/clientes/Clientes';
 import Vehiculos from '../pages/vehiculos/Vehiculos';
+=======
+import GestionEmpleados from '../pages/empleados/GestionEmpleados/GestionEmpleados';
+>>>>>>> develop
 
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
@@ -31,6 +35,8 @@ const Layout = () => {
                         <Route path="/clientes" element={<Clientes />} />
                         <Route path="/vehiculos" element={<Vehiculos/>}/>
                         <Route path="/servicios" element={<GestionServicios />} />             
+                        <Route path="/servicios" element={<GestionServicios />} />
+                        <Route path="/empleados" element={<GestionEmpleados />} />
                         <Route path="/" element={<Dashboard />} />
                     </Routes>
                 </div>
