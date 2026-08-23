@@ -22,6 +22,7 @@ public class OrdenResponseDTO {
         private Long idCliente;
         private String nombreCliente;
         private String telefonoCliente;
+        private List<VehiculoInfoDTO> vehiculos; 
     }
 
     @Data

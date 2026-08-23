@@ -19,7 +19,7 @@ public class Empleado {
     private String nombreEmpleado;
 
     @Column(name = "rol_empleado", nullable = false, length = 30)
-    private String rolEmpleado;  // "ADMINISTRADOR", "MECANICO", "TRABAJADOR", "LAVADOR"
+    private String rolEmpleado;
 
     @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
@@ -27,14 +27,14 @@ public class Empleado {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "activo", nullable = false, columnDefinition = "boolean default true")
+    @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
     @ManyToMany
     @JoinTable(
-            name = "empleado_servicio",
-            joinColumns = @JoinColumn(name = "id_empleado"),
-            inverseJoinColumns = @JoinColumn(name = "id_servicio")
+        name = "empleado_servicio",
+        joinColumns = @JoinColumn(name = "id_empleado"),
+        inverseJoinColumns = @JoinColumn(name = "id_servicio")
     )
     private List<Servicio> servicios = new ArrayList<>();
 }

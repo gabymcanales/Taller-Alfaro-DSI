@@ -1,19 +1,18 @@
 package com.taller.dto;
 
 import lombok.Data;
-import java.math.BigDecimal;
 import java.util.List;
 
 @Data
 public class OrdenRequestDTO {
     private Long idCliente;
     private Long idVehiculo;
-    private List<ServicioRequestDTO> servicios;
+    private List<ServicioAsignadoDTO> servicios;
 
     @Data
-    public static class ServicioRequestDTO {
+    public static class ServicioAsignadoDTO {
         private Long idServicio;
         private Long idEmpleado;
-        private BigDecimal precioAplicado; 
+       
     }
 }

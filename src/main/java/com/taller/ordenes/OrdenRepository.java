@@ -24,11 +24,15 @@ public interface OrdenRepository extends JpaRepository<Orden, Long> {
     @Query("SELECT o FROM Orden o WHERE o.cliente.idCliente = :clienteId AND o.estadoOrden = :estado")
     List<Orden> findByClienteIdAndEstadoOrden(@Param("clienteId") Long clienteId, @Param("estado") String estadoOrden);
 
-    List<Orden> findByEstadoOrden(String estadoOrden);
-
     @Query("SELECT o FROM Orden o WHERE o.cliente.idCliente = :clienteId")
     List<Orden> findByCliente_IdCliente(@Param("clienteId") Long clienteId);
 
     @Query("SELECT o FROM Orden o WHERE o.vehiculo.idVehiculo = :vehiculoId")
     List<Orden> findByVehiculoId(@Param("vehiculoId") Long vehiculoId);
+
+     @Query("SELECT o FROM Orden o WHERE o.cliente.idCliente = :clienteId")
+    List<Orden> findByClienteId(@Param("clienteId") Long clienteId);
+    
+    @Query("SELECT o FROM Orden o WHERE o.estadoOrden = :estado")
+    List<Orden> findByEstadoOrden(@Param("estado") String estado);
 }

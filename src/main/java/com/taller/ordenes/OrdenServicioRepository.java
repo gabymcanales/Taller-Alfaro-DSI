@@ -19,4 +19,7 @@ public interface OrdenServicioRepository extends JpaRepository<OrdenServicio, Or
     List<OrdenServicio> findByOrdenId(@Param("idOrden") Long idOrden);
 
     List<OrdenServicio> findByEstadoServicioOrden(String estado);
+
+    @Query("SELECT os FROM OrdenServicio os WHERE os.empleado.idEmpleado = :empleadoId")
+    List<OrdenServicio> findByEmpleadoId(@Param("empleadoId") Long empleadoId);
 }
