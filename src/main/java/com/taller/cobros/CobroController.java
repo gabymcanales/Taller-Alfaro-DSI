@@ -1,5 +1,6 @@
 package com.taller.cobros;
 
+import com.taller.ordenes.OrdenService;
 import com.taller.dto.RegistroCobroRequest;
 import com.taller.dto.RegistroCobroResponse;
 import com.taller.model.Cliente;
@@ -9,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.taller.dto.ArqueoDiarioDTO;
+import com.taller.dto.CobroRequest;
 import com.taller.dto.HistorialTransaccionDTO;
+import com.taller.dto.OrdenResponseDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.List;
 public class CobroController {
 
     private final CobrosService cobrosService;
+    private final OrdenService ordenService;
 
     @PostMapping("/registrar")
     public ResponseEntity<RegistroCobroResponse> registrarCobro(
@@ -55,5 +59,14 @@ public class CobroController {
     public ResponseEntity<List<Cliente>> buscarClientes(@RequestParam String nombre) {
         List<Cliente> clientes = cobrosService.buscarClientesPorNombre(nombre);
         return ResponseEntity.ok(clientes);
+    }
+
+    @PostMapping("/{id}/cobrar")
+    public ResponseEntity<OrdenResponseDTO> cobrarOrden(
+            @PathVariable Long id,
+            @RequestBody CobroRequest request,
+            Authentication authentication) {
+        String username = authentication.getName();
+        return ResponseEntity.ok(ordenService.cobrarOrden(id, request, username));
     }
 }
