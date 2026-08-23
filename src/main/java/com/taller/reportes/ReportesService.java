@@ -4,6 +4,7 @@ import com.taller.cobros.TransaccionRepository;
 import com.taller.dto.RankingServicioDTO;
 import com.taller.dto.ReporteDiarioDTO;
 import com.taller.dto.ReporteMensualDTO;
+import com.taller.dto.ReportePeriodoDTO;
 import com.taller.dto.TransaccionDTO;
 import com.taller.model.OrdenServicio;
 import com.taller.model.Transaccion;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +87,50 @@ public class ReportesService {
         dto.setTotalIngresos(totalMes);
         dto.setTotalOrdenes(transacciones.size());
         dto.setTotalMesAnterior(totalMesAnterior);
+        return dto;
+    }
+
+    // Reporte por período (rango libre) con comparación al período anterior equivalente
+    public ReportePeriodoDTO getReportePeriodoCompleto(LocalDate fechaInicio, LocalDate fechaFin) {
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(23, 59, 59);
+
+        List<Transaccion> transacciones = transaccionRepository
+                .findByFechaHoraTransaccionBetween(inicio, fin);
+
+        BigDecimal totalIngresos = transacciones.stream()
+                .map(Transaccion::getMontoTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, BigDecimal> desglosePorArea = transacciones.stream()
+                .flatMap(t -> t.getOrden().getOrdenServicios().stream())
+                .collect(Collectors.groupingBy(
+                        os -> os.getServicio().getAreaServicio(),
+                        Collectors.reducing(BigDecimal.ZERO,
+                                OrdenServicio::getPrecioAplicado, BigDecimal::add)
+                ));
+
+        long diasPeriodo = ChronoUnit.DAYS.between(fechaInicio, fechaFin) + 1;
+        LocalDate fechaFinAnterior = fechaInicio.minusDays(1);
+        LocalDate fechaInicioAnterior = fechaFinAnterior.minusDays(diasPeriodo - 1);
+
+        BigDecimal totalIngresosPeriodoAnterior = transaccionRepository
+                .findByFechaHoraTransaccionBetween(
+                        fechaInicioAnterior.atStartOfDay(), fechaFinAnterior.atTime(23, 59, 59))
+                .stream()
+                .map(Transaccion::getMontoTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        ReportePeriodoDTO dto = new ReportePeriodoDTO();
+        dto.setFechaInicio(fechaInicio);
+        dto.setFechaFin(fechaFin);
+        dto.setTotalOrdenes(transacciones.size());
+        dto.setTotalIngresos(totalIngresos);
+        dto.setTotalIngresosPeriodoAnterior(totalIngresosPeriodoAnterior);
+        dto.setDesglosePorArea(desglosePorArea);
+        dto.setTransacciones(transacciones.stream()
+                .map(this::toTransaccionDTO)
+                .collect(Collectors.toList()));
         return dto;
     }
 

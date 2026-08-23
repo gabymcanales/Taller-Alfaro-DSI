@@ -3,6 +3,12 @@ import axiosInstance from '../api/axiosInstance';
 export const getReporteDiario = (fecha) =>
     axiosInstance.get(`/reportes/diario?fecha=${fecha}`);
 
+export const getReportePeriodo = (fechaInicio, fechaFin) =>
+    axiosInstance.get(`/reportes/periodo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
+
+export const exportarReportePeriodoPdf = (fechaInicio, fechaFin) =>
+    axiosInstance.get(`/reportes/periodo/pdf?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`, { responseType: 'blob' });
+
 export const getReporteMensual = (mes, anio) =>
     axiosInstance.get(`/reportes/mensual?mes=${mes}&anio=${anio}`);
 
