@@ -27,14 +27,14 @@ public class Empleado {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "activo", nullable = false)
-    private Boolean activo = true; 
+    @Column(name = "activo", nullable = false, columnDefinition = "boolean default true")
+    private Boolean activo = true;
 
     @ManyToMany
     @JoinTable(
-        name = "empleado_servicio",
-        joinColumns = @JoinColumn(name = "id_empleado"),
-        inverseJoinColumns = @JoinColumn(name = "id_servicio")
+            name = "empleado_servicio",
+            joinColumns = @JoinColumn(name = "id_empleado"),
+            inverseJoinColumns = @JoinColumn(name = "id_servicio")
     )
-    private List<Servicio> especialidades = new ArrayList<>();
+    private List<Servicio> servicios = new ArrayList<>();
 }
