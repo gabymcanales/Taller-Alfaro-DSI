@@ -10,7 +10,7 @@ public class OrdenServicioDTO {
     private String nombreServicio;
     private String areaServicio;
     private BigDecimal precioAplicado;
-    private String estadoServicioOrden;  // PENDIENTE, EN_PROCESO, FINALIZADO
+    private String estadoServicioOrden; 
     private EmpleadoInfoDTO empleado;
 
     @Data

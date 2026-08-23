@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.taller.cobros.ServicioRepository;
-import com.taller.ordenes.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,12 +27,13 @@ public class OrdenService {
 
 
     @Transactional
-    public OrdenResponseDTO crearOrden(OrdenRequestDTO request) {
-        // 1. Validar cliente
+    public OrdenResponseDTO crearOrden(OrdenRequestDTO request, String username) {
+
+        
         Cliente cliente = clienteRepository.findById(request.getIdCliente())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        // 2. Validar vehículo
+       
         Vehiculo vehiculo = vehiculoRepository.findById(request.getIdVehiculo())
                 .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
 
@@ -41,25 +41,30 @@ public class OrdenService {
             throw new RuntimeException("El vehículo no pertenece a este cliente");
         }
 
+     
         if (request.getServicios() == null || request.getServicios().isEmpty()) {
             throw new RuntimeException("La orden debe tener al menos un servicio");
         }
 
-        // 3. Crear orden
+        // Obtener el empleado que crea la orden
+        Empleado empleadoCrea = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        
         Orden orden = new Orden();
         orden.setCliente(cliente);
         orden.setVehiculo(vehiculo);
+        orden.setEmpleado(empleadoCrea);
         orden.setEstadoOrden("PENDIENTE");
         orden.setFechaHoraOrden(LocalDateTime.now());
-        orden.setNumOrden(generarNumeroOrden());
+        orden.setNumOrden(generarNumeroOrden()); 
         orden.setTotalCalculadoOrden(BigDecimal.ZERO);
         orden.setPrecioFinal(null);
         orden = ordenRepository.save(orden);
 
-        // 4. Registrar estado inicial
         registrarHistorial(orden, null, "PENDIENTE", "Orden creada");
 
-        // 5. Procesar servicios
+        
         BigDecimal totalCalculado = BigDecimal.ZERO;
 
         for (OrdenRequestDTO.ServicioRequestDTO servicioReq : request.getServicios()) {
@@ -77,7 +82,7 @@ public class OrdenService {
                 throw new RuntimeException("No se puede asignar un Administrador a un servicio");
             }
 
-            // Validar especialidad
+           
             boolean tieneEspecialidad = empleado.getEspecialidades().stream()
                     .anyMatch(e -> e.getIdServicio().equals(servicio.getIdServicio()));
             if (!tieneEspecialidad) {
@@ -85,7 +90,7 @@ public class OrdenService {
                         " no tiene la especialidad para " + servicio.getNombreServicio());
             }
 
-            // Crear OrdenServicio
+           
             OrdenServicio ordenServicio = new OrdenServicio();
             OrdenServicioId id = new OrdenServicioId();
             id.setIdOrden(orden.getIdOrden());
@@ -96,7 +101,7 @@ public class OrdenService {
             ordenServicio.setEmpleado(empleado);
             ordenServicio.setEstadoServicioOrden("PENDIENTE");
 
-            // Precio
+            
             if (servicioReq.getPrecioAplicado() != null) {
                 ordenServicio.setPrecioAplicado(servicioReq.getPrecioAplicado());
                 totalCalculado = totalCalculado.add(servicioReq.getPrecioAplicado());
@@ -124,20 +129,19 @@ public class OrdenService {
         return convertToDTO(orden);
     }
 
-
+  
     public List<OrdenResponseDTO> getOrdenes() {
         return ordenRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-
+ 
     public OrdenResponseDTO getOrdenById(Long id) {
         Orden orden = ordenRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
         return convertToDTO(orden);
     }
-
 
     public List<HistorialEstadoDTO> getHistorial(Long idOrden) {
         List<HistorialEstadoOrden> historial = historialEstadoOrdenRepository
@@ -148,172 +152,29 @@ public class OrdenService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void cobrarOrden(Long idOrden) {
-        Orden orden = ordenRepository.findById(idOrden)
-                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
-
-        if (!"FINALIZADO".equals(orden.getEstadoOrden())) {
-            throw new RuntimeException("Solo se pueden cobrar órdenes en estado FINALIZADO");
-        }
-
-        boolean todosFinalizados = orden.getOrdenServicios().stream()
-                .allMatch(os -> "FINALIZADO".equals(os.getEstadoServicioOrden()));
-        if (!todosFinalizados) {
-            throw new RuntimeException("No todos los servicios están finalizados");
-        }
-
-        if (orden.getPrecioFinal() == null) {
-            throw new RuntimeException("La orden no tiene precio final definido");
-        }
-
-        String estadoAnterior = orden.getEstadoOrden();
-        orden.setEstadoOrden("ENTREGADO");
-        ordenRepository.save(orden);
-
-        registrarHistorial(orden, estadoAnterior, "ENTREGADO", "Orden cobrada y entregada");
-    }
-
-    public List<OrdenServicioDTO> getMisServicios(String username) {
-        Empleado empleado = empleadoRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
-
-        List<OrdenServicio> servicios = ordenServicioRepository.findByEmpleado(empleado);
-
-        return servicios.stream()
-                .map(this::convertToServicioDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void updateEstadoServicio(Long idOrden, Long idServicio, String nuevoEstado,
-                                     String comentario, String username) {
-        Empleado empleado = empleadoRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
-
-        OrdenServicioId id = new OrdenServicioId();
-        id.setIdOrden(idOrden);
-        id.setIdServicio(idServicio);
-
-        OrdenServicio ordenServicio = ordenServicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
-
-        if (!ordenServicio.getEmpleado().getIdEmpleado().equals(empleado.getIdEmpleado())) {
-            throw new RuntimeException("No tienes permiso para modificar este servicio");
-        }
-
-        String estadoActual = ordenServicio.getEstadoServicioOrden();
-        if (estadoActual == null) estadoActual = "PENDIENTE";
-
-        if (!isValidTransition(estadoActual, nuevoEstado)) {
-            throw new RuntimeException("No se puede pasar de " + estadoActual + " a " + nuevoEstado);
-        }
-
-        if ("FINALIZADO".equals(nuevoEstado) &&
-            "VARIABLE".equals(ordenServicio.getServicio().getTipoPrecio()) &&
-            ordenServicio.getPrecioAplicado() == null) {
-            throw new RuntimeException("El servicio variable debe tener un precio definido");
-        }
-
-        ordenServicio.setEstadoServicioOrden(nuevoEstado);
-        ordenServicioRepository.save(ordenServicio);
-
-        registrarHistorial(ordenServicio.getOrden(), estadoActual, nuevoEstado, comentario);
-
-        
-        Orden orden = ordenServicio.getOrden();
-        boolean todosFinalizados = orden.getOrdenServicios().stream()
-                .allMatch(os -> "FINALIZADO".equals(os.getEstadoServicioOrden()));
-
-        if (todosFinalizados) {
-            BigDecimal precioFinal = orden.getOrdenServicios().stream()
-                    .map(OrdenServicio::getPrecioAplicado)
-                    .filter(p -> p != null)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            orden.setPrecioFinal(precioFinal);
-            orden.setEstadoOrden("FINALIZADO");
-            ordenRepository.save(orden);
-
-            registrarHistorial(orden, "EN_PROCESO", "FINALIZADO",
-                    "Todos los servicios completados. Orden lista para cobrar.");
-        }
-    }
-
-    @Transactional
-    public void updatePrecioServicio(Long idOrden, Long idServicio, BigDecimal precioAplicado,
-                                     String username) {
-        Empleado empleado = empleadoRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
-
-        OrdenServicioId id = new OrdenServicioId();
-        id.setIdOrden(idOrden);
-        id.setIdServicio(idServicio);
-
-        OrdenServicio ordenServicio = ordenServicioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
-
-        if (!ordenServicio.getEmpleado().getIdEmpleado().equals(empleado.getIdEmpleado())) {
-            throw new RuntimeException("No tienes permiso para modificar este servicio");
-        }
-
-        if (!"VARIABLE".equals(ordenServicio.getServicio().getTipoPrecio())) {
-            throw new RuntimeException("Este servicio no es de precio variable");
-        }
-
-        if (precioAplicado == null || precioAplicado.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("El precio debe ser mayor a 0");
-        }
-
-        ordenServicio.setPrecioAplicado(precioAplicado);
-        ordenServicioRepository.save(ordenServicio);
-
-        Orden orden = ordenServicio.getOrden();
-        BigDecimal total = orden.getOrdenServicios().stream()
-                .map(OrdenServicio::getPrecioAplicado)
-                .filter(p -> p != null)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        orden.setTotalCalculadoOrden(total);
-        ordenRepository.save(orden);
-
-        registrarHistorial(orden, null, null,
-                "Precio definido para " + ordenServicio.getServicio().getNombreServicio() +
-                ": $" + precioAplicado);
-    }
-
 
     private String generarNumeroOrden() {
         LocalDateTime ahora = LocalDateTime.now();
         String fecha = ahora.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         long count = ordenRepository.countByFechaHoraOrdenBetween(
                 ahora.toLocalDate().atStartOfDay(),
-                ahora.toLocalDate().atTime(23, 59, 59)
-        );
+                ahora.toLocalDate().atTime(23, 59, 59));
         return String.format("ORD-%s-%03d", fecha, count + 1);
     }
 
-    private boolean isValidTransition(String actual, String nuevo) {
-        return switch (actual) {
-            case "PENDIENTE" -> "EN_PROCESO".equals(nuevo);
-            case "EN_PROCESO" -> "FINALIZADO".equals(nuevo);
-            case "FINALIZADO" -> false;
-            default -> false;
-        };
-    }
-
     private void registrarHistorial(Orden orden, String estadoAnterior,
-                                     String estadoNuevo, String comentario) {
+            String estadoNuevo, String comentario) {
         HistorialEstadoOrden historial = new HistorialEstadoOrden();
         historial.setOrden(orden);
         historial.setEstadoAnterior(estadoAnterior);
         historial.setEstadoNuevo(estadoNuevo != null ? estadoNuevo : estadoAnterior);
         historial.setFechaCambio(LocalDateTime.now());
         historial.setComentario(comentario);
-        historial.setEmpleado(null);
+        historial.setEmpleado(orden.getEmpleado());
         historialEstadoOrdenRepository.save(historial);
     }
 
-
+   
     private OrdenResponseDTO convertToDTO(Orden orden) {
         OrdenResponseDTO dto = new OrdenResponseDTO();
         dto.setIdOrden(orden.getIdOrden());

@@ -11,7 +11,6 @@ import java.util.List;
 @Repository
 public interface HistorialEstadoOrdenRepository extends JpaRepository<HistorialEstadoOrden, Long> {
 
-    // ✅ CORREGIDO - Usar @Query explícito
     @Query("SELECT h FROM HistorialEstadoOrden h WHERE h.orden.idOrden = :idOrden ORDER BY h.fechaCambio ASC")
     List<HistorialEstadoOrden> findByOrdenIdOrderByFechaCambioAsc(@Param("idOrden") Long idOrden);
 }
