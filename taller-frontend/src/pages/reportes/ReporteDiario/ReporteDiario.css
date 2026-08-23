@@ -63,6 +63,11 @@
     font-size: 14px;
 }
 
+.filtro-group input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
 .cards-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

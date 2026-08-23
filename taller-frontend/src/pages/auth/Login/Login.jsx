@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axiosInstance from '../../../api/axiosInstance';
 import './Login.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [mostrarPassword, setMostrarPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -45,13 +47,21 @@ const Login = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         required
                     />
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                    <div className="password-field">
+                        <input
+                            type={mostrarPassword ? 'text' : 'password'}
+                            placeholder="Contraseña"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <span
+                            className="toggle-password"
+                            onClick={() => setMostrarPassword(!mostrarPassword)}
+                        >
+                            {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
+                        </span>
+                    </div>
                     {error && <div className="error">{error}</div>}
                     <button type="submit" disabled={loading}>
                         {loading ? 'Cargando...' : 'Iniciar Sesión'}

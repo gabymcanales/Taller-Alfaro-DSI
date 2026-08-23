@@ -22,6 +22,10 @@ public class AuthService {
             throw new RuntimeException("Contraseña incorrecta");
         }
 
+        if (Boolean.FALSE.equals(empleado.getActivo())) {
+            throw new RuntimeException("El empleado está inhabilitado");
+        }
+
         return jwtUtil.generateToken(empleado.getUsername(), empleado.getRolEmpleado());
     }
 }

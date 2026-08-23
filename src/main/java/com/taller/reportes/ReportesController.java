@@ -3,6 +3,7 @@ package com.taller.reportes;
 import com.taller.dto.RankingServicioDTO;
 import com.taller.dto.ReporteDiarioDTO;
 import com.taller.dto.ReporteMensualDTO;
+import com.taller.dto.ReportePeriodoDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,29 @@ public class ReportesController {
             @RequestParam Integer mes,
             @RequestParam Integer anio) {
         return ResponseEntity.ok(reportesService.getReporteMensualCompleto(mes, anio));
+    }
+
+    // Reporte por período (rango libre, con comparación al período anterior)
+    @GetMapping("/periodo")
+    public ResponseEntity<ReportePeriodoDTO> getReportePeriodo(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        return ResponseEntity.ok(reportesService.getReportePeriodoCompleto(fechaInicio, fechaFin));
+    }
+
+    // Exportar PDF reporte por período
+    @GetMapping("/periodo/pdf")
+    public ResponseEntity<byte[]> exportarReportePeriodoPdf(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        ReportePeriodoDTO reporte = reportesService.getReportePeriodoCompleto(fechaInicio, fechaFin);
+        byte[] pdf = pdfExportService.exportarReportePeriodo(reporte);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=reporte-periodo-" + fechaInicio + "_a_" + fechaFin + ".pdf")
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     // HU-25 — Ranking de servicios

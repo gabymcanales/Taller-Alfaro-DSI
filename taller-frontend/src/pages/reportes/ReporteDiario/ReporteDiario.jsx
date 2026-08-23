@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import {
-    getReporteDiario,
-    getReporteMensual,
+    getReportePeriodo,
     getRankingServicios,
-    exportarReporteDiarioPdf,
-    exportarReporteMensualPdf
+    exportarReportePeriodoPdf
 } from '../../../services/reporteService';
 import './ReporteDiario.css';
 
@@ -43,58 +41,68 @@ const ExportIcon = () => (
     </svg>
 );
 
+const primerDiaDelMes = () => {
+    const hoy = new Date();
+    return new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+};
+
 const ReporteDiario = () => {
     const hoy = new Date().toISOString().split('T')[0];
-    const mesActual = new Date().getMonth() + 1;
-    const anioActual = new Date().getFullYear();
 
-    const [fecha, setFecha] = useState(hoy);
-    const [mes, setMes] = useState(mesActual);
-    const [anio, setAnio] = useState(anioActual);
-    const [reporteDiario, setReporteDiario] = useState(null);
-    const [reporteMensual, setReporteMensual] = useState(null);
+    const [fechaInicio, setFechaInicio] = useState(primerDiaDelMes());
+    const [fechaFin, setFechaFin] = useState(hoy);
+    const [reportePeriodo, setReportePeriodo] = useState(null);
     const [ranking, setRanking] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const rangoValido = fechaInicio && fechaFin && fechaInicio <= fechaFin;
+    const errorRango = !rangoValido ? 'La fecha "Desde" no puede ser posterior a la fecha "Hasta".' : '';
 
     useEffect(() => {
-        cargarDatos();
-    }, [fecha, mes, anio]);
+        if (rangoValido) {
+            cargarDatos();
+        }
+    }, [fechaInicio, fechaFin]);
 
     const cargarDatos = async () => {
         setLoading(true);
+        setError('');
         try {
-            const [diario, mensual, rank] = await Promise.all([
-                getReporteDiario(fecha),
-                getReporteMensual(mes, anio),
-                getRankingServicios(
-                    `${anio}-${String(mes).padStart(2, '0')}-01`,
-                    `${anio}-${String(mes).padStart(2, '0')}-30`
-                )
+            const [periodo, rank] = await Promise.all([
+                getReportePeriodo(fechaInicio, fechaFin),
+                getRankingServicios(fechaInicio, fechaFin)
             ]);
-            setReporteDiario(diario.data);
-            setReporteMensual(mensual.data);
+            setReportePeriodo(periodo.data);
             setRanking(rank.data);
         } catch (err) {
             console.error('Error cargando reportes', err);
+            setError('No se pudieron cargar los reportes para el período seleccionado.');
         } finally {
             setLoading(false);
         }
     };
 
-    const descargarPdf = async (tipo) => {
+    const descargarPdf = async () => {
+        const nuevaPestana = window.open('', '_blank');
         try {
-            const res = tipo === 'diario'
-                ? await exportarReporteDiarioPdf(fecha)
-                : await exportarReporteMensualPdf(mes, anio);
-            const url = window.URL.createObjectURL(new Blob([res.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `reporte-${tipo}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            const res = await exportarReportePeriodoPdf(fechaInicio, fechaFin);
+            const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+            const titulo = `Reporte ${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}`;
+
+            if (nuevaPestana) {
+                nuevaPestana.document.title = titulo;
+                nuevaPestana.document.write(
+                    `<!DOCTYPE html><html><head><title>${titulo}</title></head>` +
+                    `<body style="margin:0"><iframe src="${url}" style="position:fixed;inset:0;width:100%;height:100%;border:none;"></iframe></body></html>`
+                );
+                nuevaPestana.document.close();
+            }
         } catch (err) {
             console.error('Error descargando PDF', err);
+            if (nuevaPestana) {
+                nuevaPestana.close();
+            }
         }
     };
 
@@ -102,6 +110,16 @@ const ReporteDiario = () => {
         nombre: s.nombreServicio.substring(0, 8),
         ingresos: parseFloat(s.totalIngresos)
     }));
+
+    const totalIngresos = reportePeriodo?.totalIngresos ?? 0;
+    const totalAnterior = reportePeriodo?.totalIngresosPeriodoAnterior ?? 0;
+    const diferenciaAnterior = totalIngresos - totalAnterior;
+
+    const formatearFecha = (isoDate) => {
+        if (!isoDate) return '';
+        const [anio, mes, dia] = isoDate.split('-');
+        return `${dia}/${mes}/${anio}`;
+    };
 
     if (loading) {
         return <div className="loading">Cargando reportes...</div>;
@@ -114,7 +132,7 @@ const ReporteDiario = () => {
                     <h1>Reportes y Estadísticas</h1>
                     <p>Análisis del desempeño del taller</p>
                 </div>
-                <button className="btn-exportar" onClick={() => descargarPdf('diario')}>
+                <button className="btn-exportar" onClick={descargarPdf} disabled={!rangoValido}>
                     <ExportIcon />
                     Exportar
                 </button>
@@ -123,21 +141,18 @@ const ReporteDiario = () => {
             {/* Filtros */}
             <div className="filtros-row">
                 <div className="filtro-group">
-                    <label>Fecha</label>
-                    <input type="date" value={fecha}
-                           onChange={e => setFecha(e.target.value)} />
+                    <label>Desde</label>
+                    <input type="date" value={fechaInicio}
+                           onChange={e => setFechaInicio(e.target.value)} />
                 </div>
                 <div className="filtro-group">
-                    <label>Mes</label>
-                    <input type="number" min="1" max="12" value={mes}
-                           onChange={e => setMes(e.target.value)} />
-                </div>
-                <div className="filtro-group">
-                    <label>Año</label>
-                    <input type="number" value={anio}
-                           onChange={e => setAnio(e.target.value)} />
+                    <label>Hasta</label>
+                    <input type="date" value={fechaFin}
+                           onChange={e => setFechaFin(e.target.value)} />
                 </div>
             </div>
+
+            {(errorRango || error) && <div className="alert-warn">{errorRango || error}</div>}
 
             {/* Cards resumen */}
             <div className="cards-row">
@@ -146,12 +161,12 @@ const ReporteDiario = () => {
                         <MoneyIcon />
                     </div>
                     <div className="card-info">
-                        <span className="card-label">Ingresos del Mes</span>
+                        <span className="card-label">Ingresos del Período</span>
                         <span className="card-value">
-                            ${reporteMensual?.totalIngresos?.toFixed(2) ?? '0.00'}
+                            ${totalIngresos.toFixed(2)}
                         </span>
                         <span className="card-sub">
-                            vs anterior: ${reporteMensual?.totalMesAnterior?.toFixed(2) ?? '0.00'}
+                            {diferenciaAnterior >= 0 ? '▲' : '▼'} vs período anterior: ${totalAnterior.toFixed(2)}
                         </span>
                     </div>
                 </div>
@@ -160,9 +175,9 @@ const ReporteDiario = () => {
                         <OrdersIcon />
                     </div>
                     <div className="card-info">
-                        <span className="card-label">Órdenes del Mes</span>
+                        <span className="card-label">Órdenes del Período</span>
                         <span className="card-value">
-                            {reporteMensual?.totalOrdenes ?? 0}
+                            {reportePeriodo?.totalOrdenes ?? 0}
                         </span>
                         <span className="card-sub">órdenes atendidas</span>
                     </div>
@@ -220,12 +235,12 @@ const ReporteDiario = () => {
                 </div>
             </div>
 
-            {/* Tabla resumen diario */}
+            {/* Tabla resumen del período */}
             <div className="tabla-card">
                 <div className="tabla-header">
-                    <h3>Resumen del Día — {fecha}</h3>
+                    <h3>Resumen del Período — {formatearFecha(fechaInicio)} a {formatearFecha(fechaFin)}</h3>
                     <span className="total-badge">
-                        Total: ${reporteDiario?.totalIngresos?.toFixed(2) ?? '0.00'}
+                        Total: ${totalIngresos.toFixed(2)}
                     </span>
                 </div>
                 <table className="tabla-reportes">
@@ -240,8 +255,8 @@ const ReporteDiario = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {reporteDiario?.transacciones?.length > 0
-                            ? reporteDiario.transacciones.map((t, i) => (
+                        {reportePeriodo?.transacciones?.length > 0
+                            ? reportePeriodo.transacciones.map((t, i) => (
                                 <tr key={i}>
                                     <td className="order-highlight">{t.numOrden}</td>
                                     <td>{t.nombreCliente}</td>
@@ -251,7 +266,7 @@ const ReporteDiario = () => {
                                     <td>{t.fechaHoraTransaccion?.substring(11, 16)}</td>
                                 </tr>
                             ))
-                            : <tr><td colSpan="6" className="sin-datos">Sin transacciones en esta fecha</td></tr>
+                            : <tr><td colSpan="6" className="sin-datos">Sin transacciones en este período</td></tr>
                         }
                     </tbody>
                 </table>

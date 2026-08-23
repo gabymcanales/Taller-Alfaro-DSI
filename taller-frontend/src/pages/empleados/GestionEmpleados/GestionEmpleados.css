@@ -1,0 +1,333 @@
+.gestion-empleados {
+    padding: 24px;
+    color: white;
+}
+
+.empleados-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.empleados-header h1 {
+    margin: 0;
+}
+
+.empleados-header p {
+    color: #b0b0b0;
+    margin-top: 4px;
+}
+
+.btn-nuevo {
+    background: #f05907;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-nuevo:hover {
+    background: #f05907;
+    transform: scale(1.03);
+}
+
+.buscador {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background-color: #1e1e1e;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.buscador:focus {
+    outline: none;
+    border-color: #f05907;
+    box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.2);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.empleado-card {
+    background: #222530;
+    border: 1px solid #243044;
+    border-radius: 16px;
+    padding: 18px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+}
+
+.empleado-card:hover {
+    transform: translateY(-3px);
+    border-color: #f05907;
+}
+
+.empleado-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.empleado-card-header h3 {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.empleado-username {
+    color: #c0c0c0;
+    margin: 8px 0 0;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.empleado-badges {
+
+    flex-wrap: wrap;
+    align-items:center;
+    gap: 25px;
+    margin-top: 8px;
+    min-height: 25px;
+    margin-right: 8px;
+}
+
+.rol-badge,
+.estado {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.rol-badge {
+    background-color: #1e3a5f;
+    color: #7dd3fc;
+    margin-right: 8px;
+}
+
+.estado.activo {
+    background-color: #14532d;
+    color: #86efac;
+}
+
+.estado.inactivo {
+    background-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+.empleado-servicios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+}
+
+.servicio-tag {
+    background: #111827;
+    border: 1px solid #334155;
+    color: #cbd5e1;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+}
+
+.sin-servicios {
+    color: #666;
+    font-size: 12px;
+}
+
+.sin-datos {
+    text-align: center;
+    color: #555;
+    padding: 20px;
+    grid-column: 1 / -1;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-empleado {
+    background: #1e293b;
+    padding: 28px;
+    border-radius: 18px;
+    width: 550px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modal-empleado input,
+.modal-empleado select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #111827;
+    color: white;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-field label {
+    font-size: 13px;
+    color: #b0b0b0;
+}
+
+.form-field input,
+.form-field select {
+    width: 100%;
+}
+
+.password-field {
+    position: relative;
+    display: flex;
+}
+
+.password-field input {
+    width: 100%;
+}
+
+.password-field:has(.toggle-password) input {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+}
+
+.toggle-password:hover {
+    color: #fff;
+}
+
+.servicios-select label {
+    font-size: 13px;
+    color: #b0b0b0;
+}
+
+.servicios-checklist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #111827;
+    border: 1px solid #444;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.servicio-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #e2e8f0;
+    cursor: pointer;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.modal-buttons button:first-child {
+    background: #374151;
+    color: white;
+}
+
+.modal-buttons button:last-child {
+    background: #f05907;
+    color: white;
+}
+
+.acciones-empleado {
+    display: flex;
+    gap: 12px;
+}
+
+.icono-editar,
+.icono-inhabilitar,
+.icono-habilitar {
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.icono-editar {
+    color: #60a5fa;
+}
+
+.icono-editar:hover {
+    transform: scale(1.15);
+}
+
+.icono-inhabilitar {
+    color: #f87171;
+}
+
+.icono-inhabilitar:hover {
+    transform: scale(1.15);
+}
+
+.icono-habilitar {
+    color: #86efac;
+}
+
+.icono-habilitar:hover {
+    transform: scale(1.15);
+}

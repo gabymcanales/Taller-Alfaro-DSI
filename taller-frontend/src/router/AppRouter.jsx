@@ -8,6 +8,7 @@ import Sidebar from '../components/common/Sidebar/Sidebar';
 import ReporteDiario from '../pages/reportes/ReporteDiario/ReporteDiario';
 import Dashboard from '../pages/dashboard/Dashboard';
 import GestionServicios from '../pages/servicios/GestionServicios/GestionServicios';
+import GestionEmpleados from '../pages/empleados/GestionEmpleados/GestionEmpleados';
 
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
@@ -27,6 +28,7 @@ const Layout = () => {
                         <Route path="/cobros/historial" element={<Historial />} />
                         <Route path="/reportes" element={<ReporteDiario />} />
                         <Route path="/servicios" element={<GestionServicios />} />
+                        <Route path="/empleados" element={<GestionEmpleados />} />
                         <Route path="/" element={<Dashboard />} />
                     </Routes>
                 </div>
