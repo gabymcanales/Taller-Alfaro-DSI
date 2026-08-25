@@ -5,6 +5,7 @@ import com.taller.model.Producto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import com.taller.dto.MovimientoInventarioDTO;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class InventarioController {
     // =========================
 
     @GetMapping("/movimientos")
-    public List<MovimientoInventario> obtenerMovimientos() {
+    public List<MovimientoInventarioDTO> obtenerMovimientos() {
         return inventarioService.obtenerMovimientos();
     }
 

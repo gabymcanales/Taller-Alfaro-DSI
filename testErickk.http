@@ -118,4 +118,4 @@ Content-Type: application/json
 
 ### Obtener historial de movimientos
 GET http://localhost:8080/api/inventario/movimientos
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODc2OTQ0NDAsImV4cCI6MTc4Nzc4MDg0MH0.Do_yE3-5KsDOJtiiRtebtnu8bDhmCSaLRqYTXXNPv2Q

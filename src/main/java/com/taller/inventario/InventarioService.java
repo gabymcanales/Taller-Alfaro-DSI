@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.taller.dto.MovimientoInventarioDTO;
+
 @Service
 @RequiredArgsConstructor
 public class InventarioService {
@@ -54,8 +56,24 @@ public class InventarioService {
     // MOVIMIENTOS
     // =========================
 
-    public List<MovimientoInventario> obtenerMovimientos() {
-        return movimientoInventarioRepository.findAll();
+    public List<MovimientoInventarioDTO> obtenerMovimientos() {
+
+        return movimientoInventarioRepository.findAllByOrderByFechaMovimientoDesc()
+                .stream()
+                .map(movimiento -> {
+
+                    MovimientoInventarioDTO dto = new MovimientoInventarioDTO();
+
+                    dto.setIdMovimiento(movimiento.getIdMovimiento());
+                    dto.setProducto(movimiento.getProducto().getNombre());
+                    dto.setTipoMovimiento(movimiento.getTipoMovimiento());
+                    dto.setCantidad(movimiento.getCantidad());
+                    dto.setFechaMovimiento(movimiento.getFechaMovimiento());
+                    dto.setEmpleado(movimiento.getEmpleado().getNombreEmpleado());
+
+                    return dto;
+                })
+                .toList();
     }
 
     public MovimientoInventario registrarMovimiento(
