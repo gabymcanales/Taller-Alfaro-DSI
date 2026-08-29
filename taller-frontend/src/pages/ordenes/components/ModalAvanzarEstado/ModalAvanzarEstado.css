@@ -1,0 +1,340 @@
+/* ============================================================
+   OVERLAY Y CONTENEDOR
+   ============================================================ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   CABECERA
+   ============================================================ */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 8px;
+}
+
+.btn-close:hover {
+    color: #ff4000;
+}
+
+/* ============================================================
+   INFORMACIÓN DEL SERVICIO
+   ============================================================ */
+.servicio-info {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.orden-ref {
+    font-size: 15px;
+    font-weight: 600;
+    color: #ff8c42;
+    margin-bottom: 4px;
+}
+
+.asignado {
+    font-size: 13px;
+    color: #a0a0a0;
+}
+
+.badge-variable {
+    display: inline-block;
+    background: rgba(255, 107, 0, 0.2);
+    color: #ff8c42;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+/* ============================================================
+   ESTADOS
+   ============================================================ */
+.estados-section {
+    margin-bottom: 20px;
+}
+
+.estado-actual {
+    font-size: 13px;
+    color: #a0a0a0;
+    margin-bottom: 12px;
+}
+
+.estado-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.estado-pill.pendiente {
+    background: rgba(239, 159, 39, 0.2);
+    color: #ef9f27;
+}
+
+.estado-pill.en_proceso {
+    background: rgba(55, 138, 221, 0.2);
+    color: #85b7eb;
+}
+
+.estado-pill.finalizado {
+    background: rgba(99, 153, 34, 0.2);
+    color: #97c459;
+}
+
+.opciones-estados {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-estado {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 2px solid #333;
+    background: transparent;
+    color: #a0a0a0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-estado:hover {
+    border-color: #555;
+    color: #fff;
+}
+
+.btn-estado.selected {
+    border-color: #ff4000;
+    color: #fff;
+    background: rgba(255, 64, 0, 0.1);
+}
+
+/* ============================================================
+   COMENTARIO
+   ============================================================ */
+.comentario-section {
+    margin-bottom: 20px;
+}
+
+.comentario-section label {
+    display: block;
+    font-size: 13px;
+    color: #a0a0a0;
+    margin-bottom: 6px;
+}
+
+.comentario-section textarea {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+}
+
+.comentario-section textarea:focus {
+    border-color: #ff4000;
+}
+
+/* ============================================================
+   PRECIO FINAL (VARIABLE)
+   ============================================================ */
+.precio-final-section {
+    background: rgba(255, 107, 0, 0.05);
+    border: 1px solid rgba(255, 107, 0, 0.2);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.precio-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #fff;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.campo-obligatorio {
+    font-size: 11px;
+    color: #f09595;
+    font-weight: 400;
+}
+
+.precio-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.precio-simbolo {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ff8c42;
+}
+
+.precio-input-wrapper input {
+    flex: 1;
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+}
+
+.precio-input-wrapper input:focus {
+    border-color: #ff8c42;
+}
+
+.precio-info {
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ============================================================
+   MENSAJE INFORMATIVO
+   ============================================================ */
+.info-mensaje {
+    background: rgba(55, 138, 221, 0.1);
+    border: 1px solid rgba(55, 138, 221, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.info-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.info-mensaje p {
+    font-size: 12px;
+    color: #a0a0a0;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+.error-mensaje {
+    background: rgba(226, 75, 74, 0.1);
+    border: 1px solid rgba(226, 75, 74, 0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #f09595;
+    font-size: 13px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid #333;
+    padding-top: 16px;
+}
+
+.btn-cancelar {
+    background: transparent;
+    border: 1px solid #444;
+    color: #a0a0a0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+    border-color: #666;
+    color: #fff;
+}
+
+.btn-confirmar {
+    background: #ff4000;
+    border: none;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-confirmar:hover {
+    background: #e03800;
+}
+
+.btn-confirmar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

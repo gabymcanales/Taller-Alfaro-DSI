@@ -8,7 +8,8 @@ import Sidebar from '../components/common/Sidebar/Sidebar';
 import ReporteDiario from '../pages/reportes/ReporteDiario/ReporteDiario';
 import Dashboard from '../pages/dashboard/Dashboard';
 import GestionServicios from '../pages/servicios/GestionServicios/GestionServicios';
-//import OrdenesTrabajo from '../pages/ordenes/OrdenesTrabajo';
+import Clientes from '../pages/clientes/Clientes';
+import Vehiculos from '../pages/vehiculos/Vehiculos';
 import GestionEmpleados from '../pages/empleados/GestionEmpleados/GestionEmpleados';
 
 const PrivateRoute = ({ children }) => {
@@ -28,6 +29,9 @@ const Layout = () => {
                         <Route path="/cobros/cierres" element={<CierreCaja />} />
                         <Route path="/cobros/historial" element={<Historial />} />
                         <Route path="/reportes" element={<ReporteDiario />} />
+                        <Route path="/clientes" element={<Clientes />} />
+                        <Route path="/vehiculos" element={<Vehiculos/>}/>
+                        <Route path="/servicios" element={<GestionServicios />} />             
                         <Route path="/servicios" element={<GestionServicios />} />
                         <Route path="/empleados" element={<GestionEmpleados />} />
                         <Route path="/" element={<Dashboard />} />

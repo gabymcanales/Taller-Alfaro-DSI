@@ -1,0 +1,221 @@
+.vehiculos-container {
+    width: 100%;
+    background: #111;
+    min-height: 100vh;
+    color: #fff;
+}
+
+/* ========== CABECERA ========== */
+.vehiculos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.vehiculos-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.vehiculos-header p {
+    font-size: 13px;
+    color: #a0a0a0;
+    margin-top: 4px;
+}
+
+.btn-registrar {
+    background: #ff4000;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+}
+
+.btn-registrar:hover {
+    background: #e03800;
+}
+
+.btn-registrar svg {
+    stroke: #fff;
+}
+
+/* ========== TARJETAS DE ESTADÍSTICAS ========== */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ff8c42;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #fff;
+    margin-top: 4px;
+}
+
+.stat-sub {
+    font-size: 11px;
+    color: #a0a0a0;
+    margin-top: 2px;
+}
+
+/* ========== TABLA ========== */
+.tabla-container {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tabla-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.buscador {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 8px 14px;
+    flex: 1;
+    max-width: 420px;
+}
+
+.buscador input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+}
+
+.buscador input::placeholder {
+    color: #888;
+}
+
+.total-vehiculos {
+    font-size: 13px;
+    color: #a0a0a0;
+}
+
+/* ========== TABLA ========== */
+.tabla-scroll {
+    overflow-x: auto;
+}
+
+.vehiculos-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.vehiculos-tabla th {
+    text-align: left;
+    padding: 12px 16px;
+    color: #888;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid #333;
+}
+
+.vehiculos-tabla td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #e0e0e0;
+    vertical-align: middle;
+}
+
+.vehiculos-tabla tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ========== PLACA DESTACADA ========== */
+.placa-destacada {
+    color: #ff8c42;
+    font-weight: 600;
+}
+
+/* ========== COLOR DOT ========== */
+.color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid #444;
+    vertical-align: middle;
+}
+
+/* ========== SIN DATOS ========== */
+.sin-datos {
+    text-align: center;
+    padding: 40px;
+    color: #555;
+}
+
+/* ========== LOADING ========== */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #a0a0a0;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 900px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .tabla-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .buscador {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .stats-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .vehiculos-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}

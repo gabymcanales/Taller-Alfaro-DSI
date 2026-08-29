@@ -1,4 +1,6 @@
-/* ============ CONTENEDOR PRINCIPAL ============ */
+/* ============================================================
+   CONTENEDOR PRINCIPAL
+   ============================================================ */
 .ordenes-container {
     padding: 24px;
     background: #0a0a0a;
@@ -15,7 +17,9 @@
     font-size: 16px;
 }
 
-/* ============ ENCABEZADO ============ */
+/* ============================================================
+   ENCABEZADO
+   ============================================================ */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -37,5 +41,389 @@
 
 .btn-nuevo-orden {
     background: #ff4000;
-    color: beige
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-nuevo-orden:hover {
+    background: #e03800;
+}
+
+/* ============================================================
+   TABS DE NAVEGACIÓN
+   ============================================================ */
+.ordenes-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    background: #1a1a1a;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid #333;
+}
+
+.tab {
+    padding: 10px 20px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: #a0a0a0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: #fff;
+}
+
+.tab.active {
+    background: #ff4000;
+    color: #fff;
+}
+
+/* ============================================================
+   FILTROS (Admin)
+   ============================================================ */
+.filtros-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #333;
+}
+
+.filtros-bar select,
+.filtros-bar input {
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.filtros-bar select:focus,
+.filtros-bar input:focus {
+    border-color: #ff4000;
+}
+
+.filtros-bar .buscador {
+    flex: 1;
+    min-width: 200px;
+}
+
+.btn-limpiar {
+    background: transparent;
+    color: #888;
+    border: 1px solid #333;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-limpiar:hover {
+    border-color: #ff4000;
+    color: #ff8c42;
+}
+
+.total-ordenes {
+    color: #a0a0a0;
+    font-size: 13px;
+    margin-left: auto;
+}
+
+/* ============================================================
+   TABLA GENERAL
+   ============================================================ */
+.table-container {
+    overflow-x: auto;
+    background: #1a1a1a;
+    border-radius: 10px;
+    border: 1px solid #333;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table th {
+    background: rgba(42, 42, 42, 0.6);
+    color: #a0a0a0;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 12px 16px;
+    text-align: left;
+}
+
+.data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #e0e0e0;
+    vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ============================================================
+   ESTILOS DE CELDAS ESPECÍFICOS
+   ============================================================ */
+.orden-highlight {
+    color: #ff8c42;
+    font-weight: 600;
+}
+
+.servicios-cell .servicio-responsable {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.servicio-nombre {
+    color: #e0e0e0;
+}
+
+.responsable {
+    color: #a0a0a0;
+    font-size: 12px;
+}
+
+.fecha-cell {
+    color: #a0a0a0;
+    font-size: 12px;
+}
+
+.acciones-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* ============================================================
+   BADGES DE ESTADO
+   ============================================================ */
+.estado-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.estado-pill.pendiente {
+    background: rgba(239, 159, 39, 0.2);
+    color: #ef9f27;
+}
+
+.estado-pill.en_proceso {
+    background: rgba(55, 138, 221, 0.2);
+    color: #85b7eb;
+}
+
+.estado-pill.finalizado {
+    background: rgba(99, 153, 34, 0.2);
+    color: #97c459;
+}
+
+.estado-pill.entregado {
+    background: rgba(160, 160, 160, 0.2);
+    color: #a0a0a0;
+}
+
+/* ============================================================
+   BOTONES DE ACCIÓN
+   ============================================================ */
+.btn-ver {
+    background: transparent;
+    border: 1px solid #333;
+    color: #a0a0a0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-ver:hover {
+    border-color: #ff8c42;
+    color: #ff8c42;
+}
+
+.btn-cobrar {
+    background: transparent;
+    border: 1px solid #333;
+    color: #a0a0a0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-cobrar:hover {
+    border-color: #97c459;
+    color: #97c459;
+}
+
+.btn-iniciar {
+    background: rgba(55, 138, 221, 0.2);
+    color: #85b7eb;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-iniciar:hover {
+    background: rgba(55, 138, 221, 0.3);
+}
+
+.btn-finalizar {
+    background: rgba(99, 153, 34, 0.2);
+    color: #97c459;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-finalizar:hover {
+    background: rgba(99, 153, 34, 0.3);
+}
+
+.completado {
+    color: #97c459;
+    font-size: 13px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+}
+
+/* ============================================================
+   VISTA DE EMPLEADO - TARJETAS DE RESUMEN
+   ============================================================ */
+.tabla-servicios-empleado {
+    padding: 0;
+}
+
+.resumen-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.resumen-cards .card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+}
+
+.resumen-cards .card .numero {
+    font-size: 28px;
+    font-weight: 700;
+    display: block;
+}
+
+.resumen-cards .card .label {
+    font-size: 13px;
+    color: #a0a0a0;
+    margin-top: 4px;
+}
+
+.resumen-cards .card.pendiente .numero {
+    color: #ef9f27;
+}
+
+.resumen-cards .card.en-proceso .numero {
+    color: #85b7eb;
+}
+
+.resumen-cards .card.finalizado .numero {
+    color: #97c459;
+}
+
+/* ============================================================
+   VISTA DE EMPLEADO - FILTROS
+   ============================================================ */
+.filtros-empleado {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 16px 20px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #333;
+}
+
+.filtros-empleado .buscador {
+    flex: 1;
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    min-width: 200px;
+}
+
+.filtros-empleado .buscador:focus {
+    border-color: #ff4000;
+}
+
+.filtros-empleado select {
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.filtros-empleado select:focus {
+    border-color: #ff4000;
+}
+
+.total-servicios {
+    color: #a0a0a0;
+    font-size: 13px;
+    margin-left: auto;
+}
+
+.tabla-servicios-empleado .data-table td.variable {
+    color: #ff8c42;
+    font-weight: 500;
 }
