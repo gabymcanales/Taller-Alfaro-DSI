@@ -1,6 +1,7 @@
 package com.taller.ordenes;
 
 import com.taller.cobros.ServicioRepository;
+import com.taller.cobros.TransaccionRepository;
 import com.taller.dto.*;
 import com.taller.model.*;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class OrdenService {
     private final VehiculoRepository vehiculoRepository;
     private final EmpleadoRepository empleadoRepository;
     private final ServicioRepository servicioRepository;
+    private final TransaccionRepository transaccionRepository;
 
     @Transactional
     public OrdenResponseDTO crearOrden(OrdenRequestDTO request, String username) {
@@ -233,6 +235,53 @@ public class OrdenService {
     }
 
     @Transactional
+    public OrdenResponseDTO cobrarOrden(Long idOrden, CobroRequest request, String username) {
+        Orden orden = ordenRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
+        if (!"FINALIZADO".equals(orden.getEstadoOrden())) {
+            throw new RuntimeException("La orden debe estar FINALIZADA para poder cobrarla");
+        }
+
+        BigDecimal totalFinal = orden.getOrdenServicios().stream()
+                .map(OrdenServicio::getPrecioAplicado)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (request.getMontoRecibido() == null || request.getMontoRecibido().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("El monto recibido debe ser mayor a 0");
+        }
+
+        if (request.getMontoRecibido().compareTo(totalFinal) < 0) {
+            throw new RuntimeException("El monto recibido es menor al total de la orden");
+        }
+
+        Empleado empleado = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        Transaccion transaccion = new Transaccion();
+        transaccion.setOrden(orden);
+        transaccion.setMontoTotal(totalFinal);
+        transaccion.setMontoRecibido(request.getMontoRecibido());
+        transaccion.setCambio(request.getMontoRecibido().subtract(totalFinal));
+        transaccion.setFechaHoraTransaccion(LocalDateTime.now());
+        transaccion.setEmpleado(empleado);
+        transaccion.setCierreAsociado(false);
+        transaccion.setCierreMensualAsociado(false);
+        transaccion = transaccionRepository.save(transaccion);
+
+        orden.setPrecioFinal(totalFinal);
+        orden.setEstadoOrden("ENTREGADO");
+        orden = ordenRepository.save(orden);
+
+        registrarHistorial(orden, "FINALIZADO", "ENTREGADO",
+                "Orden cobrada por " + empleado.getNombreEmpleado() +
+                        " - Total: $" + totalFinal);
+
+        return convertToDTO(orden);
+    }
+
+    @Transactional
     public OrdenResponseDTO cambiarEstadoOrden(Long idOrden, String nuevoEstado, String username) {
         Orden orden = ordenRepository.findById(idOrden)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
@@ -364,6 +413,22 @@ public class OrdenService {
         clienteDTO.setIdCliente(orden.getCliente().getIdCliente());
         clienteDTO.setNombreCliente(orden.getCliente().getNombreCliente());
         clienteDTO.setTelefonoCliente(orden.getCliente().getTelefonoCliente());
+
+        if (orden.getCliente().getVehiculos() != null && !orden.getCliente().getVehiculos().isEmpty()) {
+            List<OrdenResponseDTO.VehiculoInfoDTO> vehiculosDTO = orden.getCliente().getVehiculos().stream()
+                    .map(v -> {
+                        OrdenResponseDTO.VehiculoInfoDTO vDto = new OrdenResponseDTO.VehiculoInfoDTO();
+                        vDto.setIdVehiculo(v.getIdVehiculo());
+                        vDto.setPlaca(v.getPlaca());
+                        vDto.setMarca(v.getMarca());
+                        vDto.setModelo(v.getModelo());
+                        vDto.setAnio(v.getAnio());
+                        vDto.setColor(v.getColor());
+                        return vDto;
+                    })
+                    .collect(Collectors.toList());
+            clienteDTO.setVehiculos(vehiculosDTO);
+        }
         dto.setCliente(clienteDTO);
 
         if (orden.getVehiculo() != null) {
@@ -377,7 +442,8 @@ public class OrdenService {
             dto.setVehiculo(vehiculoDTO);
         }
 
-        dto.setOrdenServicios(orden.getOrdenServicios().stream()
+        List<OrdenServicio> servicios = ordenServicioRepository.findByOrdenId(orden.getIdOrden());
+        dto.setOrdenServicios(servicios.stream()
                 .map(this::convertToServicioDTO)
                 .collect(Collectors.toList()));
 
@@ -424,41 +490,5 @@ public class OrdenService {
         dto.setComentario(h.getComentario());
         dto.setNombreEmpleado(h.getEmpleado() != null ? h.getEmpleado().getNombreEmpleado() : "Sistema");
         return dto;
-    }
-
-    @Transactional
-    public OrdenResponseDTO cobrarOrden(Long idOrden, CobroRequest request, String username) {
-        Orden orden = ordenRepository.findById(idOrden)
-                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
-
-        if (!"FINALIZADO".equals(orden.getEstadoOrden())) {
-            throw new RuntimeException("La orden debe estar FINALIZADA para poder cobrarla");
-        }
-
-        BigDecimal totalFinal = orden.getOrdenServicios().stream()
-                .map(OrdenServicio::getPrecioAplicado)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        if (request.getMontoRecibido() == null || request.getMontoRecibido().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("El monto recibido debe ser mayor a 0");
-        }
-
-        if (request.getMontoRecibido().compareTo(totalFinal) < 0) {
-            throw new RuntimeException("El monto recibido es menor al total de la orden");
-        }
-
-        Empleado empleado = empleadoRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
-
-        orden.setPrecioFinal(totalFinal);
-        orden.setEstadoOrden("ENTREGADO");
-        orden = ordenRepository.save(orden);
-
-        registrarHistorial(orden, "FINALIZADO", "ENTREGADO",
-                "Orden cobrada por " + empleado.getNombreEmpleado() +
-                        " - Total: $" + totalFinal);
-
-        return convertToDTO(orden);
     }
 }

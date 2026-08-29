@@ -2,7 +2,6 @@ package com.taller.clientes;
 
 import com.taller.dto.ClienteRequestDTO;
 import com.taller.dto.ClienteResponseDTO;
-import com.taller.clientes.ClienteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -7,12 +7,17 @@ import com.taller.model.*;
 import com.taller.ordenes.ClienteRepository;
 import com.taller.ordenes.EmpleadoRepository;
 import com.taller.ordenes.OrdenRepository;
+import com.taller.ordenes.OrdenService;
 import com.taller.ordenes.OrdenServicioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.taller.dto.ArqueoDiarioDTO;
 import com.taller.dto.HistorialTransaccionDTO;
+
+import com.taller.dto.OrdenRequestDTO;
+import com.taller.dto.OrdenResponseDTO;
+import com.taller.dto.CobroRequest;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,6 +39,7 @@ public class CobrosService {
     private final EmpleadoRepository empleadoRepository;
     private final OrdenServicioRepository ordenServicioRepository;
     private final CierreDiarioRepository cierreDiarioRepository;
+    private final OrdenService ordenService;
 
     @Transactional
     public RegistroCobroResponse registrarCobro(RegistroCobroRequest request, String usernameEmpleado) {
@@ -43,11 +49,11 @@ public class CobrosService {
             throw new RuntimeException("No se pueden registrar cobros: el día " + hoy + " ya está cerrado.");
         }
 
-        // 1. Validar servicio
+        
         Servicio servicio = servicioRepository.findById(request.getIdServicio())
                 .orElseThrow(() -> new ServicioNoEncontradoException(request.getIdServicio()));
 
-        // 2. Crear o buscar cliente por teléfono
+        
         Cliente cliente = clienteRepository.findByTelefonoCliente(request.getTelefonoCliente())
                 .orElseGet(() -> {
                     Cliente nuevoCliente = new Cliente();
@@ -56,66 +62,44 @@ public class CobrosService {
                     return clienteRepository.save(nuevoCliente);
                 });
 
-        // 3. Validar monto
+      
         if (request.getMontoRecibido().compareTo(request.getMontoTotal()) < 0) {
             throw new MontoInsuficienteException();
         }
 
-        // 4. Validar empleado
+      
         Empleado empleado = empleadoRepository.findByUsername(usernameEmpleado)
                 .orElseThrow(() -> new EmpleadoNoEncontradoException(usernameEmpleado));
 
-        // 5. Calcular cambio
+       
         BigDecimal cambio = request.getMontoRecibido().subtract(request.getMontoTotal());
 
-        // 6. Crear orden
-        Orden orden = new Orden();
-        orden.setCliente(cliente);
-        orden.setEmpleado(empleado);
-        orden.setTotalCalculadoOrden(request.getMontoTotal());
-        orden.setEstadoOrden("FINALIZADO");
-        orden.setFechaHoraOrden(LocalDateTime.now());
-        orden.setNumOrden(generarNumeroOrden());
-        orden = ordenRepository.save(orden);
+        OrdenRequestDTO ordenRequest = new OrdenRequestDTO();
+        ordenRequest.setIdCliente(cliente.getIdCliente());
 
-        // 7. Crear la relación orden-servicio
-        OrdenServicio ordenServicio = new OrdenServicio();
-        OrdenServicioId ordenServicioId = new OrdenServicioId();
-        ordenServicioId.setIdOrden(orden.getIdOrden());
-        ordenServicioId.setIdServicio(request.getIdServicio());
-        ordenServicio.setId(ordenServicioId);
-        ordenServicio.setOrden(orden);
-        ordenServicio.setServicio(servicio);
-        ordenServicio.setPrecioAplicado(request.getMontoTotal());
-        ordenServicioRepository.save(ordenServicio);
+        OrdenRequestDTO.ServicioAsignadoDTO servicioDTO = new OrdenRequestDTO.ServicioAsignadoDTO();
+        servicioDTO.setIdServicio(request.getIdServicio());
+        servicioDTO.setIdEmpleado(empleado.getIdEmpleado());
+        ordenRequest.setServicios(List.of(servicioDTO));
 
-        // 8. Crear transacción
-        Transaccion transaccion = new Transaccion();
-        transaccion.setOrden(orden);
-        transaccion.setMontoTotal(request.getMontoTotal());
-        transaccion.setMontoRecibido(request.getMontoRecibido());
-        transaccion.setCambio(cambio);
-        transaccion.setFechaHoraTransaccion(LocalDateTime.now());
-        transaccion.setEmpleado(empleado);
-        transaccion = transaccionRepository.save(transaccion);
+        OrdenResponseDTO ordenResponse = ordenService.crearOrden(ordenRequest, usernameEmpleado);
 
-        // 9. Cambiar orden a ENTREGADO
-        orden.setEstadoOrden("ENTREGADO");
-        ordenRepository.save(orden);
+        
+        Orden orden = ordenRepository.findById(ordenResponse.getIdOrden())
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
-        // 10. Retornar respuesta
+        
+        CobroRequest cobroRequest = new CobroRequest();
+        cobroRequest.setMontoRecibido(request.getMontoRecibido());
+        ordenService.cobrarOrden(orden.getIdOrden(), cobroRequest, usernameEmpleado);
+
+        
+        Transaccion transaccion = transaccionRepository.findByOrdenId(orden.getIdOrden())
+                .orElseThrow(() -> new RuntimeException("Transacción no encontrada"));
+
         return mapearARespuesta(transaccion, orden, cliente, servicio, empleado, cambio);
     }
 
-    private String generarNumeroOrden() {
-        Orden ultimaOrden = ordenRepository.findTopByOrderByIdOrdenDesc();
-        int nuevoNumero = 1;
-        if (ultimaOrden != null) {
-            String ultimoNum = ultimaOrden.getNumOrden().replace("ORD-", "");
-            nuevoNumero = Integer.parseInt(ultimoNum) + 1;
-        }
-        return String.format("ORD-%03d", nuevoNumero);
-    }
 
     private RegistroCobroResponse mapearARespuesta(Transaccion transaccion, Orden orden,
             Cliente cliente, Servicio servicio,
@@ -195,7 +179,7 @@ public class CobrosService {
 
     public List<HistorialTransaccionDTO> getHistorialTransacciones(
             String numOrden,
-            String cliente, 
+            String cliente,
             LocalDate fechaDesde,
             LocalDate fechaHasta) {
 
