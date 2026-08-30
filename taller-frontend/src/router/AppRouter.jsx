@@ -24,17 +24,16 @@ const Layout = () => {
             <main className="layout-content">
                 <div className="layout-content-inner">
                     <Routes>
+                        <Route path="/" element={<Dashboard />} />  {/* ← PRIMERO */}
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
                         <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
-                        <Route path="/cobros/cierres" element={<CierreCaja />} />
+                        <Route path="/cierres/diario" element={<CierreCaja />} />
                         <Route path="/cobros/historial" element={<Historial />} />
                         <Route path="/reportes" element={<ReporteDiario />} />
                         <Route path="/clientes" element={<Clientes />} />
-                        <Route path="/vehiculos" element={<Vehiculos/>}/>
-                        <Route path="/servicios" element={<GestionServicios />} />             
+                        <Route path="/vehiculos" element={<Vehiculos />} />
                         <Route path="/servicios" element={<GestionServicios />} />
                         <Route path="/empleados" element={<GestionEmpleados />} />
-                        <Route path="/" element={<Dashboard />} />
                     </Routes>
                 </div>
             </main>

@@ -1,0 +1,227 @@
+.modal-registrar-vehiculo {
+    max-width: 560px !important;
+}
+
+.buscador-cliente {
+    position: relative;
+}
+
+.buscador-cliente input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.buscador-cliente input:focus {
+    border-color: #ff4000;
+}
+
+.resultados-clientes {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    margin-top: 4px;
+}
+
+.resultado-cliente {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.resultado-cliente:hover {
+    background: #2a2a2a;
+}
+
+.resultado-cliente:last-child {
+    border-bottom: none;
+}
+
+.resultado-cliente .avatar-iniciales {
+    width: 36px;
+    height: 36px;
+    background: #ff4000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.resultado-cliente .nombre {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.resultado-cliente .telefono {
+    font-size: 11px;
+    color: #a0a0a0;
+}
+
+.sin-resultados {
+    padding: 16px;
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+}
+
+.ayuda-cliente {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+}
+
+.btn-registrar-cliente {
+    background: none;
+    border: none;
+    color: #ff8c42;
+    cursor: pointer;
+    font-size: 11px;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.btn-registrar-cliente:hover {
+    color: #ff4000;
+}
+
+.modal-registrar-vehiculo .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.modal-registrar-vehiculo .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.modal-registrar-vehiculo .form-group label {
+    font-size: 12px;
+    color: #a0a0a0;
+    font-weight: 500;
+}
+
+.modal-registrar-vehiculo .form-group input {
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.modal-registrar-vehiculo .form-group input:focus {
+    border-color: #ff4000;
+}
+
+.modal-registrar-vehiculo .form-group.full-width {
+    grid-column: span 2;
+}
+
+.alert-info {
+    background: rgba(255, 107, 0, 0.05);
+    border: 1px solid rgba(255, 107, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 12px;
+    color: #ff8c42;
+    line-height: 1.5;
+    margin-top: 12px;
+}
+
+.alert-success {
+    background: rgba(99, 153, 34, 0.1);
+    border: 1px solid rgba(99, 153, 34, 0.3);
+    color: #97c459;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.alert-error {
+    background: rgba(226, 75, 74, 0.1);
+    border: 1px solid rgba(226, 75, 74, 0.3);
+    color: #f09595;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.btn-guardar {
+    background: #ff4000;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-guardar:hover {
+    background: #e03800;
+}
+
+.btn-guardar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancelar {
+    background: transparent;
+    border: 1px solid #444;
+    color: #a0a0a0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+    border-color: #666;
+    color: #fff;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid #333;
+    padding-top: 16px;
+    margin-top: 16px;
+}

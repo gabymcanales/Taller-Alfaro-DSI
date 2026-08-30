@@ -18,4 +18,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Optional<Cliente> findByIdWithVehiculos(@Param("id") Long id);
 
     List<Cliente> findByNombreClienteContainingIgnoreCase(String nombre);
-}   
+
+    @Query("SELECT c FROM Cliente c LEFT JOIN FETCH c.vehiculos")
+    List<Cliente> findAllWithVehiculos();
+}

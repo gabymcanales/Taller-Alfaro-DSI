@@ -2,11 +2,15 @@ package com.taller.clientes;
 
 import com.taller.dto.ClienteRequestDTO;
 import com.taller.dto.ClienteResponseDTO;
+import com.taller.dto.VehiculoRequestDTO;
+import com.taller.dto.VehiculoResponseDTO;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -46,5 +50,17 @@ public class ClienteController {
     public ResponseEntity<Void> eliminarCliente(@PathVariable Long id) {
         clienteService.eliminarCliente(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/estadisticas")
+    public ResponseEntity<Map<String, Object>> getEstadisticas() {
+        return ResponseEntity.ok(clienteService.getEstadisticas());
+    }
+
+    @PostMapping("/{id}/vehiculos")
+    public ResponseEntity<VehiculoResponseDTO> agregarVehiculo(
+            @PathVariable Long id,
+            @RequestBody VehiculoRequestDTO request) {
+        return ResponseEntity.ok(clienteService.agregarVehiculo(id, request));
     }
 }

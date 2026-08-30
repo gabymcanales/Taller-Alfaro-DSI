@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vehiculos")
@@ -57,5 +59,15 @@ public class VehiculoController {
     @GetMapping("/{id}/historial")
     public ResponseEntity<List<HistorialServicioDTO>> getHistorialServicios(@PathVariable Long id) {
         return ResponseEntity.ok(vehiculoService.getHistorialServicios(id));
+    }
+
+    @GetMapping("/estadisticas")
+    public ResponseEntity<Map<String, Object>> getEstadisticas() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalVehiculos", vehiculoService.getTotalVehiculos());
+        stats.put("totalClientes", vehiculoService.getTotalClientesConVehiculos());
+        stats.put("nuevosEsteMes", 0);
+        stats.put("ordenesActivas", 0);
+        return ResponseEntity.ok(stats);
     }
 }

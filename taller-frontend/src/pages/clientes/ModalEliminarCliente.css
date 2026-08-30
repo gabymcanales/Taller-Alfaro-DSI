@@ -1,0 +1,80 @@
+.modal-eliminar-cliente {
+    max-width: 480px !important;
+}
+
+.modal-eliminar-cliente .cliente-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.modal-eliminar-cliente .cliente-info .avatar-iniciales {
+    width: 44px;
+    height: 44px;
+    background: #ff4000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.modal-eliminar-cliente .cliente-info .cliente-nombre {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.modal-eliminar-cliente .cliente-info .cliente-telefono {
+    display: block;
+    font-size: 12px;
+    color: #a0a0a0;
+}
+
+.alert-warning {
+    background: rgba(226, 75, 74, 0.05);
+    border: 1px solid rgba(226, 75, 74, 0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 12px;
+    color: #f09595;
+    line-height: 1.5;
+}
+
+.alert-warning svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.btn-eliminar {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-eliminar:hover {
+    background: #b91c1c;
+}
+
+.btn-eliminar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

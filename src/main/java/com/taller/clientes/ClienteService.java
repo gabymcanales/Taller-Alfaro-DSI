@@ -2,13 +2,20 @@ package com.taller.clientes;
 
 import com.taller.dto.ClienteRequestDTO;
 import com.taller.dto.ClienteResponseDTO;
+import com.taller.dto.VehiculoRequestDTO;
+import com.taller.dto.VehiculoResponseDTO;
 import com.taller.model.Cliente;
+import com.taller.model.Vehiculo;
 import com.taller.ordenes.ClienteRepository;
+import com.taller.ordenes.OrdenRepository;
+import com.taller.ordenes.VehiculoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -16,6 +23,8 @@ import java.util.stream.Collectors;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final VehiculoRepository vehiculoRepository;
+    private final OrdenRepository ordenRepository;
 
     @Transactional
     public ClienteResponseDTO crearCliente(ClienteRequestDTO request) {
@@ -32,13 +41,13 @@ public class ClienteService {
     }
 
     public List<ClienteResponseDTO> getClientes() {
-        return clienteRepository.findAll().stream()
+        return clienteRepository.findAllWithVehiculos().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public ClienteResponseDTO getClienteById(Long id) {
-        Cliente cliente = clienteRepository.findById(id)
+        Cliente cliente = clienteRepository.findByIdWithVehiculos(id)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
         return convertToDTO(cliente);
     }
@@ -71,6 +80,23 @@ public class ClienteService {
         dto.setIdCliente(cliente.getIdCliente());
         dto.setNombreCliente(cliente.getNombreCliente());
         dto.setTelefonoCliente(cliente.getTelefonoCliente());
+
+        if (cliente.getVehiculos() != null && !cliente.getVehiculos().isEmpty()) {
+            List<ClienteResponseDTO.VehiculoInfoDTO> vehiculosDTO = cliente.getVehiculos().stream()
+                    .map(v -> {
+                        ClienteResponseDTO.VehiculoInfoDTO vDto = new ClienteResponseDTO.VehiculoInfoDTO();
+                        vDto.setIdVehiculo(v.getIdVehiculo());
+                        vDto.setPlaca(v.getPlaca());
+                        vDto.setMarca(v.getMarca());
+                        vDto.setModelo(v.getModelo());
+                        vDto.setAnio(v.getAnio());
+                        vDto.setColor(v.getColor());
+                        return vDto;
+                    })
+                    .collect(Collectors.toList());
+            dto.setVehiculos(vehiculosDTO);
+        }
+
         return dto;
     }
 
@@ -81,5 +107,52 @@ public class ClienteService {
         return clienteRepository.findByNombreClienteContainingIgnoreCase(nombre).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> getEstadisticas() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalClientes", clienteRepository.count());
+        stats.put("totalVehiculos", vehiculoRepository.count());
+        stats.put("nuevosEsteMes", 0);
+        stats.put("ordenesActivas", ordenRepository.countByEstadoIn(List.of("PENDIENTE", "EN_PROCESO")));
+        return stats;
+    }
+
+    @Transactional
+    public VehiculoResponseDTO agregarVehiculo(Long clienteId, VehiculoRequestDTO request) {
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        if (vehiculoRepository.existsByPlaca(request.getPlaca())) {
+            throw new RuntimeException("Ya existe un vehículo con la placa " + request.getPlaca());
+        }
+
+        Vehiculo vehiculo = new Vehiculo();
+        vehiculo.setPlaca(request.getPlaca().toUpperCase());
+        vehiculo.setMarca(request.getMarca());
+        vehiculo.setModelo(request.getModelo());
+        vehiculo.setAnio(request.getAnio());
+        vehiculo.setColor(request.getColor());
+        vehiculo.setCliente(cliente);
+
+        vehiculo = vehiculoRepository.save(vehiculo);
+
+        VehiculoResponseDTO dto = new VehiculoResponseDTO();
+        dto.setIdVehiculo(vehiculo.getIdVehiculo());
+        dto.setPlaca(vehiculo.getPlaca());
+        dto.setMarca(vehiculo.getMarca());
+        dto.setModelo(vehiculo.getModelo());
+        dto.setAnio(vehiculo.getAnio());
+        dto.setColor(vehiculo.getColor());
+
+        if (vehiculo.getCliente() != null) {
+            VehiculoResponseDTO.ClienteInfoDTO clienteDTO = new VehiculoResponseDTO.ClienteInfoDTO();
+            clienteDTO.setIdCliente(vehiculo.getCliente().getIdCliente());
+            clienteDTO.setNombreCliente(vehiculo.getCliente().getNombreCliente());
+            clienteDTO.setTelefonoCliente(vehiculo.getCliente().getTelefonoCliente());
+            dto.setCliente(clienteDTO);
+        }
+
+        return dto;
     }
 }

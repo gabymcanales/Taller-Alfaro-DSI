@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -147,7 +148,7 @@ public class VehiculoService {
     }
 
     public List<HistorialServicioDTO> getHistorialServicios(Long vehiculoId) {
-       
+
         Vehiculo vehiculo = vehiculoRepository.findById(vehiculoId)
                 .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
 
@@ -184,5 +185,18 @@ public class VehiculoService {
         dto.setEstado(orden.getEstadoOrden());
 
         return dto;
+    }
+
+    public long getTotalVehiculos() {
+        return vehiculoRepository.count();
+    }
+
+    public long getTotalClientesConVehiculos() {
+        return vehiculoRepository.findAll().stream()
+                .map(Vehiculo::getCliente)
+                .filter(Objects::nonNull)
+                .map(Cliente::getIdCliente)
+                .distinct()
+                .count();
     }
 }

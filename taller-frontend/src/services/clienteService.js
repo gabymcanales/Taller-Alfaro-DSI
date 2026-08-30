@@ -1,10 +1,25 @@
 import axiosInstance from '../api/axiosInstance';
 
-// Obtener todos los clientes
 export const getClientes = () => axiosInstance.get('/clientes');
 
-// Obtener estadísticas
+
 export const getEstadisticas = () => axiosInstance.get('/clientes/estadisticas');
 
-// Buscar clientes
-export const buscarClientes = (termino) => axiosInstance.get(`/clientes/buscar?q=${termino}`);
+
+export const buscarClientes = (termino) => axiosInstance.get(`/clientes/buscar?nombre=${termino}`);
+
+
+export const crearCliente = (data) => axiosInstance.post('/clientes', data);
+
+
+export const getClienteById = (id) => axiosInstance.get(`/clientes/${id}`);
+
+
+export const actualizarCliente = (id, data) => axiosInstance.put(`/clientes/${id}`, data);
+
+
+export const eliminarCliente = (id) => axiosInstance.delete(`/clientes/${id}`);
+
+export const agregarVehiculoACliente = (clienteId, data) => axiosInstance.post(`/clientes/${clienteId}/vehiculos`, data);
+
+export const buscarClientesPorNombre = (nombre) => axiosInstance.get(`/clientes/buscar?nombre=${nombre}`);

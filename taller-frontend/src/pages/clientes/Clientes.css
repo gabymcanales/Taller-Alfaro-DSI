@@ -5,7 +5,6 @@
     color: #fff;
 }
 
-/* ========== CABECERA ========== */
 .clientes-header {
     display: flex;
     align-items: center;
@@ -48,7 +47,6 @@
     stroke: #fff;
 }
 
-/* ========== TARJETAS DE ESTADÍSTICAS ========== */
 .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -82,7 +80,6 @@
     margin-top: 2px;
 }
 
-/* ========== TABLA ========== */
 .tabla-container {
     background: #1a1a1a;
     border: 1px solid #333;
@@ -130,7 +127,6 @@
     color: #a0a0a0;
 }
 
-/* ========== TABLA ========== */
 .tabla-scroll {
     overflow-x: auto;
 }
@@ -142,11 +138,12 @@
 }
 
 .clientes-tabla th {
-    text-align: left;
-    padding: 12px 16px;
-    color: #888;
+    background: rgba(42, 42, 42, 0.6);
+    color: #a0a0a0;
     font-weight: 600;
     font-size: 12px;
+    padding: 12px 16px;
+    text-align: left;
     border-bottom: 1px solid #333;
 }
 
@@ -157,11 +154,14 @@
     vertical-align: middle;
 }
 
+.clientes-tabla tr:last-child td {
+    border-bottom: none;
+}
+
 .clientes-tabla tr:hover td {
     background: rgba(255, 255, 255, 0.03);
 }
 
-/* ========== CLIENTE CON AVATAR ========== */
 .cliente-nombre {
     display: flex;
     align-items: center;
@@ -182,7 +182,6 @@
     flex-shrink: 0;
 }
 
-/* ========== TAGS DE VEHÍCULOS ========== */
 .vehiculos-lista {
     display: flex;
     flex-wrap: wrap;
@@ -197,31 +196,88 @@
     color: #a0a0a0;
 }
 
-/* ========== SIN DATOS ========== */
+.sin-vehiculo {
+    color: #555;
+    font-size: 12px;
+}
+
 .sin-datos {
     text-align: center;
     padding: 40px;
     color: #555;
 }
 
-/* ========== LOADING ========== */
 .loading {
     text-align: center;
     padding: 40px;
     color: #a0a0a0;
 }
 
-/* ========== RESPONSIVE ========== */
+.error-message {
+    text-align: center;
+    padding: 40px;
+    color: #f09595;
+}
+
+.acciones-cell {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.acciones-cell button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #a0a0a0;
+}
+
+.acciones-cell button svg {
+    width: 18px;
+    height: 18px;
+    stroke: #a0a0a0;
+}
+
+.btn-agregar-vehiculo:hover {
+    background: rgba(99, 153, 34, 0.15);
+}
+
+.btn-agregar-vehiculo:hover svg {
+    stroke: #97c459;
+}
+
+.btn-editar:hover {
+    background: rgba(255, 107, 0, 0.15);
+}
+
+.btn-editar:hover svg {
+    stroke: #ff8c42;
+}
+
+.btn-eliminar:hover {
+    background: rgba(226, 75, 74, 0.15);
+}
+
+.btn-eliminar:hover svg {
+    stroke: #f09595;
+}
+
 @media (max-width: 900px) {
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .tabla-header {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .buscador {
         max-width: 100%;
     }
@@ -231,7 +287,7 @@
     .stats-row {
         grid-template-columns: 1fr;
     }
-    
+
     .clientes-header {
         flex-direction: column;
         align-items: flex-start;

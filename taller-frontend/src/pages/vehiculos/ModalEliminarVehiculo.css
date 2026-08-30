@@ -1,0 +1,101 @@
+
+.modal-eliminar {
+    max-width: 480px !important;
+}
+
+.vehiculo-info {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.vehiculo-info .placa {
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ff8c42;
+}
+
+.vehiculo-info .descripcion {
+    display: block;
+    font-size: 13px;
+    color: #a0a0a0;
+    margin-top: 4px;
+}
+
+.vehiculo-info .propietario {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.alert-warning {
+    background: rgba(226, 75, 74, 0.05);
+    border: 1px solid rgba(226, 75, 74, 0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 12px;
+    color: #f09595;
+    line-height: 1.5;
+}
+
+.alert-warning svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.alert-error {
+    background: rgba(226, 75, 74, 0.1);
+    border: 1px solid rgba(226, 75, 74, 0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #f09595;
+    font-size: 13px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.btn-eliminar {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-eliminar:hover {
+    background: #b91c1c;
+}
+
+.btn-eliminar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancelar {
+    background: transparent;
+    border: 1px solid #444;
+    color: #a0a0a0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+    border-color: #666;
+    color: #fff;
+}
