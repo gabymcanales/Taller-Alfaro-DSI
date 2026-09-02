@@ -9,6 +9,7 @@ public class RegistroCobroResponse {
     private Long ordenId;
     private String numOrden;
     private String clienteNombre;
+    private String telefonoCliente;  
     private String servicioNombre;
     private BigDecimal montoTotal;
     private BigDecimal montoRecibido;

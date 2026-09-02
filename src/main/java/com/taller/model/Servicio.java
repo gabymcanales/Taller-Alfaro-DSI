@@ -2,12 +2,11 @@ package com.taller.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
 
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 @Data
@@ -25,29 +24,22 @@ public class Servicio {
     private String nombreServicio;
 
     @NotBlank(message = "La descripción del servicio es obligatoria")
-    @Column(name = "descripcion_servicio", nullable = false, length = 255)
+    @Column(name = "descripcion_servicio", length = 255)
     private String descripcionServicio;
-    
-    @Column(name = "area_servicio", nullable = false, length = 50)
+
+    @Column(name = "area_servicio", length = 50)
     private String areaServicio;
 
-    @NotNull(message = "El precio del servicio es obligatorio")
-    @DecimalMin(
-      value = "0.01",
-      message = "El precio debe ser mayor a 0"
-    )
-    private BigDecimal precioServicio;
+    @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
+    @Column(name = "precio_sugerido", precision = 10, scale = 2)
+    private BigDecimal precioSugerido;
 
-    @NotNull(message = "La duración del servicio es obligatoria")
-    @Min(
-       value = 1,
-       message = "La duración debe ser mayor a 0"
-    )
-    private Integer duracionServicio;
+    @NotBlank(message = "El tipo de precio es obligatorio")
+    @Column(name = "tipo_precio", length = 10, nullable = false)
+    private String tipoPrecio;
 
     @NotBlank(message = "El estado del servicio es obligatorio")
     @Pattern(regexp = "ACTIVO|INACTIVO", message = "El estado del servicio debe ser ACTIVO o INACTIVO")
-    @Column(name = "estado_servicio", nullable = false, length = 8)
+    @Column(name = "estado_servicio", length = 8)
     private String estadoServicio;
-
 }

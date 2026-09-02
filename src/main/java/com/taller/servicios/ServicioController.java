@@ -2,46 +2,61 @@ package com.taller.servicios;
 
 import com.taller.model.Servicio;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/servicios")
 @RequiredArgsConstructor
 public class ServicioController {
+
     private final ServicioService servicioService;
 
     @GetMapping
-    public List<Servicio> obtenerTodos() {
-        return servicioService.obtenerTodos();
+    public ResponseEntity<List<Servicio>> obtenerTodos() {
+        return ResponseEntity.ok(servicioService.obtenerTodos());
     }
 
     @PostMapping
-    public Servicio guardar(@Valid @RequestBody Servicio servicio) {
+    public ResponseEntity<?> guardar(
+            @Valid @RequestBody Servicio servicio) {
 
-        System.out.println("ENTRO AL CONTROLLER");
+        try {
+            Servicio guardado = servicioService.guardar(servicio);
+            return ResponseEntity.ok(guardado);
 
-        return servicioService.guardar(servicio);
-    }
-
-    @PostMapping("/prueba")
-    public String prueba() {
-        return "FUNCIONA";
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public Servicio actualizar(
+    public ResponseEntity<?> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody Servicio servicio) {
 
-        return servicioService.actualizar(id, servicio);
+        try {
+            Servicio actualizado = servicioService.actualizar(id, servicio);
+
+            return ResponseEntity.ok(actualizado);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable Long id) {
-        servicioService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+
+        try {
+            servicioService.eliminar(id);
+            return ResponseEntity.ok().build();
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

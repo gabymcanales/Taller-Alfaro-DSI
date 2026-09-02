@@ -34,14 +34,14 @@ public class InventarioController {
 
     @PutMapping("/productos/{id}")
     public Producto actualizarProducto(
-            @PathVariable Integer id,
+            @PathVariable Long id,
             @Valid @RequestBody Producto producto) {
 
         return inventarioService.actualizarProducto(id, producto);
     }
 
     @DeleteMapping("/productos/{id}")
-    public void eliminarProducto(@PathVariable Integer id) {
+    public void eliminarProducto(@PathVariable Long id) {
         inventarioService.eliminarProducto(id);
     }
 

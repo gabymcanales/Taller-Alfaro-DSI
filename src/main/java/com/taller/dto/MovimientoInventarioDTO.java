@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class MovimientoInventarioDTO {
 
-    private Integer idMovimiento;
+    private Long idMovimiento;
     private String producto;
     private String tipoMovimiento;
     private Integer cantidad;

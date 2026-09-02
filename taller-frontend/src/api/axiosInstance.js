@@ -16,12 +16,10 @@ axiosInstance.interceptors.request.use(
         }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
-// Interceptor: maneja errores de autenticación
+// Interceptor: maneja error 401 (token expirado)
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {

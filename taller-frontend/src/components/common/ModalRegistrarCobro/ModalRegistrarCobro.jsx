@@ -11,14 +11,13 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
     const cambio = recibido - total;  // cambio = recibido - total
 
 
-    const numOrdenTemp = `ORD-${Math.floor(Math.random() * 10000)}`;
+
 
 
     return (
-        // Fondo oscuro (overlay) - al hacer clic aquí se cierra el modal
+
         <div className="modal-overlay" onClick={onClose}>
 
-            {/* Contenedor del modal - evita que el clic dentro cierre el modal */}
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
 
                 {/* ========== CABECERA DEL MODAL ========== */}
@@ -34,7 +33,7 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                             <path d="M13 16l2 0" />
                         </svg>
                     </div>
-                    {/* Botón para cerrar el modal (X) */}
+                    {/* Botón para cerrar el modal  */}
                     <button className="modal-close" onClick={onClose}>×</button>
                 </div>
 
@@ -58,50 +57,45 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
 
                 {/* ========== DATOS DEL COBRO ========== */}
                 <div className="modal-data">
-                    {/* Fila 1: Orden */}
-                    <div className="data-row">
-                        <span className="label">Orden</span>
-                        <span className="value">{numOrdenTemp}</span>
-                    </div>
 
-                    {/* Fila 2: Servicio */}
+
                     <div className="data-row">
                         <span className="label">Servicio</span>
                         <span className="value">{data?.servicioNombre || '—'}</span>
                     </div>
 
-                    {/* Fila 3: Total a pagar (color naranja) */}
+
                     <div className="data-row">
                         <span className="label">Total a pagar</span>
                         <span className="value orange">${total.toFixed(2)}</span>
                     </div>
 
-                    {/* Fila 4: Monto recibido */}
+
                     <div className="data-row">
                         <span className="label">Monto recibido</span>
                         <span className="value">${recibido.toFixed(2)}</span>
                     </div>
 
-                    {/* Fila 5: Cambio a entregar (color verde) */}
+
                     <div className="data-row">
                         <span className="label">Cambio a entregar</span>
                         <span className="value green">${cambio.toFixed(2)}</span>
                     </div>
 
-                    {/* Fila 6: Empleado */}
+
                     <div className="data-row">
                         <span className="label">Empleado</span>
                         <span className="value">Admin</span>
                     </div>
                 </div>
 
-                {/* ========== BOTONES ========== */}
+
                 <div className="modal-footer">
-                    {/* Botón Cancelar - cierra el modal sin hacer nada */}
+
                     <button className="btn-outline" onClick={onClose}>
                         Cancelar
                     </button>
-                    {/* Botón Confirmar - ejecuta la función onConfirm */}
+
                     <button className="btn-primary" onClick={onConfirm}>
                         Confirmar cobro
                     </button>

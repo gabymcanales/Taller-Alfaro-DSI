@@ -1,8 +1,12 @@
 .arqueo-container {
-    width: 100%;
+    padding: 24px;
+    background: #111;
+    min-height: 100vh;
+    color: #fff;
+    
 }
 
-/* Cabecera */
+
 .page-header {
     display: flex;
     align-items: center;
@@ -26,24 +30,25 @@
     font-size: 13px;
 }
 
-/* Tarjetas de estadísticas */
+
 .cards-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
 }
 
 .stat-card {
+    flex: 1;  
+    min-width: 0;  
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 10px;
-    padding: 16px 18px;
+    padding: 14px 12px;
 }
 
 .icon-box {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -52,10 +57,21 @@
     margin-bottom: 10px;
 }
 
-.icon-box.blue { background: #185fa5; }
-.icon-box.green { background: #639922; }
-.icon-box.red { background: #ff4000; }
-.icon-box.orange { background: #854f0b; }
+.icon-box.blue {
+    background: #185fa5;
+}
+
+.icon-box.green {
+    background: #639922;
+}
+
+.icon-box.red {
+    background: #ff4000;
+}
+
+.icon-box.orange {
+    background: #854f0b;
+}
 
 .icon-box svg {
     width: 22px;
@@ -63,19 +79,30 @@
     stroke: white;
 }
 
-.icon-box.blue svg { stroke: #fff; }
-.icon-box.green svg { stroke: #fff; }
-.icon-box.red svg { stroke: #fff; }
-.icon-box.orange svg { stroke: #fff; }
+.icon-box.blue svg {
+    stroke: #fff;
+}
+
+.icon-box.green svg {
+    stroke: #fff;
+}
+
+.icon-box.red svg {
+    stroke: #fff;
+}
+
+.icon-box.orange svg {
+    stroke: #fff;
+}
 
 .stat-card .label {
-    font-size: 12px;
+    font-size: 11px;
     color: #a0a0a0;
     margin-bottom: 4px;
 }
 
 .stat-card .value {
-    font-size: 22px;
+    font-size: 18px;  /* ← Reduce el tamaño de fuente */
     font-weight: 600;
 }
 

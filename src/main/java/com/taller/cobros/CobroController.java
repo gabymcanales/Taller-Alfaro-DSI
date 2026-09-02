@@ -2,6 +2,7 @@ package com.taller.cobros;
 
 import com.taller.dto.RegistroCobroRequest;
 import com.taller.dto.RegistroCobroResponse;
+import com.taller.model.Cliente;
 import com.taller.model.Servicio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,10 +43,17 @@ public class CobroController {
     @GetMapping("/historial")
     public ResponseEntity<List<HistorialTransaccionDTO>> getHistorial(
             @RequestParam(required = false) String numOrden,
+            @RequestParam(required = false) String cliente,
             @RequestParam(required = false) LocalDate fechaDesde,
             @RequestParam(required = false) LocalDate fechaHasta) {
         List<HistorialTransaccionDTO> historial = cobrosService.getHistorialTransacciones(
-                numOrden, fechaDesde, fechaHasta);
+                numOrden, cliente, fechaDesde, fechaHasta);
         return ResponseEntity.ok(historial);
+    }
+
+    @GetMapping("/clientes")
+    public ResponseEntity<List<Cliente>> buscarClientes(@RequestParam String nombre) {
+        List<Cliente> clientes = cobrosService.buscarClientesPorNombre(nombre);
+        return ResponseEntity.ok(clientes);
     }
 }

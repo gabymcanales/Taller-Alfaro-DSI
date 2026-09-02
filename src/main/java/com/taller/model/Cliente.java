@@ -2,6 +2,8 @@ package com.taller.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -17,5 +19,8 @@ public class Cliente {
     private String nombreCliente;
 
     @Column(name = "telefono_cliente", length = 15)
-    private String telefonoCliente;
+    private String telefonoCliente; 
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Vehiculo> vehiculos = new ArrayList<>();
 }

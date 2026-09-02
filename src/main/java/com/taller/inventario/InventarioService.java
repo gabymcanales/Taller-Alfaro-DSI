@@ -29,7 +29,7 @@ public class InventarioService {
         return productoRepository.save(producto);
     }
 
-    public Producto actualizarProducto(Integer id, Producto productoActualizado) {
+    public Producto actualizarProducto(Long id, Producto productoActualizado) {
 
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
@@ -44,7 +44,7 @@ public class InventarioService {
         return productoRepository.save(producto);
     }
 
-    public void eliminarProducto(Integer id) {
+    public void eliminarProducto(Long id) {
 
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
@@ -81,7 +81,7 @@ public class InventarioService {
 
         Producto producto = productoRepository.findById(
                 movimiento.getProducto().getIdProducto())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         String tipo = movimiento.getTipoMovimiento().toUpperCase();
 

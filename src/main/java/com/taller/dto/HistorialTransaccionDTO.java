@@ -12,5 +12,5 @@ public class HistorialTransaccionDTO {
     private String servicios;
     private BigDecimal monto;
     private String empleadoUsername;
-    private String estado;
+    private String clienteNombre;
 }
