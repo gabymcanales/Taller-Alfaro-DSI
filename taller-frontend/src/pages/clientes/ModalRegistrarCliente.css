@@ -1,0 +1,197 @@
+.modal-registrar-cliente {
+    max-width: 540px !important;
+}
+
+.modal-registrar-cliente .modal-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 20px 0;
+}
+
+.modal-registrar-cliente .icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 64, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-registrar-cliente .btn-close {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-registrar-cliente .btn-close:hover {
+    color: #fff;
+}
+
+.modal-registrar-cliente .modal-body {
+    padding: 14px 20px 20px;
+}
+
+.modal-registrar-cliente h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+}
+
+.modal-registrar-cliente .modal-subtitle {
+    font-size: 12px;
+    color: #a0a0a0;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.modal-registrar-cliente .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+
+.modal-registrar-cliente .form-group label {
+    font-size: 12px;
+    color: #a0a0a0;
+    font-weight: 500;
+}
+
+.modal-registrar-cliente .form-group input {
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.modal-registrar-cliente .form-group input:focus {
+    border-color: #ff4000;
+}
+
+.modal-registrar-cliente .form-group input::placeholder {
+    color: #555;
+}
+
+.modal-registrar-cliente .seccion-vehiculo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    margin: 18px 0 10px;
+    padding-top: 12px;
+    border-top: 1px solid #2a2a2a;
+}
+
+.modal-registrar-cliente .obligatorio-dot {
+    color: #ff4000;
+}
+
+.modal-registrar-cliente .form-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.modal-registrar-cliente .form-grid.two {
+    grid-template-columns: 1fr 1fr;
+}
+
+.modal-registrar-cliente .form-grid.three {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.modal-registrar-cliente .nota-vehiculo {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.5;
+    margin-top: 4px;
+}
+
+.alert-success {
+    background: rgba(99, 153, 34, 0.1);
+    border: 1px solid rgba(99, 153, 34, 0.3);
+    color: #97c459;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.alert-error {
+    background: rgba(226, 75, 74, 0.1);
+    border: 1px solid rgba(226, 75, 74, 0.3);
+    color: #f09595;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.modal-registrar-cliente .modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid #333;
+    padding-top: 16px;
+    margin-top: 18px;
+}
+
+.btn-cancelar {
+    background: transparent;
+    border: 1px solid #444;
+    color: #a0a0a0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+    border-color: #666;
+    color: #fff;
+}
+
+.btn-guardar {
+    background: #ff4000;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.btn-guardar:hover {
+    background: #e03800;
+}
+
+.btn-guardar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .modal-registrar-cliente .form-grid.two,
+    .modal-registrar-cliente .form-grid.three {
+        grid-template-columns: 1fr;
+    }
+}

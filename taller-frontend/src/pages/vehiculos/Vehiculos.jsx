@@ -122,7 +122,6 @@ const Vehiculos = () => {
             <div className="vehiculos-header">
                 <div>
                     <h1>Vehículos</h1>
-                    <p>Expediente vehicular — Módulo 2</p>
                 </div>
                 <button 
                     className="btn-registrar"

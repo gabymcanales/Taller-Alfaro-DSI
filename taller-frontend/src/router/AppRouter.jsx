@@ -11,6 +11,7 @@ import GestionServicios from '../pages/servicios/GestionServicios/GestionServici
 import Clientes from '../pages/clientes/Clientes';
 import Vehiculos from '../pages/vehiculos/Vehiculos';
 import GestionEmpleados from '../pages/empleados/GestionEmpleados/GestionEmpleados';
+import Ordenes from '../pages/ordenes/Ordenes';
 
 const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
@@ -24,7 +25,7 @@ const Layout = () => {
             <main className="layout-content">
                 <div className="layout-content-inner">
                     <Routes>
-                        <Route path="/" element={<Dashboard />} />  {/* ← PRIMERO */}
+                        <Route path="/" element={<Dashboard />} /> 
                         <Route path="/cobros/registrar" element={<RegistrarCobro />} />
                         <Route path="/cobros/arqueo" element={<ArqueoDiario />} />
                         <Route path="/cierres/diario" element={<CierreCaja />} />
@@ -34,6 +35,8 @@ const Layout = () => {
                         <Route path="/vehiculos" element={<Vehiculos />} />
                         <Route path="/servicios" element={<GestionServicios />} />
                         <Route path="/empleados" element={<GestionEmpleados />} />
+                        <Route path="/ordenes" element={<Ordenes />} />
+                        <Route path="/ordenes" element={<Ordenes />} />
                     </Routes>
                 </div>
             </main>

@@ -12,7 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -65,7 +68,7 @@ public class OrdenService {
         orden.setPrecioFinal(null);
         orden = ordenRepository.save(orden);
 
-        registrarHistorial(orden, null, "PENDIENTE", "Orden creada");
+        registrarHistorial(orden, null, "PENDIENTE", "Orden creada", empleadoCrea);
 
         BigDecimal totalCalculado = BigDecimal.ZERO;
 
@@ -123,7 +126,8 @@ public class OrdenService {
             if ("VARIABLE".equals(servicio.getTipoPrecio())) {
                 mensaje += " (precio variable)";
             }
-            registrarHistorial(orden, null, "PENDIENTE", mensaje);
+
+            registrarHistorial(orden, null, "PENDIENTE", mensaje, empleado);
         }
 
         orden.setTotalCalculadoOrden(totalCalculado);
@@ -178,15 +182,18 @@ public class OrdenService {
             throw new RuntimeException("Solo el empleado asignado puede iniciar este servicio");
         }
 
+        String estadoAnterior = ordenServicio.getEstadoServicioOrden(); // "PENDIENTE"
         ordenServicio.setEstadoServicioOrden("EN_PROCESO");
         ordenServicio = ordenServicioRepository.save(ordenServicio);
 
         actualizarEstadoOrdenPorServicios(idOrden);
 
         Orden orden = ordenServicio.getOrden();
-        registrarHistorial(orden, null, orden.getEstadoOrden(),
+
+        registrarHistorial(orden, estadoAnterior, "EN_PROCESO",
                 "Servicio " + ordenServicio.getServicio().getNombreServicio() +
-                        " iniciado por " + empleado.getNombreEmpleado());
+                        " iniciado por " + empleado.getNombreEmpleado(),
+                empleado);
 
         return convertToServicioDTO(ordenServicio);
     }
@@ -220,6 +227,8 @@ public class OrdenService {
             }
         }
 
+        String estadoAnterior = ordenServicio.getEstadoServicioOrden(); // "EN_PROCESO"
+
         ordenServicio.setEstadoServicioOrden("FINALIZADO");
         ordenServicio = ordenServicioRepository.save(ordenServicio);
 
@@ -227,9 +236,11 @@ public class OrdenService {
         actualizarEstadoOrdenPorServicios(idOrden);
 
         Orden orden = ordenServicio.getOrden();
-        registrarHistorial(orden, null, orden.getEstadoOrden(),
+
+        registrarHistorial(orden, estadoAnterior, "FINALIZADO",
                 "Servicio " + servicio.getNombreServicio() + " finalizado por " +
-                        empleado.getNombreEmpleado() + " - Precio: $" + ordenServicio.getPrecioAplicado());
+                        empleado.getNombreEmpleado() + " - Precio: $" + ordenServicio.getPrecioAplicado(),
+                empleado);
 
         return convertToServicioDTO(ordenServicio);
     }
@@ -276,7 +287,8 @@ public class OrdenService {
 
         registrarHistorial(orden, "FINALIZADO", "ENTREGADO",
                 "Orden cobrada por " + empleado.getNombreEmpleado() +
-                        " - Total: $" + totalFinal);
+                        " - Total: $" + totalFinal,
+                empleado);
 
         return convertToDTO(orden);
     }
@@ -296,7 +308,7 @@ public class OrdenService {
         orden = ordenRepository.save(orden);
 
         registrarHistorial(orden, estadoAnterior, nuevoEstado,
-                "Cambio de estado por " + empleado.getNombreEmpleado());
+                "Cambio de estado por " + empleado.getNombreEmpleado(), empleado);
 
         return convertToDTO(orden);
     }
@@ -356,8 +368,6 @@ public class OrdenService {
             String estadoAnterior = orden.getEstadoOrden();
             orden.setEstadoOrden(nuevoEstado);
             ordenRepository.save(orden);
-            registrarHistorial(orden, estadoAnterior, nuevoEstado,
-                    "Cambio automático basado en estado de servicios");
         }
     }
 
@@ -389,17 +399,18 @@ public class OrdenService {
     }
 
     private void registrarHistorial(Orden orden, String estadoAnterior,
-            String estadoNuevo, String comentario) {
+            String estadoNuevo, String comentario, Empleado empleado) {
         HistorialEstadoOrden historial = new HistorialEstadoOrden();
         historial.setOrden(orden);
         historial.setEstadoAnterior(estadoAnterior);
         historial.setEstadoNuevo(estadoNuevo);
         historial.setFechaCambio(LocalDateTime.now());
         historial.setComentario(comentario);
-        historial.setEmpleado(orden.getEmpleado());
+        historial.setEmpleado(empleado);
         historialEstadoOrdenRepository.save(historial);
     }
 
+  
     private OrdenResponseDTO convertToDTO(Orden orden) {
         OrdenResponseDTO dto = new OrdenResponseDTO();
         dto.setIdOrden(orden.getIdOrden());
@@ -447,6 +458,12 @@ public class OrdenService {
                 .map(this::convertToServicioDTO)
                 .collect(Collectors.toList()));
 
+        List<HistorialEstadoOrden> historial = historialEstadoOrdenRepository
+                .findByOrdenIdOrderByFechaCambioAsc(orden.getIdOrden());
+        dto.setHistorialEstados(historial.stream()
+                .map(this::convertToHistorialDTO)
+                .collect(Collectors.toList()));
+
         return dto;
     }
 
@@ -461,11 +478,19 @@ public class OrdenService {
         dto.setEstadoServicioOrden(os.getEstadoServicioOrden());
         dto.setEsPrecioVariable("VARIABLE".equals(os.getServicio().getTipoPrecio()));
 
+       
         OrdenServicioDTO.EmpleadoInfoDTO empleadoDTO = new OrdenServicioDTO.EmpleadoInfoDTO();
-        empleadoDTO.setIdEmpleado(os.getEmpleado().getIdEmpleado());
-        empleadoDTO.setNombreEmpleado(os.getEmpleado().getNombreEmpleado());
-        empleadoDTO.setRolEmpleado(os.getEmpleado().getRolEmpleado());
-        empleadoDTO.setUsername(os.getEmpleado().getUsername());
+        if (os.getEmpleado() != null) {
+            empleadoDTO.setIdEmpleado(os.getEmpleado().getIdEmpleado());
+            empleadoDTO.setNombreEmpleado(os.getEmpleado().getNombreEmpleado());
+            empleadoDTO.setRolEmpleado(os.getEmpleado().getRolEmpleado());
+            empleadoDTO.setUsername(os.getEmpleado().getUsername());
+        } else {
+            empleadoDTO.setIdEmpleado(null);
+            empleadoDTO.setNombreEmpleado("Sin asignar");
+            empleadoDTO.setRolEmpleado(null);
+            empleadoDTO.setUsername(null);
+        }
         dto.setEmpleado(empleadoDTO);
 
         return dto;
@@ -488,7 +513,83 @@ public class OrdenService {
         dto.setEstadoNuevo(h.getEstadoNuevo());
         dto.setFechaCambio(h.getFechaCambio());
         dto.setComentario(h.getComentario());
-        dto.setNombreEmpleado(h.getEmpleado() != null ? h.getEmpleado().getNombreEmpleado() : "Sistema");
+
+        if (h.getEmpleado() != null) {
+            dto.setNombreEmpleado(h.getEmpleado().getNombreEmpleado());
+        } else {
+            dto.setNombreEmpleado("Sistema");
+        }
+
         return dto;
+    }
+
+    
+    public Map<String, Long> getEstadisticas() {
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("totalOrdenes", ordenRepository.count());
+        stats.put("pendientes", ordenRepository.countByEstadoIn(List.of("PENDIENTE")));
+        stats.put("enProceso", ordenRepository.countByEstadoIn(List.of("EN_PROCESO")));
+        stats.put("finalizadas", ordenRepository.countByEstadoIn(List.of("FINALIZADO")));
+        stats.put("entregadas", ordenRepository.countByEstadoIn(List.of("ENTREGADO")));
+        return stats;
+    }
+
+    public List<OrdenResponseDTO> getOrdenesPorEmpleado(String username) {
+        Empleado empleado = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        List<OrdenServicio> serviciosAsignados = ordenServicioRepository.findByEmpleado(empleado);
+
+        List<Long> ordenIds = serviciosAsignados.stream()
+                .map(os -> os.getOrden().getIdOrden())
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (ordenIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return ordenRepository.findAllById(ordenIds).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Long> getEstadisticasPorEmpleado(String username) {
+        Empleado empleado = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        List<OrdenServicio> serviciosAsignados = ordenServicioRepository.findByEmpleado(empleado);
+
+        List<Long> ordenIds = serviciosAsignados.stream()
+                .map(os -> os.getOrden().getIdOrden())
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("totalOrdenes", (long) ordenIds.size());
+        stats.put("pendientes", 0L);
+        stats.put("enProceso", 0L);
+        stats.put("finalizadas", 0L);
+        stats.put("entregadas", 0L);
+
+        if (ordenIds.isEmpty()) {
+            return stats;
+        }
+
+        List<Orden> ordenes = ordenRepository.findAllById(ordenIds);
+        stats.put("pendientes", ordenes.stream()
+                .filter(o -> "PENDIENTE".equals(o.getEstadoOrden()))
+                .count());
+        stats.put("enProceso", ordenes.stream()
+                .filter(o -> "EN_PROCESO".equals(o.getEstadoOrden()))
+                .count());
+        stats.put("finalizadas", ordenes.stream()
+                .filter(o -> "FINALIZADO".equals(o.getEstadoOrden()))
+                .count());
+        stats.put("entregadas", ordenes.stream()
+                .filter(o -> "ENTREGADO".equals(o.getEstadoOrden()))
+                .count());
+
+        return stats;
     }
 }

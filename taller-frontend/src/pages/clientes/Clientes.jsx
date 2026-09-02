@@ -3,6 +3,7 @@ import { getClientes, getEstadisticas } from '../../services/clienteService';
 import ModalAgregarVehiculo from './ModalAgregarVehiculo';
 import ModalEditarCliente from './ModalEditarCliente';
 import ModalEliminarCliente from './ModalEliminarCliente';
+import ModalRegistrarCliente from './ModalRegistrarCliente';
 import './Clientes.css';
 
 const Clientes = () => {
@@ -21,6 +22,7 @@ const Clientes = () => {
     const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
     const [showEditar, setShowEditar] = useState(false);
     const [showEliminar, setShowEliminar] = useState(false);
+    const [showRegistrarCliente, setShowRegistrarCliente] = useState(false);
 
     useEffect(() => {
         cargarDatos();
@@ -78,7 +80,7 @@ const Clientes = () => {
         cliente.telefonoCliente?.includes(busqueda)
     );
 
-    // Iconos SVG
+
     const AgregarVehiculoIcon = () => (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
@@ -125,9 +127,11 @@ const Clientes = () => {
             <div className="clientes-header">
                 <div>
                     <h1>Clientes</h1>
-                    <p>Expediente de clientes y vehículos — Módulo 2</p>
                 </div>
-                <button className="btn-registrar">
+                <button
+                    className="btn-registrar"
+                    onClick={() => setShowRegistrarCliente(true)}
+                >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
@@ -262,6 +266,13 @@ const Clientes = () => {
                 <ModalEliminarCliente
                     cliente={clienteSeleccionado}
                     onClose={() => setShowEliminar(false)}
+                    onSuccess={cargarDatos}
+                />
+            )}
+
+            {showRegistrarCliente && (
+                <ModalRegistrarCliente
+                    onClose={() => setShowRegistrarCliente(false)}
                     onSuccess={cargarDatos}
                 />
             )}

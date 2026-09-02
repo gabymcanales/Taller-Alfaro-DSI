@@ -32,11 +32,44 @@ public class ClienteService {
             throw new RuntimeException("El nombre del cliente es obligatorio");
         }
 
+        
+        ClienteRequestDTO.VehiculoDataDTO vehiculoData = request.getVehiculo();
+        if (vehiculoData == null) {
+            throw new RuntimeException("Debe registrar al menos un vehículo junto con el cliente");
+        }
+        if (vehiculoData.getPlaca() == null || vehiculoData.getPlaca().trim().isEmpty()) {
+            throw new RuntimeException("La placa del vehículo es obligatoria");
+        }
+        if (vehiculoData.getMarca() == null || vehiculoData.getMarca().trim().isEmpty()) {
+            throw new RuntimeException("La marca del vehículo es obligatoria");
+        }
+        if (vehiculoData.getModelo() == null || vehiculoData.getModelo().trim().isEmpty()) {
+            throw new RuntimeException("El modelo del vehículo es obligatorio");
+        }
+        if (vehiculoData.getAnio() == null) {
+            throw new RuntimeException("El año del vehículo es obligatorio");
+        }
+        if (vehiculoRepository.existsByPlaca(vehiculoData.getPlaca())) {
+            throw new RuntimeException("Ya existe un vehículo con la placa " + vehiculoData.getPlaca());
+        }
+
         Cliente cliente = new Cliente();
         cliente.setNombreCliente(request.getNombreCliente());
         cliente.setTelefonoCliente(request.getTelefonoCliente());
-
         cliente = clienteRepository.save(cliente);
+
+        Vehiculo vehiculo = new Vehiculo();
+        vehiculo.setPlaca(vehiculoData.getPlaca().toUpperCase());
+        vehiculo.setMarca(vehiculoData.getMarca());
+        vehiculo.setModelo(vehiculoData.getModelo());
+        vehiculo.setAnio(vehiculoData.getAnio());
+        vehiculo.setColor(vehiculoData.getColor());
+        vehiculo.setCliente(cliente);
+        vehiculoRepository.save(vehiculo);
+
+        cliente = clienteRepository.findByIdWithVehiculos(cliente.getIdCliente())
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
         return convertToDTO(cliente);
     }
 

@@ -17,12 +17,14 @@ public class OrdenResponseDTO {
     private VehiculoInfoDTO vehiculo;
     private List<OrdenServicioDTO> ordenServicios;
 
+    private List<HistorialEstadoDTO> historialEstados;
+
     @Data
     public static class ClienteInfoDTO {
         private Long idCliente;
         private String nombreCliente;
         private String telefonoCliente;
-        private List<VehiculoInfoDTO> vehiculos; 
+        private List<VehiculoInfoDTO> vehiculos;
     }
 
     @Data
