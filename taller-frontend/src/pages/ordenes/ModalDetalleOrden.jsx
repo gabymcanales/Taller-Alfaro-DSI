@@ -3,36 +3,32 @@ import { getOrdenById, cambiarEstadoOrden } from '../../services/ordenService';
 import ModalAvanzarServicio from './ModalAvanzarServicio';
 import './ModalDetalleOrden.css';
 
-const ModalDetalleOrden = ({ isOpen, onClose, ordenId, onOrdenActualizada }) => {
+const ModalDetalleOrden = ({
+    isOpen,
+    onClose,
+    ordenId,
+    onOrdenActualizada,
+    esAdmin = false,
+    username = ''
+}) => {
     const [orden, setOrden] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAvanzarModal, setShowAvanzarModal] = useState(false);
     const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
-    const [usuario, setUsuario] = useState(null);
 
     useEffect(() => {
         if (isOpen && ordenId) {
             cargarOrden();
-            obtenerUsuario();
         }
     }, [isOpen, ordenId]);
-
-    const obtenerUsuario = () => {
-        const token = localStorage.getItem('token');
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            setUsuario(payload);
-        } catch (e) {
-            setUsuario({ rol: 'ADMINISTRADOR' });
-        }
-    };
 
     const cargarOrden = async () => {
         setLoading(true);
         setError('');
         try {
             const res = await getOrdenById(ordenId);
+            console.log(' Detalle orden:', res.data);
             setOrden(res.data);
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al cargar la orden');
@@ -61,7 +57,7 @@ const ModalDetalleOrden = ({ isOpen, onClose, ordenId, onOrdenActualizada }) => 
         return nombres[estado] || estado;
     };
 
-    const isAdmin = usuario?.rol === 'ADMINISTRADOR';
+    const isAdmin = esAdmin;
     const todosFinalizados = orden?.ordenServicios?.every(s => s.estadoServicioOrden === 'FINALIZADO');
 
     const handleAvanzarServicio = (servicio) => {
@@ -69,7 +65,6 @@ const ModalDetalleOrden = ({ isOpen, onClose, ordenId, onOrdenActualizada }) => 
         setShowAvanzarModal(true);
     };
 
-    
     const handleServicioActualizado = () => {
         setShowAvanzarModal(false);
         cargarOrden();
@@ -144,7 +139,7 @@ const ModalDetalleOrden = ({ isOpen, onClose, ordenId, onOrdenActualizada }) => 
                             <div className="detalle-info-item">
                                 <label>VEHÍCULO</label>
                                 <span>
-                                    {orden.vehiculo 
+                                    {orden.vehiculo
                                         ? `${orden.vehiculo.marca} ${orden.vehiculo.modelo} ${orden.vehiculo.anio || ''} - ${orden.vehiculo.placa}`
                                         : 'Sin vehículo'
                                     }
@@ -170,39 +165,55 @@ const ModalDetalleOrden = ({ isOpen, onClose, ordenId, onOrdenActualizada }) => 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orden.ordenServicios?.map((servicio) => (
-                                        <tr key={servicio.idServicio}>
-                                            <td>{servicio.nombreServicio}</td>
-                                            <td>{servicio.empleado?.nombreEmpleado || 'Sin asignar'}</td>
-                                            <td className="precio-col">
-                                                {servicio.precioAplicado ? (
-                                                    `$${servicio.precioAplicado.toFixed(2)}`
-                                                ) : servicio.tipoPrecio === 'VARIABLE' ? (
-                                                    <span className="precio-variable-text">Pendiente</span>
-                                                ) : (
-                                                    '—'
-                                                )}
-                                            </td>
-                                            <td>
-                                                <span className={`badge-estado ${getEstadoBadge(servicio.estadoServicioOrden)}`}>
-                                                    ● {getEstadoDisplay(servicio.estadoServicioOrden)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {servicio.estadoServicioOrden !== 'FINALIZADO' && (
-                                                    <button 
-                                                        className="btn-avanzar"
-                                                        onClick={() => handleAvanzarServicio(servicio)}
-                                                    >
-                                                        Avanzar
-                                                    </button>
-                                                )}
-                                                {servicio.estadoServicioOrden === 'FINALIZADO' && (
-                                                    <span className="completo-text">Completo</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {orden.ordenServicios
+                                        ?.filter(s => {
+                                            if (isAdmin) return true;
+                                            return s.empleado?.username === username;
+                                        })
+                                        .map((servicio) => {
+                                            const puedeAvanzar = !isAdmin &&
+                                                servicio.empleado?.username === username &&
+                                                servicio.estadoServicioOrden !== 'FINALIZADO';
+
+                                            return (
+                                                <tr key={servicio.idServicio}>
+                                                    <td>{servicio.nombreServicio}</td>
+                                                    <td>{servicio.empleado?.nombreEmpleado || 'Sin asignar'}</td>
+                                                    <td className="precio-col">
+                                                        {servicio.precioAplicado ? (
+                                                            `$${servicio.precioAplicado.toFixed(2)}`
+                                                        ) : servicio.tipoPrecio === 'VARIABLE' ? (
+                                                            <span className="precio-variable-text">Pendiente</span>
+                                                        ) : (
+                                                            '—'
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <span className={`badge-estado ${getEstadoBadge(servicio.estadoServicioOrden)}`}>
+                                                            ● {getEstadoDisplay(servicio.estadoServicioOrden)}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {puedeAvanzar && (
+                                                            <button
+                                                                className="btn-avanzar"
+                                                                onClick={() => handleAvanzarServicio(servicio)}
+                                                            >
+                                                                Avanzar
+                                                            </button>
+                                                        )}
+                                                        {servicio.estadoServicioOrden === 'FINALIZADO' && (
+                                                            <span className="completo-text"> Completo</span>
+                                                        )}
+                                                        {!puedeAvanzar && servicio.estadoServicioOrden !== 'FINALIZADO' && isAdmin && (
+                                                            <span className="completo-text" style={{ color: '#888', fontSize: '11px' }}>
+                                                                Asignado a {servicio.empleado?.nombreEmpleado || '...'}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                 </tbody>
                             </table>
                         </div>

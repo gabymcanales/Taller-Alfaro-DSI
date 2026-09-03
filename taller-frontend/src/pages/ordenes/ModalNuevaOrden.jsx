@@ -209,7 +209,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                         </div>
 
                         <div className="form-group">
-                            <label>Vehículo (opcional)</label>
+                            <label>Vehículo *</label>
                             <select
                                 className="form-select"
                                 value={formData.idVehiculo}
