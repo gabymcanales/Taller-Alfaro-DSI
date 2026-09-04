@@ -1,4 +1,3 @@
-
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -12,8 +11,6 @@
     z-index: 1000;
 }
 
-
-
 .modal-content {
     background: #1a1a1a;
     border: 1px solid #333;
@@ -23,7 +20,6 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-
 .modal-header {
     padding: 20px 20px 0 20px;
     display: flex;
@@ -31,7 +27,6 @@
     justify-content: space-between;
 }
 
-/* Icono del modal */
 .modal-icon {
     width: 48px;
     height: 48px;
@@ -42,7 +37,6 @@
     justify-content: center;
 }
 
-/* Botón de cerrar (X) */
 .modal-close {
     background: none;
     border: none;
@@ -58,7 +52,6 @@
     color: #ff4000;
 }
 
-/* PASO 2.4: TÍTULO */
 .modal-title {
     padding: 0 20px;
 }
@@ -69,7 +62,6 @@
     color: #fff;
     margin: 0;
 }
-
 
 .modal-warning {
     margin: 20px;
@@ -94,7 +86,6 @@
     font-weight: 600;
 }
 
-
 .modal-data {
     margin: 0 20px 20px 20px;
     background: #111;
@@ -103,7 +94,6 @@
     padding: 14px;
 }
 
-/* Cada fila de datos */
 .data-row {
     display: flex;
     justify-content: space-between;
@@ -113,36 +103,59 @@
     border-bottom: 1px solid #1e1e1e;
 }
 
-/* La última fila no tiene borde */
 .data-row:last-child {
     border-bottom: none;
 }
 
-/* Etiqueta (ej: "Servicio") */
 .data-row .label {
     color: #888;
     font-weight: 400;
 }
 
-/* Valor (ej: "Cambio de aceite") */
 .data-row .value {
     color: #fff;
     font-weight: 500;
 }
 
-/* Valor con color naranja (Total a pagar) */
 .data-row .value.orange {
     color: #ff8c42;
     font-weight: 600;
 }
 
-/* Valor con color verde (Cambio) */
 .data-row .value.green {
     color: #97c459;
     font-weight: 600;
 }
 
-/* PASO 2.7: PIE DEL MODAL (BOTONES) */
+.servicios-row {
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+}
+
+.servicios-value {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 60%;
+    justify-content: flex-end;
+}
+
+.servicio-tag {
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #e0e0e0;
+    white-space: nowrap;
+    font-weight: 400;
+    transition: border-color 0.2s;
+}
+
+.servicio-tag:hover {
+    border-color: #ff8c42;
+}
+
 .modal-footer {
     padding: 16px 20px 20px 20px;
     border-top: 1px solid #333;
@@ -151,7 +164,6 @@
     gap: 12px;
 }
 
-/* Botón Cancelar */
 .modal-footer .btn-outline {
     background: transparent;
     color: #ccc;
@@ -169,7 +181,6 @@
     color: #fff;
 }
 
-/* Botón Confirmar cobro */
 .modal-footer .btn-primary {
     background: #ff4000;
     color: #fff;
@@ -184,4 +195,23 @@
 
 .modal-footer .btn-primary:hover {
     background: #e03800;
+}
+
+@media (max-width: 500px) {
+    .servicios-row {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+    }
+
+    .servicios-value {
+        max-width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .servicio-tag {
+        font-size: 11px;
+        padding: 3px 10px;
+    }
 }

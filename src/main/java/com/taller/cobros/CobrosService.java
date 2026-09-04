@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,73 +50,71 @@ public class CobrosService {
             throw new RuntimeException("No se pueden registrar cobros: el día " + hoy + " ya está cerrado.");
         }
 
-        
-        Servicio servicio = servicioRepository.findById(request.getIdServicio())
-                .orElseThrow(() -> new ServicioNoEncontradoException(request.getIdServicio()));
+        // 1. Validar que la orden existe y está FINALIZADA
+        Orden orden = ordenRepository.findById(request.getIdOrden())
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
-        
-        Cliente cliente = clienteRepository.findByTelefonoCliente(request.getTelefonoCliente())
-                .orElseGet(() -> {
-                    Cliente nuevoCliente = new Cliente();
-                    nuevoCliente.setNombreCliente(request.getNombreCliente());
-                    nuevoCliente.setTelefonoCliente(request.getTelefonoCliente());
-                    return clienteRepository.save(nuevoCliente);
-                });
-
-      
-        if (request.getMontoRecibido().compareTo(request.getMontoTotal()) < 0) {
-            throw new MontoInsuficienteException();
+        if (!"FINALIZADO".equals(orden.getEstadoOrden())) {
+            throw new RuntimeException("La orden debe estar en estado FINALIZADO para poder cobrarla");
         }
 
-      
+        // 2. Validar que la orden no tenga una transacción asociada (no se haya cobrado
+        // antes)
+        if (transaccionRepository.findByOrdenId(orden.getIdOrden()).isPresent()) {
+            throw new RuntimeException("Esta orden ya ha sido cobrada");
+        }
+
+        // 3. Obtener empleado
         Empleado empleado = empleadoRepository.findByUsername(usernameEmpleado)
                 .orElseThrow(() -> new EmpleadoNoEncontradoException(usernameEmpleado));
 
-       
-        BigDecimal cambio = request.getMontoRecibido().subtract(request.getMontoTotal());
+        // 4. Calcular total final de la orden (suma de servicios)
+        BigDecimal totalFinal = orden.getOrdenServicios().stream()
+                .map(OrdenServicio::getPrecioAplicado)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        OrdenRequestDTO ordenRequest = new OrdenRequestDTO();
-        ordenRequest.setIdCliente(cliente.getIdCliente());
+        // 5. Validar monto recibido
+        if (request.getMontoRecibido().compareTo(totalFinal) < 0) {
+            throw new MontoInsuficienteException();
+        }
 
-        OrdenRequestDTO.ServicioAsignadoDTO servicioDTO = new OrdenRequestDTO.ServicioAsignadoDTO();
-        servicioDTO.setIdServicio(request.getIdServicio());
-        servicioDTO.setIdEmpleado(empleado.getIdEmpleado());
-        ordenRequest.setServicios(List.of(servicioDTO));
+        // 6. Crear transacción
+        Transaccion transaccion = new Transaccion();
+        transaccion.setOrden(orden);
+        transaccion.setMontoTotal(totalFinal);
+        transaccion.setMontoRecibido(request.getMontoRecibido());
+        transaccion.setCambio(request.getMontoRecibido().subtract(totalFinal));
+        transaccion.setFechaHoraTransaccion(LocalDateTime.now());
+        transaccion.setEmpleado(empleado);
+        transaccion.setCierreAsociado(false);
+        transaccion.setCierreMensualAsociado(false);
+        transaccion = transaccionRepository.save(transaccion);
 
-        OrdenResponseDTO ordenResponse = ordenService.crearOrden(ordenRequest, usernameEmpleado);
+        // 7. Cambiar orden a ENTREGADO
+        orden.setPrecioFinal(totalFinal);
+        orden.setEstadoOrden("ENTREGADO");
+        orden = ordenRepository.save(orden);
 
-        
-        Orden orden = ordenRepository.findById(ordenResponse.getIdOrden())
-                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+        // 8. Registrar en historial
+        // (si tienes un método para registrar historial, aquí se llama)
 
-        
-        CobroRequest cobroRequest = new CobroRequest();
-        cobroRequest.setMontoRecibido(request.getMontoRecibido());
-        ordenService.cobrarOrden(orden.getIdOrden(), cobroRequest, usernameEmpleado);
-
-        
-        Transaccion transaccion = transaccionRepository.findByOrdenId(orden.getIdOrden())
-                .orElseThrow(() -> new RuntimeException("Transacción no encontrada"));
-
-        return mapearARespuesta(transaccion, orden, cliente, servicio, empleado, cambio);
-    }
-
-
-    private RegistroCobroResponse mapearARespuesta(Transaccion transaccion, Orden orden,
-            Cliente cliente, Servicio servicio,
-            Empleado empleado, BigDecimal cambio) {
+        // 9. Retornar respuesta
         RegistroCobroResponse response = new RegistroCobroResponse();
         response.setOrdenId(orden.getIdOrden());
         response.setNumOrden(orden.getNumOrden());
-        response.setClienteNombre(cliente.getNombreCliente());
-        response.setTelefonoCliente(cliente.getTelefonoCliente());
-        response.setServicioNombre(servicio.getNombreServicio());
-        response.setMontoTotal(transaccion.getMontoTotal());
-        response.setMontoRecibido(transaccion.getMontoRecibido());
-        response.setCambio(cambio);
+        response.setClienteNombre(orden.getCliente().getNombreCliente());
+        response.setTelefonoCliente(orden.getCliente().getTelefonoCliente());
+        response.setServicioNombre(orden.getOrdenServicios().stream()
+                .map(os -> os.getServicio().getNombreServicio())
+                .collect(Collectors.joining(" + ")));
+        response.setMontoTotal(totalFinal);
+        response.setMontoRecibido(request.getMontoRecibido());
+        response.setCambio(request.getMontoRecibido().subtract(totalFinal));
         response.setEstado(orden.getEstadoOrden());
         response.setFechaHora(transaccion.getFechaHoraTransaccion());
         response.setEmpleadoUsername(empleado.getUsername());
+
         return response;
     }
 

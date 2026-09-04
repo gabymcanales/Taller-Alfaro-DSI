@@ -69,4 +69,15 @@ public class CobroController {
         String username = authentication.getName();
         return ResponseEntity.ok(ordenService.cobrarOrden(id, request, username));
     }
+
+    @GetMapping("/ordenes-finalizadas")
+    public ResponseEntity<List<OrdenResponseDTO>> getOrdenesFinalizadas() {
+        return ResponseEntity.ok(ordenService.getOrdenesByEstado("FINALIZADO"));
+    }
+
+    
+    @GetMapping("/orden/{id}")
+    public ResponseEntity<OrdenResponseDTO> getOrdenDetalle(@PathVariable Long id) {
+        return ResponseEntity.ok(ordenService.getOrdenById(id));
+    }
 }
