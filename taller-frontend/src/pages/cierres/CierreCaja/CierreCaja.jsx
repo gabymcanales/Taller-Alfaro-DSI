@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
-import { cerrarDiario, getCierreDiario, cerrarMensual, getCierreMensual, getTotalVentasMes } from '../../../services/cierreService';
+import {
+    cerrarDiario,
+    getCierreDiario,
+    cerrarMensual,
+    getCierreMensual,
+    getTotalVentasMes
+} from '../../../services/cierreService';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
 import ModalConfirmarCierreDiario from '../../../components/common/ModalConfirmarCierreDiario/ModalConfirmarCierreDiario';
 import ModalConfirmarCierreMensual from '../../../components/common/ModalConfirmarCierreMensual/ModalConfirmarCierreMensual';
 import './CierreCaja.css';
 
 const CierreCaja = () => {
-    // ========== ESTADOS CIERRE DIARIO ==========
+
     const [montoFisico, setMontoFisico] = useState('');
     const [totalEsperado, setTotalEsperado] = useState(0);
     const [diferencia, setDiferencia] = useState(null);
@@ -15,25 +21,32 @@ const CierreCaja = () => {
     const [showModalDiario, setShowModalDiario] = useState(false);
     const [datosCierreDiario, setDatosCierreDiario] = useState(null);
     const [errorDiario, setErrorDiario] = useState('');
+    const [transaccionesCount, setTransaccionesCount] = useState(0);
 
-    // ========== ESTADOS CIERRE MENSUAL ==========
+
     const [totalVentasMes, setTotalVentasMes] = useState(0);
     const [cierreMensualExistente, setCierreMensualExistente] = useState(false);
     const [loadingMensual, setLoadingMensual] = useState(false);
     const [showModalMensual, setShowModalMensual] = useState(false);
     const [datosCierreMensual, setDatosCierreMensual] = useState(null);
 
+    const mesActual = new Date().getMonth() + 1;
+    const anioActual = new Date().getFullYear();
+
     // ========== FUNCIONES CIERRE DIARIO ==========
     const cargarCierreDiario = async () => {
         try {
             const response = await getCierreDiario();
             if (response.data) {
-                setTotalEsperado(response.data.montoEsperado);
-                
+                setTotalEsperado(response.data.montoEsperado || 0);
+                setTransaccionesCount(response.data.totalTransacciones || 0);
                 setCierreExistente(response.data.cerrado === true);
             }
-        } catch {
+        } catch (error) {
+            console.error('Error al cargar cierre diario:', error);
             setCierreExistente(false);
+            setTotalEsperado(0);
+            setTransaccionesCount(0);
         }
     };
 
@@ -55,13 +68,30 @@ const CierreCaja = () => {
 
     const cargarDatosParaModalDiario = async () => {
         try {
+
             const response = await getCierreDiario();
             if (response.data && response.data.cerrado === true) {
                 setCierreExistente(true);
+                setErrorDiario('El día ya ha sido cerrado');
                 return;
             }
+
+            if (response.data) {
+                setTotalEsperado(response.data.montoEsperado || 0);
+                setTransaccionesCount(response.data.totalTransacciones || 0);
+            }
         } catch {
-            // No hay cierre, continuar
+
+        }
+
+        if (!montoFisico || parseFloat(montoFisico) <= 0) {
+            setErrorDiario('Ingrese el monto físico contado');
+            return;
+        }
+
+        if (diferencia === null) {
+            setErrorDiario('Calcule la diferencia primero');
+            return;
         }
 
         setDatosCierreDiario({
@@ -69,26 +99,31 @@ const CierreCaja = () => {
             totalEsperado: totalEsperado,
             montoFisico: parseFloat(montoFisico),
             diferencia: diferencia,
+            transacciones: transaccionesCount,
             usuario: 'Admin',
-            horaCierre: new Date().toLocaleTimeString('es-ES')
+            horaCierre: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
         });
         setShowModalDiario(true);
     };
 
     const handleCierreDiario = async () => {
-        if (!montoFisico || parseFloat(montoFisico) <= 0) {
-            setErrorDiario('Ingrese el monto físico contado');
-            return;
-        }
-
         setLoadingDiario(true);
         try {
-            const response = await cerrarDiario({ montoFisico: parseFloat(montoFisico) });
-            setCierreExistente(true);
-            setTotalEsperado(response.data.montoEsperado);
-            setShowModalDiario(false);
+            const response = await cerrarDiario({
+                montoFisico: parseFloat(montoFisico)
+            });
+
+            if (response.data) {
+                setCierreExistente(true);
+                setTotalEsperado(response.data.montoEsperado || 0);
+                setShowModalDiario(false);
+
+                await cargarCierreDiario();
+            }
         } catch (err) {
-            setErrorDiario(err.response?.data?.mensaje || 'Error al realizar el cierre diario');
+            const mensaje = err.response?.data?.mensaje || 'Error al realizar el cierre diario';
+            setErrorDiario(mensaje);
+            setShowModalDiario(false);
         } finally {
             setLoadingDiario(false);
         }
@@ -100,16 +135,14 @@ const CierreCaja = () => {
         setErrorDiario('');
     };
 
-    // ========== FUNCIONES CIERRE MENSUAL ==========
-    const cargarDatosMensuales = async () => {
-        const mes = new Date().getMonth() + 1;
-        const anio = new Date().getFullYear();
 
+    const cargarDatosMensuales = async () => {
         try {
-            const response = await getCierreMensual(mes, anio);
-            if (response.data && response.data.cerrado === true) {
+
+            const cierreResponse = await getCierreMensual(mesActual, anioActual);
+            if (cierreResponse.data && cierreResponse.data.cerrado === true) {
                 setCierreMensualExistente(true);
-                setTotalVentasMes(response.data.montoTotal);
+                setTotalVentasMes(cierreResponse.data.montoTotal || 0);
                 return;
             } else {
                 setCierreMensualExistente(false);
@@ -118,35 +151,28 @@ const CierreCaja = () => {
             setCierreMensualExistente(false);
         }
 
+
         try {
-            const response = await getTotalVentasMes(mes, anio);
-            setTotalVentasMes(response.data);
-        } catch {
-            console.error('Error al cargar datos mensuales');
+            const response = await getTotalVentasMes(mesActual, anioActual);
+            setTotalVentasMes(response.data || 0);
+        } catch (error) {
+            console.error('Error al cargar total del mes:', error);
             setTotalVentasMes(0);
         }
     };
 
     const cargarDatosParaModalMensual = async () => {
-        const mes = new Date().getMonth() + 1;
-        const anio = new Date().getFullYear();
 
-        try {
-            const response = await getCierreMensual(mes, anio);
-            if (response.data && response.data.cerrado === true) {
-                setCierreMensualExistente(true);
-                return;
-            }
-        } catch {
-            // No hay cierre, continuar
+        await cargarDatosMensuales();
+
+        if (cierreMensualExistente) {
+            return;
         }
 
         setDatosCierreMensual({
-            mes: mes,
-            anio: anio,
+            mes: mesActual,
+            anio: anioActual,
             totalMes: totalVentasMes,
-            diasTrabajados: 0,
-            totalTransacciones: 0,
             usuario: 'Admin'
         });
         setShowModalMensual(true);
@@ -156,18 +182,24 @@ const CierreCaja = () => {
         setLoadingMensual(true);
         try {
             const response = await cerrarMensual({
-                mes: new Date().getMonth() + 1,
-                anio: new Date().getFullYear()
+                mes: mesActual,
+                anio: anioActual
             });
-            setCierreMensualExistente(true);
-            setTotalVentasMes(response.data.montoTotal);
-            setShowModalMensual(false);
+
+            if (response.data) {
+                setCierreMensualExistente(true);
+                setTotalVentasMes(response.data.montoTotal || 0);
+                setShowModalMensual(false);
+                await cargarDatosMensuales();
+            }
         } catch (err) {
             console.error('Error al realizar cierre mensual:', err);
+            setShowModalMensual(false);
         } finally {
             setLoadingMensual(false);
         }
     };
+
 
     useEffect(() => {
         const inicializarDatos = async () => {
@@ -192,7 +224,6 @@ const CierreCaja = () => {
             <CobrosTabs />
 
             <div className="two-panels">
-                {/* Panel Cierre Diario */}
                 <div className="panel">
                     <div className="panel-header">
                         <h3>
@@ -210,6 +241,7 @@ const CierreCaja = () => {
                             <div className="info-card">
                                 <div className="ic-label">Total esperado (sistema)</div>
                                 <div className="ic-val orange">${totalEsperado.toFixed(2)}</div>
+                                <div className="ic-sub">{transaccionesCount} transacciones</div>
                             </div>
                             <div className={`info-card ${diferencia !== null ? (diferencia >= 0 ? 'positive' : 'negative') : ''}`}>
                                 <div className="ic-label">Diferencia</div>
@@ -280,7 +312,7 @@ const CierreCaja = () => {
                     </div>
                 </div>
 
-                {/* Panel Cierre Mensual */}
+
                 <div className="panel">
                     <div className="panel-header">
                         <h3>
@@ -294,7 +326,7 @@ const CierreCaja = () => {
                             </svg>
                             Cierre mensual
                         </h3>
-                        <span className="status-pill pill-yellow">{meses[new Date().getMonth()]} {new Date().getFullYear()}</span>
+                        <span className="status-pill pill-yellow">{meses[mesActual - 1]} {anioActual}</span>
                     </div>
                     <div className="panel-body">
                         <div className="close-info">
@@ -305,8 +337,8 @@ const CierreCaja = () => {
                             </div>
                             <div className="info-card">
                                 <div className="ic-label">Mes actual</div>
-                                <div className="ic-val">{meses[new Date().getMonth()]}</div>
-                                <div className="ic-sub">{new Date().getFullYear()}</div>
+                                <div className="ic-val">{meses[mesActual - 1]}</div>
+                                <div className="ic-sub">{anioActual}</div>
                             </div>
                         </div>
 
@@ -351,7 +383,7 @@ const CierreCaja = () => {
                 </div>
             </div>
 
-            {/* Modales */}
+            {/* ========== MODALES ========== */}
             <ModalConfirmarCierreDiario
                 isOpen={showModalDiario}
                 onClose={() => setShowModalDiario(false)}

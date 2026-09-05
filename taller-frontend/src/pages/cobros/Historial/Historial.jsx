@@ -31,6 +31,40 @@ const ListIcon = () => (
 
 const ITEMS_PER_PAGE = 10;
 
+const parseFecha = (fechaStr, horaStr) => {
+    if (!fechaStr) return new Date(0);
+
+    const partes = fechaStr.split('/');
+    if (partes.length === 3) {
+        const dia = parseInt(partes[0]);
+        const mes = parseInt(partes[1]) - 1;
+        const anio = parseInt(partes[2]);
+        let horas = 0;
+        let minutos = 0;
+
+        if (horaStr) {
+            const horaMatch = horaStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM|a\.\s*m\.|p\.\s*m\.)?/i);
+            if (horaMatch) {
+                horas = parseInt(horaMatch[1]);
+                minutos = parseInt(horaMatch[2]);
+                const ampm = horaMatch[3]?.toLowerCase() || '';
+                if (ampm.includes('p') && horas < 12) horas += 12;
+                if (ampm.includes('a') && horas === 12) horas = 0;
+            }
+        }
+        return new Date(anio, mes, dia, horas, minutos);
+    }
+    return new Date(fechaStr);
+};
+
+const ordenarPorFechaHora = (data) => {
+    return [...data].sort((a, b) => {
+        const fechaA = parseFecha(a.fecha, a.hora);
+        const fechaB = parseFecha(b.fecha, b.hora);
+        return fechaB - fechaA;
+    });
+};
+
 const Historial = () => {
     const [transacciones, setTransacciones] = useState([]);
     const [filteredTransacciones, setFilteredTransacciones] = useState([]);
@@ -41,18 +75,10 @@ const Historial = () => {
     });
     const [currentPage, setCurrentPage] = useState(1);
 
-    const ordenarPorNumeroOrden = (data) => {
-        return [...data].sort((a, b) => {
-            const numA = parseInt(a.numOrden.replace('ORD-', ''));
-            const numB = parseInt(b.numOrden.replace('ORD-', ''));
-            return numB - numA;
-        });
-    };
-
     const cargarHistorial = async () => {
         try {
             const response = await getHistorial();
-            const datosOrdenados = ordenarPorNumeroOrden(response.data);
+            const datosOrdenados = ordenarPorFechaHora(response.data);
             setTransacciones(datosOrdenados);
             setFilteredTransacciones(datosOrdenados);
             setCurrentPage(1);
@@ -94,7 +120,7 @@ const Historial = () => {
             if (filters.fechaHasta) params.fechaHasta = filters.fechaHasta;
 
             const response = await getHistorial(params);
-            const datosOrdenados = ordenarPorNumeroOrden(response.data);
+            const datosOrdenados = ordenarPorFechaHora(response.data);
             setFilteredTransacciones(datosOrdenados);
             setCurrentPage(1);
         } catch (err) {
