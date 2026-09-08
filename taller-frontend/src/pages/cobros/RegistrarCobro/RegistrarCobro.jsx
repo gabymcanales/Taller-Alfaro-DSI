@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
-import { registrarCobro, getServicios, buscarClientes } from '../../../services/cobroService';
+import {
+    registrarCobro,
+    getOrdenesFinalizadas,
+    getOrdenDetalle
+} from '../../../services/cobroService';
 import ModalRegistrarCobro from '../../../components/common/ModalRegistrarCobro/ModalRegistrarCobro';
 import ModalExitoCobro from '../../../components/common/ModalExitoCobro/ModalExitoCobro';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
@@ -16,176 +20,93 @@ const ChangeIcon = () => (
 );
 
 const RegistrarCobro = () => {
-    const [servicios, setServicios] = useState([]);
+    const [ordenes, setOrdenes] = useState([]);
+    const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
+    const [ordenDetalle, setOrdenDetalle] = useState(null);
+
     const [formData, setFormData] = useState({
-        idServicio: '',
-        nombreCliente: '',
-        telefonoCliente: '',
-        montoTotal: '',
+        idOrden: '',
         montoRecibido: ''
     });
+
     const [cambio, setCambio] = useState(null);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showModalExito, setShowModalExito] = useState(false);
     const [pendingData, setPendingData] = useState(null);
-    const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
-    
-    const [clientesSugeridos, setClientesSugeridos] = useState([]);
-    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
-    const [buscando, setBuscando] = useState(false);
-
-    const validarNombre = (nombre) => {
-        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-        return regex.test(nombre);
-    };
-
-    const validarTelefono = (telefono) => {
-        const soloNumeros = telefono.replace(/[^0-9]/g, '');
-        return soloNumeros.length === 8;
-    };
+    const [success, setSuccess] = useState(null);
 
     useEffect(() => {
-        const cargarServicios = async () => {
-            try {
-                const response = await getServicios();
-                setServicios(response.data);
-            } catch (err) {
-                console.error('Error al cargar servicios:', err);
-                setError('No se pudieron cargar los servicios');
-            }
-        };
-        cargarServicios();
+        cargarOrdenesFinalizadas();
     }, []);
 
-    const buscarClientesPorNombre = async (nombre) => {
-        if (!nombre || nombre.length < 2) {
-            setClientesSugeridos([]);
-            setMostrarSugerencias(false);
-            return;
-        }
-        
-        setBuscando(true);
+    const cargarOrdenesFinalizadas = async () => {
         try {
-            const response = await buscarClientes(nombre);
-            setClientesSugeridos(response.data);
-            setMostrarSugerencias(response.data.length > 0);
+            const response = await getOrdenesFinalizadas();
+            setOrdenes(response.data);
         } catch (err) {
-            console.error('Error al buscar clientes:', err);
-            setClientesSugeridos([]);
-        } finally {
-            setBuscando(false);
+            console.error('Error al cargar órdenes:', err);
+            setError('No se pudieron cargar las órdenes finalizadas');
         }
     };
 
-    const seleccionarCliente = (cliente) => {
-        setFormData(prev => ({
-            ...prev,
-            nombreCliente: cliente.nombreCliente,
-            telefonoCliente: cliente.telefonoCliente || ''
-        }));
-        setMostrarSugerencias(false);
-        setClientesSugeridos([]);
+    const handleOrdenChange = async (e) => {
+        const idOrden = e.target.value;
+        setFormData(prev => ({ ...prev, idOrden }));
+        setOrdenSeleccionada(idOrden);
+        setError('');
+        setCambio(null);
+        setOrdenDetalle(null);
+
+        if (idOrden) {
+            try {
+                const response = await getOrdenDetalle(idOrden);
+                setOrdenDetalle(response.data);
+            } catch (err) {
+                console.error('Error al cargar detalle:', err);
+                setError('No se pudo cargar el detalle de la orden');
+            }
+        }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        if (name === 'nombreCliente') {
-            const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-            setFormData(prev => ({ ...prev, [name]: soloLetras }));
-            buscarClientesPorNombre(soloLetras);
-            setError('');
-            return;
-        }
-  
-        if (name === 'telefonoCliente') {
-            const soloNumeros = value.replace(/[^0-9]/g, '');
-            if (soloNumeros.length <= 8) {
-                setFormData(prev => ({ ...prev, [name]: soloNumeros }));
-            }
-            setError('');
-            return;
-        }
-
-        if (name === 'montoTotal' || name === 'montoRecibido') {
-          
+        if (name === 'montoRecibido') {
             if (value === '') {
                 setFormData(prev => ({ ...prev, [name]: value }));
-                setError('');
-                if (name === 'montoRecibido') {
-                    setCambio(null);
-                }
+                setCambio(null);
                 return;
             }
 
             const numValue = parseFloat(value);
-
             if (!isNaN(numValue) && numValue <= 0) {
                 return;
             }
 
             setFormData(prev => ({ ...prev, [name]: value }));
             setError('');
-        }
 
-        if (name === 'idServicio') {
-            setFormData(prev => ({ ...prev, [name]: value }));
-            const servicio = servicios.find(s => s.idServicio === parseInt(value));
-            setServicioSeleccionado(servicio);
-            setError('');
-        }
-
-        if (name === 'montoRecibido' && formData.montoTotal) {
-            const total = parseFloat(formData.montoTotal);
-            const recibido = parseFloat(value);
-            if (!isNaN(total) && !isNaN(recibido) && recibido >= total && recibido > 0) {
-                setCambio(recibido - total);
+            const total = ordenDetalle?.totalCalculadoOrden || 0;
+            if (!isNaN(total) && !isNaN(numValue) && numValue >= total && numValue > 0) {
+                setCambio(numValue - total);
             } else {
                 setCambio(null);
             }
         }
-
-        setError('');
-        setSuccess(null);
     };
 
     const handleOpenModal = (e) => {
         e.preventDefault();
 
-        const total = parseFloat(formData.montoTotal);
+        if (!formData.idOrden) {
+            setError('Seleccione una orden');
+            return;
+        }
+
         const recibido = parseFloat(formData.montoRecibido);
-
-        if (!formData.idServicio) {
-            setError('Seleccione un servicio');
-            return;
-        }
-
-        if (!formData.nombreCliente.trim()) {
-            setError('Ingrese el nombre del cliente');
-            return;
-        }
-        if (!validarNombre(formData.nombreCliente)) {
-            setError('El nombre solo debe contener letras y espacios');
-            return;
-        }
-
-        // Validar teléfono
-        if (!formData.telefonoCliente.trim()) {
-            setError('Ingrese el teléfono del cliente');
-            return;
-        }
-        if (!validarTelefono(formData.telefonoCliente)) {
-            setError('El teléfono debe tener exactamente 8 dígitos');
-            return;
-        }
-
-        if (isNaN(total) || total <= 0) {
-            setError('Ingrese un monto total válido (mayor a 0)');
-            return;
-        }
+        const total = ordenDetalle?.totalCalculadoOrden || 0;
 
         if (isNaN(recibido) || recibido <= 0) {
             setError('Ingrese un monto recibido válido (mayor a 0)');
@@ -198,12 +119,16 @@ const RegistrarCobro = () => {
         }
 
         setPendingData({
-            idServicio: parseInt(formData.idServicio),
-            nombreCliente: formData.nombreCliente,
-            telefonoCliente: formData.telefonoCliente,
-            montoTotal: total,
+            idOrden: parseInt(formData.idOrden),
             montoRecibido: recibido,
-            servicioNombre: servicioSeleccionado?.nombreServicio || '',
+            numOrden: ordenDetalle?.numOrden || '',
+            clienteNombre: ordenDetalle?.cliente?.nombreCliente || '',
+            telefonoCliente: ordenDetalle?.cliente?.telefonoCliente || '',
+            vehiculo: ordenDetalle?.vehiculo
+                ? `${ordenDetalle.vehiculo.marca} ${ordenDetalle.vehiculo.modelo} ${ordenDetalle.vehiculo.anio || ''} - ${ordenDetalle.vehiculo.placa}`
+                : 'Sin vehículo',
+            servicios: ordenDetalle?.ordenServicios?.map(s => s.nombreServicio).join(' + ') || '',
+            montoTotal: total,
             cambio: recibido - total
         });
 
@@ -215,20 +140,17 @@ const RegistrarCobro = () => {
         setLoading(true);
 
         try {
-            const telefonoNormalizado = pendingData.telefonoCliente.replace(/[^0-9]/g, '');
-            
             const response = await registrarCobro({
-                idServicio: pendingData.idServicio,
-                nombreCliente: pendingData.nombreCliente,
-                telefonoCliente: telefonoNormalizado,
-                montoTotal: pendingData.montoTotal,
+                idOrden: pendingData.idOrden,
                 montoRecibido: pendingData.montoRecibido
             });
 
             const exitoData = {
-                numOrden: response.data.numOrden,
-                clienteNombre: pendingData.nombreCliente,
+                numOrden: pendingData.numOrden,
+                clienteNombre: pendingData.clienteNombre,
                 telefonoCliente: pendingData.telefonoCliente,
+                vehiculo: pendingData.vehiculo,
+                servicios: pendingData.servicios,
                 montoTotal: pendingData.montoTotal,
                 montoRecibido: pendingData.montoRecibido,
                 cambio: pendingData.cambio,
@@ -237,20 +159,20 @@ const RegistrarCobro = () => {
             };
 
             setSuccess(exitoData);
-            setCambio(pendingData.cambio);
             setShowModalExito(true);
 
+            // Limpiar formulario
             setFormData({
-                idServicio: '',
-                nombreCliente: '',
-                telefonoCliente: '',
-                montoTotal: '',
+                idOrden: '',
                 montoRecibido: ''
             });
-            setServicioSeleccionado(null);
+            setOrdenSeleccionada(null);
+            setOrdenDetalle(null);
+            setCambio(null);
             setPendingData(null);
-            setClientesSugeridos([]);
-            setMostrarSugerencias(false);
+
+            cargarOrdenesFinalizadas();
+
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al registrar el cobro');
         } finally {
@@ -260,19 +182,17 @@ const RegistrarCobro = () => {
 
     const limpiarFormulario = () => {
         setFormData({
-            idServicio: '',
-            nombreCliente: '',
-            telefonoCliente: '',
-            montoTotal: '',
+            idOrden: '',
             montoRecibido: ''
         });
+        setOrdenSeleccionada(null);
+        setOrdenDetalle(null);
         setCambio(null);
         setError('');
         setSuccess(null);
-        setServicioSeleccionado(null);
-        setClientesSugeridos([]);
-        setMostrarSugerencias(false);
     };
+
+    const total = ordenDetalle?.totalCalculadoOrden || 0;
 
     return (
         <div className="cobros-container">
@@ -285,80 +205,77 @@ const RegistrarCobro = () => {
             <div className="form-panel">
                 <div className="form-header">
                     <h3>Registrar pago en efectivo</h3>
+                    <span className="badge-estado badge-finalizado">Solo órdenes Finalizadas</span>
                 </div>
 
                 <form onSubmit={handleOpenModal}>
                     <div className="form-grid">
+                        {/* Columna izquierda - Datos de la orden */}
                         <div className="form-col">
                             <div className="field">
-                                <label>Seleccionar servicio</label>
+                                <label>Seleccionar orden finalizada</label>
                                 <select
-                                    name="idServicio"
-                                    value={formData.idServicio}
-                                    onChange={handleChange}
+                                    name="idOrden"
+                                    value={formData.idOrden}
+                                    onChange={handleOrdenChange}
                                     required
                                 >
-                                    <option value="">— Seleccionar servicio —</option>
-                                    {servicios.map(servicio => (
-                                        <option key={servicio.idServicio} value={servicio.idServicio}>
-                                            {servicio.nombreServicio}
+                                    <option value="">— Seleccionar orden —</option>
+                                    {ordenes.map(orden => (
+                                        <option key={orden.idOrden} value={orden.idOrden}>
+                                            {orden.numOrden} - {orden.cliente?.nombreCliente || 'Sin cliente'} - ${orden.totalCalculadoOrden?.toFixed(2)}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div className="field">
-                                <label>Nombre del cliente</label>
-                                <div className="registrar-cobro-buscador-container">
-                                    <input
-                                        type="text"
-                                        name="nombreCliente"
-                                        value={formData.nombreCliente}
-                                        onChange={handleChange}
-                                        placeholder="Nombre completo"
-                                        autoComplete="off"
-                                        required
-                                    />
-                                    {buscando && <span className="registrar-cobro-buscando-icon"></span>}
-                                    {mostrarSugerencias && clientesSugeridos.length > 0 && (
-                                        <ul className="registrar-cobro-sugerencias-lista">
-                                            {clientesSugeridos.map(cliente => (
-                                                <li key={cliente.idCliente} onClick={() => seleccionarCliente(cliente)}>
-                                                    <strong>{cliente.nombreCliente}</strong>
-                                                    <span>{cliente.telefonoCliente || 'Sin teléfono'}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
+                            {ordenDetalle && (
+                                <>
+                                    <div className="field">
+                                        <label>Cliente</label>
+                                        <input
+                                            type="text"
+                                            value={ordenDetalle.cliente?.nombreCliente || '—'}
+                                            readOnly
+                                            className="input-readonly"
+                                        />
+                                    </div>
 
-                            <div className="field">
-                                <label>Teléfono del cliente</label>
-                                <input
-                                    type="tel"
-                                    name="telefonoCliente"
-                                    value={formData.telefonoCliente}
-                                    onChange={handleChange}
-                                    placeholder="0000-0000"
-                                    autoComplete="off"
-                                    required
-                                />
-                            </div>
+                                    <div className="field">
+                                        <label>Teléfono</label>
+                                        <input
+                                            type="text"
+                                            value={ordenDetalle.cliente?.telefonoCliente || '—'}
+                                            readOnly
+                                            className="input-readonly"
+                                        />
+                                    </div>
+
+                                    <div className="field">
+                                        <label>Vehículo</label>
+                                        <input
+                                            type="text"
+                                            value={ordenDetalle.vehiculo
+                                                ? `${ordenDetalle.vehiculo.marca} ${ordenDetalle.vehiculo.modelo} ${ordenDetalle.vehiculo.anio || ''} - ${ordenDetalle.vehiculo.placa}`
+                                                : 'Sin vehículo'
+                                            }
+                                            readOnly
+                                            className="input-readonly"
+                                        />
+                                    </div>
+                                </>
+                            )}
                         </div>
 
+                        {/* Columna derecha - Montos y Servicios */}
                         <div className="form-col">
                             <div className="field">
                                 <label>Total a pagar ($)</label>
                                 <input
-                                    type="number"
-                                    name="montoTotal"
-                                    value={formData.montoTotal}
-                                    onChange={handleChange}
-                                    placeholder="0.00"
-                                    step="0.01"
-                                    min="0.01"
-                                    required
+                                    type="text"
+                                    value={`$${total.toFixed(2)}`}
+                                    readOnly
+                                    className="total-readonly"
                                 />
                             </div>
 
@@ -373,8 +290,26 @@ const RegistrarCobro = () => {
                                     step="0.01"
                                     min="0.01"
                                     required
+                                    disabled={!formData.idOrden}
                                 />
                             </div>
+
+                            {/* Servicios - aparece debajo del monto recibido */}
+                            {ordenDetalle && ordenDetalle.ordenServicios?.length > 0 && (
+                                <div className="field">
+                                    <label>Servicios de la orden</label>
+                                    <div className="servicios-lista">
+                                        {ordenDetalle.ordenServicios.map((s, index) => (
+                                            <div key={index} className="servicio-item">
+                                                <span className="servicio-nombre">{s.nombreServicio}</span>
+                                                <span className="servicio-estado">
+                                                    {s.estadoServicioOrden === 'FINALIZADO' ? '' : ''}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {cambio !== null && cambio >= 0 && (
                                 <div className="change-box">
@@ -403,7 +338,7 @@ const RegistrarCobro = () => {
                         <button type="button" className="btn-outline" onClick={limpiarFormulario}>
                             Cancelar
                         </button>
-                        <button type="submit" className="btn-primary" disabled={loading}>
+                        <button type="submit" className="btn-primary" disabled={loading || !formData.idOrden}>
                             {loading ? 'Procesando...' : 'Confirmar cobro'}
                         </button>
                     </div>

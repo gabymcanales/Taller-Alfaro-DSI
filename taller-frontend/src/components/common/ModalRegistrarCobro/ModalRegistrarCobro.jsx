@@ -1,28 +1,39 @@
 import './ModalRegistrarCobro.css';
 
 const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
-
-
-    if (!isOpen) return null;
-
+    if (!isOpen || !data) return null;
 
     const total = parseFloat(data?.montoTotal || 0);
     const recibido = parseFloat(data?.montoRecibido || 0);
-    const cambio = recibido - total;  // cambio = recibido - total
+    const cambio = recibido - total;
 
+    // Procesar servicios correctamente
+    const obtenerServicios = () => {
+        if (!data?.servicios) return [];
+        
+        // Si es un string con " + ", separarlo
+        if (typeof data.servicios === 'string') {
+            if (data.servicios.includes(' + ')) {
+                return data.servicios.split(' + ').map(s => s.trim());
+            }
+            return [data.servicios];
+        }
+        
+        // Si ya es un array
+        if (Array.isArray(data.servicios)) {
+            return data.servicios;
+        }
+        
+        return [];
+    };
 
-
-
+    const serviciosLista = obtenerServicios();
 
     return (
-
         <div className="modal-overlay" onClick={onClose}>
-
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-
-                {/* ========== CABECERA DEL MODAL ========== */}
+                {/* Cabecera */}
                 <div className="modal-header">
-                    {/* Icono del modal */}
                     <div className="modal-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff8c42" strokeWidth="1.5">
                             <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
@@ -33,16 +44,15 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                             <path d="M13 16l2 0" />
                         </svg>
                     </div>
-                    {/* Botón para cerrar el modal  */}
                     <button className="modal-close" onClick={onClose}>×</button>
                 </div>
 
-                {/* ========== TÍTULO ========== */}
+                {/* Título */}
                 <div className="modal-title">
                     <h3>Confirmar cobro</h3>
                 </div>
 
-                {/* ========== MENSAJE DE ADVERTENCIA ========== */}
+                {/* Mensaje de advertencia */}
                 <div className="modal-warning">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef9f27" strokeWidth="1.5">
                         <path d="M12 9v4" />
@@ -55,33 +65,56 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                     </span>
                 </div>
 
-                {/* ========== DATOS DEL COBRO ========== */}
+                {/* Datos del cobro */}
                 <div className="modal-data">
-
-
                     <div className="data-row">
-                        <span className="label">Servicio</span>
-                        <span className="value">{data?.servicioNombre || '—'}</span>
+                        <span className="label">Orden</span>
+                        <span className="value">{data?.numOrden || '—'}</span>
                     </div>
 
+                    <div className="data-row">
+                        <span className="label">Cliente</span>
+                        <span className="value">{data?.clienteNombre || '—'}</span>
+                    </div>
+
+                    <div className="data-row">
+                        <span className="label">Teléfono</span>
+                        <span className="value">{data?.telefonoCliente || '—'}</span>
+                    </div>
+
+                    <div className="data-row">
+                        <span className="label">Vehículo</span>
+                        <span className="value">{data?.vehiculo || '—'}</span>
+                    </div>
+
+                    {/* Servicios - presentación mejorada */}
+                    <div className="data-row servicios-row">
+                        <span className="label">Servicios</span>
+                        <div className="servicios-value">
+                            {serviciosLista.length > 0 ? (
+                                serviciosLista.map((s, index) => (
+                                    <span key={index} className="servicio-tag">{s}</span>
+                                ))
+                            ) : (
+                                <span className="value">—</span>
+                            )}
+                        </div>
+                    </div>
 
                     <div className="data-row">
                         <span className="label">Total a pagar</span>
                         <span className="value orange">${total.toFixed(2)}</span>
                     </div>
 
-
                     <div className="data-row">
                         <span className="label">Monto recibido</span>
                         <span className="value">${recibido.toFixed(2)}</span>
                     </div>
 
-
                     <div className="data-row">
                         <span className="label">Cambio a entregar</span>
                         <span className="value green">${cambio.toFixed(2)}</span>
                     </div>
-
 
                     <div className="data-row">
                         <span className="label">Empleado</span>
@@ -89,13 +122,11 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                     </div>
                 </div>
 
-
+                {/* Botones */}
                 <div className="modal-footer">
-
                     <button className="btn-outline" onClick={onClose}>
                         Cancelar
                     </button>
-
                     <button className="btn-primary" onClick={onConfirm}>
                         Confirmar cobro
                     </button>
@@ -104,6 +135,5 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
         </div>
     );
 };
-
 
 export default ModalRegistrarCobro;
