@@ -18,6 +18,7 @@ const Clientes = () => {
     const [busqueda, setBusqueda] = useState('');
     const [error, setError] = useState('');
 
+    // Estados para los modales
     const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
     const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
     const [showEditar, setShowEditar] = useState(false);
@@ -57,9 +58,12 @@ const Clientes = () => {
 
     const getIniciales = (nombre) => {
         if (!nombre) return '??';
-        return nombre.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase();
+        const partes = nombre.split(' ');
+        if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+        return (partes[0][0] + (partes[partes.length - 1]?.[0] || '')).toUpperCase();
     };
 
+    // ========== FUNCIONES PARA ABRIR MODALES ==========
     const handleAgregarVehiculo = (cliente) => {
         setClienteSeleccionado(cliente);
         setShowAgregarVehiculo(true);
@@ -80,9 +84,9 @@ const Clientes = () => {
         cliente.telefonoCliente?.includes(busqueda)
     );
 
-
+    // ========== ICONOS ==========
     const AgregarVehiculoIcon = () => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
             <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
             <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
@@ -90,14 +94,14 @@ const Clientes = () => {
     );
 
     const EditarIcon = () => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 21h4l13 -13a1.5 1.5 0 0 0 -4 -4l-13 13v4" />
             <path d="M14.5 5.5l4 4" />
         </svg>
     );
 
     const EliminarIcon = () => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18" />
             <path d="M8 6v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2" />
             <path d="M19 6l-1 14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l-1 -14" />
@@ -124,14 +128,13 @@ const Clientes = () => {
 
     return (
         <div className="clientes-container">
+            {/* ========== HEADER ========== */}
             <div className="clientes-header">
-                <div>
+                <div className="header-left">
                     <h1>Clientes</h1>
+                    <p className="header-subtitle">Expediente de clientes y vehículos — Módulo 2</p>
                 </div>
-                <button
-                    className="btn-registrar"
-                    onClick={() => setShowRegistrarCliente(true)}
-                >
+                <button className="btn-registrar" onClick={() => setShowRegistrarCliente(true)}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
@@ -139,7 +142,8 @@ const Clientes = () => {
                 </button>
             </div>
 
-            <div className="stats-row">
+            {/* ========== STATS ========== */}
+            <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-number">{estadisticas?.totalClientes ?? 0}</div>
                     <div className="stat-label">Clientes registrados</div>
@@ -157,15 +161,16 @@ const Clientes = () => {
                 </div>
                 <div className="stat-card">
                     <div className="stat-number">{estadisticas?.ordenesActivas ?? 0}</div>
-                    <div className="stat-label">Ordenes activas</div>
+                    <div className="stat-label">Órdenes activas</div>
                     <div className="stat-sub">Vinculadas a clientes</div>
                 </div>
             </div>
 
-            <div className="tabla-container">
-                <div className="tabla-header">
-                    <div className="buscador">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2">
+            {/* ========== TABLA ========== */}
+            <div className="table-wrapper">
+                <div className="table-toolbar">
+                    <div className="search-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                             <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
                             <path d="M21 21l-6 -6" />
                         </svg>
@@ -176,64 +181,68 @@ const Clientes = () => {
                             onChange={handleBuscar}
                         />
                     </div>
-                    <span className="total-clientes">Todos los clientes</span>
+                    <span className="table-count">Todos los clientes</span>
                 </div>
 
-                <div className="tabla-scroll">
-                    <table className="clientes-tabla">
+                <div className="table-scroll">
+                    <table className="clientes-table">
                         <thead>
                             <tr>
                                 <th>CLIENTE</th>
                                 <th>TELÉFONO</th>
                                 <th>VEHÍCULOS</th>
-                                <th>ACCIONES</th>
+                                <th className="actions-header">ACCIONES</th>
                             </tr>
                         </thead>
                         <tbody>
                             {clientesFiltrados.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="sin-datos">
-                                        No se encontraron clientes
+                                    <td colSpan="4" className="empty-state">
+                                        <span>No se encontraron clientes</span>
                                     </td>
                                 </tr>
                             ) : (
                                 clientesFiltrados.map((cliente) => (
-                                    <tr key={cliente.idCliente}>
-                                        <td className="cliente-nombre">
-                                            <div className="avatar-iniciales">
-                                                {getIniciales(cliente.nombreCliente)}
+                                    <tr key={cliente.idCliente} className="client-row">
+                                        <td className="client-cell">
+                                            <div className="client-avatar">
+                                                <span className="avatar-initials">
+                                                    {getIniciales(cliente.nombreCliente)}
+                                                </span>
                                             </div>
-                                            {cliente.nombreCliente}
+                                            <span className="client-name">{cliente.nombreCliente}</span>
                                         </td>
-                                        <td>{cliente.telefonoCliente || '—'}</td>
-                                        <td className="vehiculos-lista">
-                                            {cliente.vehiculos && cliente.vehiculos.length > 0 ? (
-                                                cliente.vehiculos.map((v, i) => (
-                                                    <span key={i} className="vehiculo-tag">{v.placa}</span>
-                                                ))
-                                            ) : (
-                                                <span className="sin-vehiculo">Sin vehículos</span>
-                                            )}
+                                        <td className="phone-cell">{cliente.telefonoCliente || '—'}</td>
+                                        <td className="vehicles-cell">
+                                            <div className="vehicle-tags">
+                                                {cliente.vehiculos && cliente.vehiculos.length > 0 ? (
+                                                    cliente.vehiculos.map((v, i) => (
+                                                        <span key={i} className="vehicle-tag">{v.placa}</span>
+                                                    ))
+                                                ) : (
+                                                    <span className="no-vehicle">Sin vehículos</span>
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="acciones-cell">
+                                        <td className="actions-cell">
                                             <button
-                                                className="btn-agregar-vehiculo"
+                                                className="action-btn add-vehicle"
                                                 onClick={() => handleAgregarVehiculo(cliente)}
                                                 title="Agregar vehículo"
                                             >
                                                 <AgregarVehiculoIcon />
                                             </button>
                                             <button
-                                                className="btn-editar"
+                                                className="action-btn edit"
                                                 onClick={() => handleEditar(cliente)}
-                                                title="Editar"
+                                                title="Editar cliente"
                                             >
                                                 <EditarIcon />
                                             </button>
                                             <button
-                                                className="btn-eliminar"
+                                                className="action-btn delete"
                                                 onClick={() => handleEliminar(cliente)}
-                                                title="Eliminar"
+                                                title="Eliminar cliente"
                                             >
                                                 <EliminarIcon />
                                             </button>
@@ -246,6 +255,7 @@ const Clientes = () => {
                 </div>
             </div>
 
+            {/* ========== MODALES (TODOS FUNCIONANDO) ========== */}
             {showAgregarVehiculo && (
                 <ModalAgregarVehiculo
                     cliente={clienteSeleccionado}

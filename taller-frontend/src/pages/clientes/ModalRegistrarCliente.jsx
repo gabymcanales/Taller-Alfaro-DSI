@@ -19,6 +19,7 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setError('');
     };
 
     const handleSubmit = async (e) => {
@@ -64,7 +65,7 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
             setTimeout(() => {
                 onSuccess();
                 onClose();
-            }, 1000);
+            }, 1200);
         } catch (err) {
             console.error('Error al registrar cliente:', err);
             setError(err.response?.data?.mensaje || 'Error al registrar el cliente');
@@ -75,10 +76,11 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content modal-registrar-cliente" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-top">
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                {/* ===== CABECERA ===== */}
+                <div className="modal-header">
                     <div className="icon-box">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff8c42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
                             <path d="M6 21v-2a4 4 0 0 1 4 -4h2" />
                             <path d="M16 19h6" />
@@ -88,26 +90,32 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                     <button className="btn-close" onClick={onClose}>×</button>
                 </div>
 
+                {/* ===== CUERPO ===== */}
                 <div className="modal-body">
                     <h3>Registrar Cliente</h3>
-                   
+                    <p className="modal-subtitle">Ingresa los datos del cliente y su vehículo principal.</p>
+
                     {success ? (
                         <div className="alert-success">
-                            Cliente y vehículo registrados correctamente
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#97c459" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            <span>Cliente y vehículo registrados correctamente</span>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit}>
+                            {/* Datos del Cliente */}
                             <div className="form-group">
-                                <label>Nombre completo *</label>
+                                <label>Nombre completo <span className="obligatorio">*</span></label>
                                 <input
                                     type="text"
                                     name="nombreCliente"
                                     value={formData.nombreCliente}
                                     onChange={handleChange}
                                     placeholder="Ej: Guadalupe Alfaro"
-                                    required
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label>Teléfono</label>
                                 <input
@@ -119,50 +127,49 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                                 />
                             </div>
 
+                            {/* Separador */}
                             <div className="seccion-vehiculo">
                                 <span>Vehículo</span>
                                 <span className="obligatorio-dot">*</span>
                             </div>
 
+                            {/* Datos del Vehículo */}
                             <div className="form-grid two">
                                 <div className="form-group">
-                                    <label>Placa *</label>
+                                    <label>Placa <span className="obligatorio">*</span></label>
                                     <input
                                         type="text"
                                         name="placa"
                                         value={formData.placa}
                                         onChange={handleChange}
                                         placeholder="P123-456"
-                                        required
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Marca *</label>
+                                    <label>Marca <span className="obligatorio">*</span></label>
                                     <input
                                         type="text"
                                         name="marca"
                                         value={formData.marca}
                                         onChange={handleChange}
                                         placeholder="Toyota"
-                                        required
                                     />
                                 </div>
                             </div>
 
                             <div className="form-grid three">
                                 <div className="form-group">
-                                    <label>Modelo *</label>
+                                    <label>Modelo <span className="obligatorio">*</span></label>
                                     <input
                                         type="text"
                                         name="modelo"
                                         value={formData.modelo}
                                         onChange={handleChange}
                                         placeholder="Corolla"
-                                        required
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Año *</label>
+                                    <label>Año <span className="obligatorio">*</span></label>
                                     <input
                                         type="number"
                                         name="anio"
@@ -171,7 +178,6 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                                         placeholder="2020"
                                         min="1900"
                                         max="2099"
-                                        required
                                     />
                                 </div>
                                 <div className="form-group">
@@ -192,10 +198,15 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
 
                             {error && (
                                 <div className="alert-error">
-                                    <span>⚠️</span> {error}
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M12 9v4" />
+                                        <path d="M12 17h.01" />
+                                    </svg>
+                                    {error}
                                 </div>
                             )}
 
+                            {/* ===== PIE ===== */}
                             <div className="modal-footer">
                                 <button type="button" className="btn-cancelar" onClick={onClose}>
                                     Cancelar
@@ -205,7 +216,7 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                                         'Guardando...'
                                     ) : (
                                         <>
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                                 <path d="M5 12l5 5l10 -10" />
                                             </svg>
                                             Guardar cliente y vehículo

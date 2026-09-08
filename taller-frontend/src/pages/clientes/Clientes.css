@@ -1,34 +1,43 @@
+/* ============================================================
+   CLIENTES - DISEÑO PROFESIONAL
+   ============================================================ */
+
 .clientes-container {
     width: 100%;
-    background: #111;
+    background: #0d0d0d;
     min-height: 100vh;
     color: #fff;
 }
 
+/* ========== HEADER ========== */
 .clientes-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
-.clientes-header h1 {
-    font-size: 22px;
-    font-weight: 600;
+.header-left h1 {
+    font-size: 24px;
+    font-weight: 700;
     color: #fff;
+    margin: 0;
+    letter-spacing: -0.5px;
 }
 
-.clientes-header p {
+.header-subtitle {
     font-size: 13px;
-    color: #a0a0a0;
-    margin-top: 4px;
+    color: #666;
+    margin: 4px 0 0 0;
 }
 
 .btn-registrar {
     background: #ff4000;
     color: #fff;
     border: none;
-    padding: 10px 20px;
+    padding: 10px 22px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
@@ -36,60 +45,70 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: background 0.15s;
+    transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .btn-registrar:hover {
     background: #e03800;
+    transform: scale(1.02);
 }
 
 .btn-registrar svg {
     stroke: #fff;
 }
 
-.stats-row {
+/* ========== STATS ========== */
+.stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
 .stat-card {
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: #161616;
+    border: 1px solid #252525;
     border-radius: 10px;
-    padding: 16px 20px;
+    padding: 18px 20px;
     text-align: center;
+    transition: border-color 0.2s;
+}
+
+.stat-card:hover {
+    border-color: #ff4000;
 }
 
 .stat-number {
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 700;
     color: #ff8c42;
 }
 
 .stat-label {
     font-size: 13px;
-    color: #fff;
+    color: #e0e0e0;
     margin-top: 4px;
 }
 
 .stat-sub {
     font-size: 11px;
-    color: #a0a0a0;
+    color: #666;
     margin-top: 2px;
 }
 
-.tabla-container {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 10px;
+/* ========== TABLE WRAPPER ========== */
+.table-wrapper {
+    background: #161616;
+    border: 1px solid #252525;
+    border-radius: 12px;
     overflow: hidden;
 }
 
-.tabla-header {
+/* ========== TABLE TOOLBAR ========== */
+.table-toolbar {
     padding: 16px 20px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #252525;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -97,19 +116,24 @@
     gap: 12px;
 }
 
-.buscador {
+.search-box {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #111;
-    border: 1px solid #333;
+    background: #0d0d0d;
+    border: 1px solid #252525;
     border-radius: 8px;
     padding: 8px 14px;
     flex: 1;
-    max-width: 400px;
+    max-width: 380px;
+    transition: border-color 0.2s;
 }
 
-.buscador input {
+.search-box:focus-within {
+    border-color: #ff4000;
+}
+
+.search-box input {
     background: transparent;
     border: none;
     color: #fff;
@@ -118,59 +142,81 @@
     width: 100%;
 }
 
-.buscador input::placeholder {
-    color: #888;
+.search-box input::placeholder {
+    color: #555;
 }
 
-.total-clientes {
+.table-count {
     font-size: 13px;
-    color: #a0a0a0;
+    color: #666;
+    white-space: nowrap;
 }
 
-.tabla-scroll {
+/* ========== TABLE ========== */
+.table-scroll {
     overflow-x: auto;
+    padding: 0 4px 4px 4px;
 }
 
-.clientes-tabla {
+.clientes-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+    min-width: 680px;
 }
 
-.clientes-tabla th {
-    background: rgba(42, 42, 42, 0.6);
-    color: #a0a0a0;
-    font-weight: 600;
-    font-size: 12px;
-    padding: 12px 16px;
+.clientes-table thead tr {
+    border-bottom: 1px solid #252525;
+}
+
+.clientes-table th {
     text-align: left;
-    border-bottom: 1px solid #333;
+    padding: 14px 16px;
+    color: #666;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.clientes-tabla td {
-    padding: 12px 16px;
-    border-bottom: 1px solid #2a2a2a;
-    color: #e0e0e0;
-    vertical-align: middle;
+.clientes-table th.actions-header {
+    text-align: center;
+    min-width: 100px;
 }
 
-.clientes-tabla tr:last-child td {
+.clientes-table tbody tr {
+    border-bottom: 1px solid #1e1e1e;
+    transition: background 0.15s;
+}
+
+.clientes-table tbody tr:last-child {
     border-bottom: none;
 }
 
-.clientes-tabla tr:hover td {
+.clientes-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.03);
 }
 
-.cliente-nombre {
+.clientes-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+}
+
+/* ========== CLIENTE ========== */
+.client-cell {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 180px;
 }
 
-.avatar-iniciales {
-    width: 36px;
-    height: 36px;
+.client-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-initials {
+    width: 38px;
+    height: 38px;
     background: #ff4000;
     border-radius: 50%;
     display: flex;
@@ -179,53 +225,60 @@
     font-size: 13px;
     font-weight: 700;
     color: #fff;
-    flex-shrink: 0;
 }
 
-.vehiculos-lista {
+.client-name {
+    font-weight: 500;
+    color: #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+/* ========== TELÉFONO ========== */
+.phone-cell {
+    color: #a0a0a0;
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+/* ========== VEHÍCULOS ========== */
+.vehicles-cell {
+    min-width: 140px;
+}
+
+.vehicle-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
 }
 
-.vehiculo-tag {
-    background: #2a2a2a;
-    padding: 2px 10px;
+.vehicle-tag {
+    background: #252525;
+    padding: 3px 10px;
     border-radius: 12px;
     font-size: 11px;
     color: #a0a0a0;
+    border: 1px solid #333;
+    font-weight: 500;
 }
 
-.sin-vehiculo {
+.no-vehicle {
     color: #555;
     font-size: 12px;
 }
 
-.sin-datos {
-    text-align: center;
-    padding: 40px;
-    color: #555;
-}
-
-.loading {
-    text-align: center;
-    padding: 40px;
-    color: #a0a0a0;
-}
-
-.error-message {
-    text-align: center;
-    padding: 40px;
-    color: #f09595;
-}
-
-.acciones-cell {
+/* ========== ACCIONES ========== */
+.actions-cell {
     display: flex;
-    gap: 4px;
+    gap: 2px;
     align-items: center;
+    justify-content: center;
+    min-width: 100px;
 }
 
-.acciones-cell button {
+.action-btn {
     background: transparent;
     border: none;
     cursor: pointer;
@@ -235,62 +288,112 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    color: #a0a0a0;
+    color: #555;
 }
 
-.acciones-cell button svg {
-    width: 18px;
-    height: 18px;
-    stroke: #a0a0a0;
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: #555;
 }
 
-.btn-agregar-vehiculo:hover {
-    background: rgba(99, 153, 34, 0.15);
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
-.btn-agregar-vehiculo:hover svg {
+.action-btn.add-vehicle:hover {
+    background: rgba(99, 153, 34, 0.12);
+}
+.action-btn.add-vehicle:hover svg {
     stroke: #97c459;
 }
 
-.btn-editar:hover {
-    background: rgba(255, 107, 0, 0.15);
+.action-btn.edit:hover {
+    background: rgba(255, 107, 0, 0.12);
 }
-
-.btn-editar:hover svg {
+.action-btn.edit:hover svg {
     stroke: #ff8c42;
 }
 
-.btn-eliminar:hover {
-    background: rgba(226, 75, 74, 0.15);
+.action-btn.delete:hover {
+    background: rgba(226, 75, 74, 0.12);
 }
-
-.btn-eliminar:hover svg {
+.action-btn.delete:hover svg {
     stroke: #f09595;
 }
 
+/* ========== EMPTY STATE ========== */
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: #555;
+    font-size: 14px;
+}
+
+/* ========== LOADING / ERROR ========== */
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.error-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: #f09595;
+}
+
+/* ========== RESPONSIVE ========== */
 @media (max-width: 900px) {
-    .stats-row {
+    .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .tabla-header {
+    .table-toolbar {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .buscador {
+    .search-box {
         max-width: 100%;
     }
 }
 
 @media (max-width: 600px) {
-    .stats-row {
+    .stats-grid {
         grid-template-columns: 1fr;
     }
 
     .clientes-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+    }
+
+    .btn-registrar {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .clientes-table {
+        font-size: 12px;
+        min-width: 600px;
+    }
+
+    .client-name {
+        max-width: 120px;
+    }
+
+    .actions-cell {
+        min-width: 80px;
+        gap: 2px;
+    }
+
+    .action-btn {
+        padding: 4px 6px;
+    }
+
+    .action-btn svg {
+        width: 14px;
+        height: 14px;
     }
 }
