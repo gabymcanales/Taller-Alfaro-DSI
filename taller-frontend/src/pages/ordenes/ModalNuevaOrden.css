@@ -304,3 +304,89 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+
+.buscador-cliente {
+    position: relative;
+}
+
+.buscador-cliente input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.buscador-cliente input:focus {
+    border-color: #ff4000;
+    box-shadow: 0 0 0 2px rgba(255, 64, 0, 0.1);
+}
+
+.resultados-clientes {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    margin-top: 4px;
+}
+
+.resultado-cliente {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.resultado-cliente:hover {
+    background: #2a2a2a;
+}
+
+.resultado-cliente:last-child {
+    border-bottom: none;
+}
+
+.resultado-cliente .avatar-iniciales {
+    width: 36px;
+    height: 36px;
+    background: #ff4000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.resultado-cliente .nombre {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.resultado-cliente .telefono {
+    font-size: 11px;
+    color: #a0a0a0;
+}
+
+.sin-resultados {
+    padding: 16px;
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+}

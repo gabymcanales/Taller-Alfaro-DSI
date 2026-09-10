@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     registrarCobro,
     getOrdenesFinalizadas,
@@ -21,7 +21,9 @@ const ChangeIcon = () => (
 
 const RegistrarCobro = () => {
     const [ordenes, setOrdenes] = useState([]);
-    const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
+    const [ordenesFiltradas, setOrdenesFiltradas] = useState([]);
+    const [busquedaOrden, setBusquedaOrden] = useState('');
+    const [showOrdenes, setShowOrdenes] = useState(false);
     const [ordenDetalle, setOrdenDetalle] = useState(null);
 
     const [formData, setFormData] = useState({
@@ -37,36 +39,75 @@ const RegistrarCobro = () => {
     const [pendingData, setPendingData] = useState(null);
     const [success, setSuccess] = useState(null);
 
+    const buscadorRef = useRef(null);
+
     useEffect(() => {
         cargarOrdenesFinalizadas();
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (buscadorRef.current && !buscadorRef.current.contains(event.target)) {
+                setShowOrdenes(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     const cargarOrdenesFinalizadas = async () => {
         try {
             const response = await getOrdenesFinalizadas();
             setOrdenes(response.data);
+            setOrdenesFiltradas(response.data);
         } catch (err) {
             console.error('Error al cargar órdenes:', err);
             setError('No se pudieron cargar las órdenes finalizadas');
         }
     };
 
-    const handleOrdenChange = async (e) => {
-        const idOrden = e.target.value;
-        setFormData(prev => ({ ...prev, idOrden }));
-        setOrdenSeleccionada(idOrden);
+    const handleBusquedaChange = (e) => {
+        const valor = e.target.value;
+        setBusquedaOrden(valor);
+        setShowOrdenes(true);
+
+
+        if (valor === '') {
+            setFormData({ idOrden: '', montoRecibido: '' });
+            setOrdenDetalle(null);
+            setCambio(null);
+            setError('');
+            setOrdenesFiltradas(ordenes);
+            return;
+        }
+
+        if (valor.length >= 1) {
+            const filtradas = ordenes.filter(orden =>
+                orden.cliente?.nombreCliente?.toLowerCase().includes(valor.toLowerCase()) ||
+                orden.numOrden?.toLowerCase().includes(valor.toLowerCase())
+            );
+            setOrdenesFiltradas(filtradas);
+        } else {
+            setOrdenesFiltradas(ordenes);
+        }
+    };
+
+    const seleccionarOrden = async (orden) => {
+        setBusquedaOrden(`${orden.numOrden} - ${orden.cliente?.nombreCliente}`);
+        setFormData(prev => ({ ...prev, idOrden: orden.idOrden }));
+        setShowOrdenes(false);
         setError('');
         setCambio(null);
-        setOrdenDetalle(null);
 
-        if (idOrden) {
-            try {
-                const response = await getOrdenDetalle(idOrden);
-                setOrdenDetalle(response.data);
-            } catch (err) {
-                console.error('Error al cargar detalle:', err);
-                setError('No se pudo cargar el detalle de la orden');
-            }
+        try {
+            const response = await getOrdenDetalle(orden.idOrden);
+            setOrdenDetalle(response.data);
+        } catch (err) {
+            console.error('Error al cargar detalle:', err);
+            setError('No se pudo cargar el detalle de la orden');
         }
     };
 
@@ -161,15 +202,12 @@ const RegistrarCobro = () => {
             setSuccess(exitoData);
             setShowModalExito(true);
 
-            // Limpiar formulario
-            setFormData({
-                idOrden: '',
-                montoRecibido: ''
-            });
-            setOrdenSeleccionada(null);
+            setFormData({ idOrden: '', montoRecibido: '' });
             setOrdenDetalle(null);
             setCambio(null);
             setPendingData(null);
+            setBusquedaOrden('');
+            setOrdenesFiltradas(ordenes);
 
             cargarOrdenesFinalizadas();
 
@@ -181,15 +219,14 @@ const RegistrarCobro = () => {
     };
 
     const limpiarFormulario = () => {
-        setFormData({
-            idOrden: '',
-            montoRecibido: ''
-        });
-        setOrdenSeleccionada(null);
+        setFormData({ idOrden: '', montoRecibido: '' });
         setOrdenDetalle(null);
         setCambio(null);
         setError('');
         setSuccess(null);
+        setBusquedaOrden('');
+        setOrdenesFiltradas(ordenes);
+        setShowOrdenes(false);
     };
 
     const total = ordenDetalle?.totalCalculadoOrden || 0;
@@ -210,23 +247,45 @@ const RegistrarCobro = () => {
 
                 <form onSubmit={handleOpenModal}>
                     <div className="form-grid">
-                        {/* Columna izquierda - Datos de la orden */}
                         <div className="form-col">
                             <div className="field">
-                                <label>Seleccionar orden finalizada</label>
-                                <select
-                                    name="idOrden"
-                                    value={formData.idOrden}
-                                    onChange={handleOrdenChange}
-                                    required
-                                >
-                                    <option value="">— Seleccionar orden —</option>
-                                    {ordenes.map(orden => (
-                                        <option key={orden.idOrden} value={orden.idOrden}>
-                                            {orden.numOrden} - {orden.cliente?.nombreCliente || 'Sin cliente'} - ${orden.totalCalculadoOrden?.toFixed(2)}
-                                        </option>
-                                    ))}
-                                </select>
+                                <label>Buscar orden por cliente o N° orden</label>
+                                <div className="buscador-orden" ref={buscadorRef}>
+                                    <input
+                                        type="text"
+                                        placeholder=" Escriba el nombre del cliente o N° orden "
+                                        value={busquedaOrden}
+                                        onChange={handleBusquedaChange}
+                                        onFocus={() => {
+                                            setShowOrdenes(true);
+                                            if (busquedaOrden.length === 0) {
+                                                setOrdenesFiltradas(ordenes);
+                                            }
+                                        }}
+                                    />
+                                    {showOrdenes && ordenesFiltradas.length > 0 && (
+                                        <div className="resultados-ordenes">
+                                            {ordenesFiltradas.map(orden => (
+                                                <div
+                                                    key={orden.idOrden}
+                                                    className="resultado-orden"
+                                                    onClick={() => seleccionarOrden(orden)}
+                                                >
+                                                    <div className="orden-info">
+                                                        <span className="orden-num">{orden.numOrden}</span>
+                                                        <span className="orden-cliente">{orden.cliente?.nombreCliente}</span>
+                                                    </div>
+                                                    <span className="orden-monto">${orden.totalCalculadoOrden?.toFixed(2)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {showOrdenes && busquedaOrden.length >= 1 && ordenesFiltradas.length === 0 && (
+                                        <div className="resultados-ordenes sin-resultados">
+                                            <span>No se encontraron órdenes</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {ordenDetalle && (
@@ -267,7 +326,6 @@ const RegistrarCobro = () => {
                             )}
                         </div>
 
-                        {/* Columna derecha - Montos y Servicios */}
                         <div className="form-col">
                             <div className="field">
                                 <label>Total a pagar ($)</label>
@@ -294,7 +352,6 @@ const RegistrarCobro = () => {
                                 />
                             </div>
 
-                            {/* Servicios - aparece debajo del monto recibido */}
                             {ordenDetalle && ordenDetalle.ordenServicios?.length > 0 && (
                                 <div className="field">
                                     <label>Servicios de la orden</label>
@@ -302,9 +359,6 @@ const RegistrarCobro = () => {
                                         {ordenDetalle.ordenServicios.map((s, index) => (
                                             <div key={index} className="servicio-item">
                                                 <span className="servicio-nombre">{s.nombreServicio}</span>
-                                                <span className="servicio-estado">
-                                                    {s.estadoServicioOrden === 'FINALIZADO' ? '' : ''}
-                                                </span>
                                             </div>
                                         ))}
                                     </div>

@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     crearOrden,
     getServiciosCatalogo,
-    getClientes,
     getVehiculosByCliente,
     getEmpleadosPorServicio
 } from '../../services/ordenService';
+import { buscarClientesPorNombre } from '../../services/clienteService';
 import './ModalNuevaOrden.css';
 
 const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
@@ -14,7 +14,6 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         idVehiculo: '',
         servicios: []
     });
-    const [clientes, setClientes] = useState([]);
     const [vehiculos, setVehiculos] = useState([]);
     const [serviciosCatalogo, setServiciosCatalogo] = useState([]);
     const [empleadosDisponibles, setEmpleadosDisponibles] = useState({});
@@ -23,37 +22,91 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
     const [servicioSeleccionado, setServicioSeleccionado] = useState('');
     const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState('');
 
+
+    const [busquedaCliente, setBusquedaCliente] = useState('');
+    const [clientesSugeridos, setClientesSugeridos] = useState([]);
+    const [showClientes, setShowClientes] = useState(false);
+    const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+
+
+    const buscadorClienteRef = useRef(null);
+
+
     useEffect(() => {
         if (isOpen) {
             cargarDatosIniciales();
         }
+        
+        setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
+        setBusquedaCliente('');
+        setClienteSeleccionado(null);
+        setClientesSugeridos([]);
+        setShowClientes(false);
+        setVehiculos([]);
+        setServicioSeleccionado('');
+        setEmpleadoSeleccionado('');
+        setError('');
     }, [isOpen]);
 
-    const cargarDatosIniciales = async () => {
+
+    useEffect(() => {
+        if (busquedaCliente.length >= 2) {
+            const timer = setTimeout(() => {
+                buscarClientes(busquedaCliente);
+            }, 500);
+            return () => clearTimeout(timer);
+        } else {
+            setClientesSugeridos([]);
+            setShowClientes(false);
+        }
+    }, [busquedaCliente]);
+
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (buscadorClienteRef.current && !buscadorClienteRef.current.contains(event.target)) {
+                setShowClientes(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const buscarClientes = async (termino) => {
         try {
-            const [clientesRes, serviciosRes] = await Promise.all([
-                getClientes(),
-                getServiciosCatalogo()
-            ]);
-            setClientes(clientesRes.data || []);
-            setServiciosCatalogo(serviciosRes.data || []);
+            const response = await buscarClientesPorNombre(termino);
+            setClientesSugeridos(response.data);
+            setShowClientes(true);
         } catch (err) {
-            console.error('Error cargando datos iniciales:', err);
+            console.error('Error al buscar clientes:', err);
         }
     };
 
-    const handleClienteChange = async (e) => {
-        const idCliente = e.target.value;
-        setFormData(prev => ({ ...prev, idCliente, idVehiculo: '' }));
-        setVehiculos([]);
+    const seleccionarCliente = async (cliente) => {
+        setClienteSeleccionado(cliente);
+        setBusquedaCliente(cliente.nombreCliente);
+        setClientesSugeridos([]);
+        setShowClientes(false);
+        setFormData(prev => ({ ...prev, idCliente: cliente.idCliente, idVehiculo: '' }));
 
-        if (idCliente) {
-            try {
-                const res = await getVehiculosByCliente(idCliente);
-                setVehiculos(res.data || []);
-            } catch (err) {
-                console.error('Error cargando vehículos:', err);
-            }
+        try {
+            const res = await getVehiculosByCliente(cliente.idCliente);
+            setVehiculos(res.data || []);
+        } catch (err) {
+            console.error('Error cargando vehículos:', err);
+            setVehiculos([]);
+        }
+    };
+
+    const cargarDatosIniciales = async () => {
+        try {
+            const serviciosRes = await getServiciosCatalogo();
+            setServiciosCatalogo(serviciosRes.data || []);
+        } catch (err) {
+            console.error('Error cargando datos iniciales:', err);
         }
     };
 
@@ -157,6 +210,8 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
             onClose();
             setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
             setError('');
+            setBusquedaCliente('');
+            setClienteSeleccionado(null);
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al crear la orden');
         } finally {
@@ -164,8 +219,21 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         }
     };
 
-    if (!isOpen) return null;
 
+    const handleClose = () => {
+        setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
+        setBusquedaCliente('');
+        setClienteSeleccionado(null);
+        setClientesSugeridos([]);
+        setShowClientes(false);
+        setVehiculos([]);
+        setServicioSeleccionado('');
+        setEmpleadoSeleccionado('');
+        setError('');
+        onClose();
+    };
+
+    if (!isOpen) return null;
 
     const totalFijos = formData.servicios
         .filter(s => s.tipoPrecio === 'FIJO')
@@ -180,11 +248,11 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         : [];
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-overlay" onClick={handleClose}>
             <div className="modal-content-orden" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header-orden">
                     <h3>Nueva Orden de Trabajo</h3>
-                    <button className="modal-close" onClick={onClose}>×</button>
+                    <button className="modal-close" onClick={handleClose}>×</button>
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -193,19 +261,51 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
 
                         <div className="form-group">
                             <label>Cliente *</label>
-                            <select
-                                className="form-select"
-                                value={formData.idCliente}
-                                onChange={handleClienteChange}
-                                required
-                            >
-                                <option value="">Buscar cliente registrado —</option>
-                                {clientes.map(c => (
-                                    <option key={c.idCliente} value={c.idCliente}>
-                                        {c.nombreCliente} - {c.telefonoCliente}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="buscador-cliente" ref={buscadorClienteRef}>
+                                <input
+                                    type="text"
+                                    placeholder=" Buscar cliente registrado "
+                                    value={busquedaCliente}
+                                    onChange={(e) => {
+                                        setBusquedaCliente(e.target.value);
+                                        setShowClientes(true);
+                                        if (!e.target.value) {
+                                            setClienteSeleccionado(null);
+                                            setFormData(prev => ({ ...prev, idCliente: '', idVehiculo: '' }));
+                                            setVehiculos([]);
+                                        }
+                                    }}
+                                    onFocus={() => {
+                                        if (busquedaCliente.length >= 2) {
+                                            setShowClientes(true);
+                                        }
+                                    }}
+                                />
+                                {showClientes && clientesSugeridos.length > 0 && (
+                                    <div className="resultados-clientes">
+                                        {clientesSugeridos.map(cliente => (
+                                            <div
+                                                key={cliente.idCliente}
+                                                className="resultado-cliente"
+                                                onClick={() => seleccionarCliente(cliente)}
+                                            >
+                                                <div className="avatar-iniciales">
+                                                    {cliente.nombreCliente?.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase() || '??'}
+                                                </div>
+                                                <div>
+                                                    <div className="nombre">{cliente.nombreCliente}</div>
+                                                    <div className="telefono">{cliente.telefonoCliente}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {showClientes && busquedaCliente.length >= 2 && clientesSugeridos.length === 0 && (
+                                    <div className="resultados-clientes sin-resultados">
+                                        <span>No se encontraron clientes</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="form-group">
@@ -316,7 +416,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                     </div>
 
                     <div className="modal-footer-orden">
-                        <button type="button" className="btn-cancelar" onClick={onClose}>
+                        <button type="button" className="btn-cancelar" onClick={handleClose}>
                             Cancelar
                         </button>
                         <button type="submit" className="btn-crear" disabled={loading}>

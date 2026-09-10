@@ -97,7 +97,6 @@ public class CobrosService {
         orden = ordenRepository.save(orden);
 
         // 8. Registrar en historial
-        // (si tienes un método para registrar historial, aquí se llama)
 
         // 9. Retornar respuesta
         RegistroCobroResponse response = new RegistroCobroResponse();
