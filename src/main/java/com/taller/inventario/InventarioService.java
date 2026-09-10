@@ -3,6 +3,8 @@ package com.taller.inventario;
 import com.taller.model.MovimientoInventario;
 import com.taller.model.Producto;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -49,7 +51,16 @@ public class InventarioService {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        productoRepository.delete(producto);
+        try {
+
+            productoRepository.delete(producto);
+            productoRepository.flush();
+
+        } catch (DataIntegrityViolationException e) {
+
+            throw new RuntimeException(
+                    "No se puede eliminar el producto porque tiene movimientos registrados. Puede cambiar su estado a INACTIVO.");
+        }
     }
 
     // =========================
@@ -70,6 +81,7 @@ public class InventarioService {
                     dto.setCantidad(movimiento.getCantidad());
                     dto.setFechaMovimiento(movimiento.getFechaMovimiento());
                     dto.setEmpleado(movimiento.getEmpleado().getNombreEmpleado());
+                    dto.setMotivo(movimiento.getMotivo());
 
                     return dto;
                 })
@@ -81,7 +93,13 @@ public class InventarioService {
 
         Producto producto = productoRepository.findById(
                 movimiento.getProducto().getIdProducto())
-                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        if (!producto.getEstado().equalsIgnoreCase("ACTIVO")) {
+
+            throw new RuntimeException(
+                    "No se puede registrar el movimiento porque el producto está INACTIVO");
+        }
 
         String tipo = movimiento.getTipoMovimiento().toUpperCase();
 
@@ -96,10 +114,14 @@ public class InventarioService {
         int cantidad = movimiento.getCantidad();
 
         if (tipo.equals("COMPRA")) {
+
             producto.setStockActual(
                     producto.getStockActual() + cantidad);
+
         } else {
+
             if (producto.getStockActual() < cantidad) {
+
                 throw new RuntimeException(
                         "Stock insuficiente para realizar el movimiento");
             }

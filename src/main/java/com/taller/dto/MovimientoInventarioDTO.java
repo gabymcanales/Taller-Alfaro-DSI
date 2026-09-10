@@ -13,4 +13,5 @@ public class MovimientoInventarioDTO {
     private Integer cantidad;
     private LocalDateTime fechaMovimiento;
     private String empleado;
+    private String motivo;
 }
