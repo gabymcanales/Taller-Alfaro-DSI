@@ -1,0 +1,121 @@
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Obtener catálogo de servicios
+GET http://localhost:8080/api/servicios
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE1MDIzOTUsImV4cCI6MTc4MTU4ODc5NX0.k7sqxUQDK7JyrCzeNVhg5nEsyXHVdEA7SYqLC8V-LRg
+
+### Crear servicio
+POST http://localhost:8080/api/servicios
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0OTYwOTcsImV4cCI6MTc4MTU4MjQ5N30.y0H9UODFm3OYgajJnttviNQgPNYYoQN9m-zdEo57gO0
+Content-Type: application/json
+
+{
+  "nombreServicio": "Cambio de aceite",
+  "descripcionServicio": "Cambio de aceite y filtro",
+  "areaServicio": "Mantenimiento",
+  "precioServicio": 450,
+  "duracionServicio": 30,
+  "estadoServicio": "ACTIVO"
+}
+
+### Prueba
+POST http://localhost:8080/api/servicios/prueba
+Authorization: Bearer TU_TOKEN
+
+### Actualizar servicio
+PUT http://localhost:8080/api/servicios/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0OTQ0MjgsImV4cCI6MTc4MTU4MDgyOH0.Shtmew9TLy8aigdPzlMPP1n4H5AYwsTYR6M_DdjCDQQ
+Content-Type: application/json
+
+{
+  "nombreServicio": "Lavado Premium Plus actualizado",
+  "areaServicio": "Carwash",
+  "precioServicio": 20.00,
+  "duracionServicio": 60,
+  "estadoServicio": "INACTIVO"
+}
+
+### Eliminar servicio
+DELETE http://localhost:8080/api/servicios/3
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODE0OTU0MjUsImV4cCI6MTc4MTU4MTgyNX0.KA49cMQGtgig4NkwbfrGaGGQlbcIRP8cdeka0_qWNbE
+
+#### Pruebas de inventario
+### Obtener productos
+GET http://localhost:8080/api/inventario/productos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+
+### Crear producto
+POST http://localhost:8080/api/inventario/productos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "nombre": "Shampoo",
+  "descripcion": "Shampoo para limpieza de vehículos",
+  "unidadMedida": "Unidad",
+  "precio": 5.00,
+  "stockActual": 20,
+  "stockMinimo": 5,
+  "estado": "ACTIVO"
+}
+
+### Registrar compra de producto
+POST http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "producto": {
+    "idProducto": 1
+  },
+  "empleado": {
+    "idEmpleado": 1
+  },
+  "tipoMovimiento": "COMPRA",
+  "cantidad": 10,
+  "fechaMovimiento": "2026-08-20T23:15:00"
+}
+
+### Registrar uso de producto
+POST http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "producto": {
+    "idProducto": 1
+  },
+  "empleado": {
+    "idEmpleado": 1
+  },
+  "tipoMovimiento": "USO",
+  "cantidad": 2,
+  "fechaMovimiento": "2026-08-21T23:20:00"
+}
+
+### Intentar uso con stock insuficiente
+POST http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODcyODg2NjksImV4cCI6MTc4NzM3NTA2OX0.NMkpUw8VGehyU9kWqs9Gu8NpPCbmUy4ipaxHlQhfnoU
+Content-Type: application/json
+
+{
+  "producto": {
+    "idProducto": 1
+  },
+  "empleado": {
+    "idEmpleado": 1
+  },
+  "tipoMovimiento": "USO",
+  "cantidad": 100,
+  "fechaMovimiento": "2026-08-21T23:25:00"
+}
+
+### Obtener historial de movimientos
+GET http://localhost:8080/api/inventario/movimientos
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbCI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3ODc2OTQ0NDAsImV4cCI6MTc4Nzc4MDg0MH0.Do_yE3-5KsDOJtiiRtebtnu8bDhmCSaLRqYTXXNPv2Q

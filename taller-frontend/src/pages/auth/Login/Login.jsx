@@ -23,6 +23,7 @@ const Login = () => {
             
             
             localStorage.setItem('token', token);
+            localStorage.setItem('username', username);
             
             
             navigate('/');

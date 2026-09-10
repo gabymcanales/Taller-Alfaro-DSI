@@ -1,7 +1,12 @@
 package com.taller.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import jakarta.validation.constraints.Digits;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -14,20 +19,27 @@ public class MovimientoInventario {
     @Column(name = "id_movimiento")
     private Long idMovimiento;
 
+    @NotNull(message = "El producto es obligatorio")
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
     private Producto producto;
 
+    @NotNull(message = "El empleado es obligatorio")
     @ManyToOne
     @JoinColumn(name = "id_empleado", nullable = false)
     private Empleado empleado;
 
+    @NotBlank(message = "El tipo de movimiento es obligatorio")
     @Column(name = "tipo_movimiento", nullable = false, length = 10)
-    private String tipoMovimiento;  // "ENTRADA" o "SALIDA"
+    private String tipoMovimiento;
 
+    @NotNull(message = "La cantidad es obligatoria")
+    @Min(value = 1, message = "La cantidad debe ser mayor a 0")
+    @Digits(integer = 10, fraction = 0, message = "La cantidad debe ser un número entero")
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 
+    @NotNull(message = "La fecha del movimiento es obligatoria")
     @Column(name = "fecha_movimiento", nullable = false)
     private LocalDateTime fechaMovimiento;
 
