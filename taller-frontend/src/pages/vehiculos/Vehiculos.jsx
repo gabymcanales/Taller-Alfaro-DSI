@@ -69,13 +69,14 @@ const Vehiculos = () => {
         setShowEditar(true);
     };
 
+
     const vehiculosFiltrados = vehiculos.filter(v =>
         v.placa?.toLowerCase().includes(busqueda.toLowerCase()) ||
         v.marca?.toLowerCase().includes(busqueda.toLowerCase()) ||
         v.modelo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        v.cliente?.nombreCliente?.toLowerCase().includes(busqueda.toLowerCase())
+        v.cliente?.nombreCliente?.toLowerCase().includes(busqueda.toLowerCase()) ||
+        (v.anio?.toString() || '').includes(busqueda)
     );
-
 
     const HistorialIcon = () => (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -123,7 +124,7 @@ const Vehiculos = () => {
                 <div>
                     <h1>Vehículos</h1>
                 </div>
-                <button 
+                <button
                     className="btn-registrar"
                     onClick={() => setShowRegistrar(true)}
                 >
@@ -205,21 +206,21 @@ const Vehiculos = () => {
                                         </td>
                                         <td>{v.cliente?.nombreCliente || 'Sin propietario'}</td>
                                         <td className="acciones-cell">
-                                            <button 
+                                            <button
                                                 className="btn-ver-historial"
                                                 onClick={() => handleVerHistorial(v)}
                                                 title="Ver historial"
                                             >
                                                 <HistorialIcon />
                                             </button>
-                                            <button 
+                                            <button
                                                 className="btn-editar"
                                                 onClick={() => handleEditar(v)}
                                                 title="Editar"
                                             >
                                                 <EditarIcon />
                                             </button>
-                                            <button 
+                                            <button
                                                 className="btn-eliminar"
                                                 onClick={() => handleEliminar(v)}
                                                 title="Eliminar"

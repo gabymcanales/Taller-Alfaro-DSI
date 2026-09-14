@@ -181,7 +181,7 @@
 
 .clientes-table th.actions-header {
     text-align: center;
-    min-width: 100px;
+    min-width: 110px;
 }
 
 .clientes-table tbody tr {
@@ -211,10 +211,6 @@
 }
 
 .client-avatar {
-    flex-shrink: 0;
-}
-
-.avatar-initials {
     width: 38px;
     height: 38px;
     background: #ff4000;
@@ -222,9 +218,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    color: #fff;
+    flex-shrink: 0;
+}
+
+.client-avatar svg {
+    width: 20px;
+    height: 20px;
+    stroke: #fff;
 }
 
 .client-name {
@@ -272,10 +272,10 @@
 /* ========== ACCIONES ========== */
 .actions-cell {
     display: flex;
-    gap: 2px;
+    gap: 4px;
     align-items: center;
     justify-content: center;
-    min-width: 100px;
+    min-width: 110px;
 }
 
 .action-btn {
@@ -288,13 +288,13 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    color: #555;
+    color: #a0a0a0;
 }
 
 .action-btn svg {
-    width: 16px;
-    height: 16px;
-    stroke: #555;
+    width: 18px;
+    height: 18px;
+    stroke: #a0a0a0;
 }
 
 .action-btn:hover {
@@ -304,6 +304,7 @@
 .action-btn.add-vehicle:hover {
     background: rgba(99, 153, 34, 0.12);
 }
+
 .action-btn.add-vehicle:hover svg {
     stroke: #97c459;
 }
@@ -311,6 +312,7 @@
 .action-btn.edit:hover {
     background: rgba(255, 107, 0, 0.12);
 }
+
 .action-btn.edit:hover svg {
     stroke: #ff8c42;
 }
@@ -318,6 +320,7 @@
 .action-btn.delete:hover {
     background: rgba(226, 75, 74, 0.12);
 }
+
 .action-btn.delete:hover svg {
     stroke: #f09595;
 }
@@ -381,19 +384,5 @@
 
     .client-name {
         max-width: 120px;
-    }
-
-    .actions-cell {
-        min-width: 80px;
-        gap: 2px;
-    }
-
-    .action-btn {
-        padding: 4px 6px;
-    }
-
-    .action-btn svg {
-        width: 14px;
-        height: 14px;
     }
 }

@@ -86,7 +86,7 @@ const Clientes = () => {
 
     // ========== ICONOS ==========
     const AgregarVehiculoIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
             <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
             <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
@@ -94,14 +94,14 @@ const Clientes = () => {
     );
 
     const EditarIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 21h4l13 -13a1.5 1.5 0 0 0 -4 -4l-13 13v4" />
             <path d="M14.5 5.5l4 4" />
         </svg>
     );
 
     const EliminarIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18" />
             <path d="M8 6v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2" />
             <path d="M19 6l-1 14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l-1 -14" />
@@ -132,7 +132,7 @@ const Clientes = () => {
             <div className="clientes-header">
                 <div className="header-left">
                     <h1>Clientes</h1>
-                    <p className="header-subtitle">Expediente de clientes y vehículos — Módulo 2</p>
+
                 </div>
                 <button className="btn-registrar" onClick={() => setShowRegistrarCliente(true)}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -206,9 +206,10 @@ const Clientes = () => {
                                     <tr key={cliente.idCliente} className="client-row">
                                         <td className="client-cell">
                                             <div className="client-avatar">
-                                                <span className="avatar-initials">
-                                                    {getIniciales(cliente.nombreCliente)}
-                                                </span>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M12 12a4 4 0 1 0 0 -8a4 4 0 0 0 0 8" />
+                                                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                                                </svg>
                                             </div>
                                             <span className="client-name">{cliente.nombreCliente}</span>
                                         </td>

@@ -105,16 +105,22 @@
 }
 
 .alert-error {
-    background: rgba(226, 75, 74, 0.1);
-    border: 1px solid rgba(226, 75, 74, 0.3);
-    color: #f09595;
+    background: rgba(234, 88, 12, 0.12); /* Fondo sutil estilo dark mode */
+    border: 1px solid rgba(234, 88, 12, 0.35); /* Borde naranja rojizo */
+    color: #f97316; /* Color de texto naranja vivo */
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 13px;
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
     margin-top: 12px;
+}
+.alert-error-icon {
+    width: 18px;
+    height: 18px;
+    min-width: 18px; /* Evita que el SVG se encoja si el texto de error es largo */
+    stroke: #ff5722; /* Tono naranja oscuro para el contorno */
 }
 
 .btn-guardar {
