@@ -3,6 +3,7 @@ package com.taller.ordenes;
 import com.taller.cobros.ServicioRepository;
 import com.taller.cobros.TransaccionRepository;
 import com.taller.dto.*;
+import com.taller.exception.AccesoDenegadoOrdenException;
 import com.taller.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -144,10 +145,28 @@ public class OrdenService {
                 .collect(Collectors.toList());
     }
 
-    public OrdenResponseDTO getOrdenById(Long id) {
+    public OrdenResponseDTO getOrdenById(Long id, String username) {
         Orden orden = ordenRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+        verificarAccesoOrden(orden, username);
         return convertToDTO(orden);
+    }
+
+    private void verificarAccesoOrden(Orden orden, String username) {
+        Empleado empleado = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        if ("ADMINISTRADOR".equals(empleado.getRolEmpleado())) {
+            return;
+        }
+
+        boolean tieneServicioAsignado = ordenServicioRepository.findByOrdenId(orden.getIdOrden()).stream()
+                .anyMatch(os -> os.getEmpleado() != null &&
+                        os.getEmpleado().getIdEmpleado().equals(empleado.getIdEmpleado()));
+
+        if (!tieneServicioAsignado) {
+            throw new AccesoDenegadoOrdenException(orden.getNumOrden());
+        }
     }
 
     public List<OrdenResponseDTO> getOrdenesByCliente(Long clienteId) {
@@ -189,11 +208,15 @@ public class OrdenService {
     }
 
     @Transactional
-    public OrdenServicioDTO iniciarServicio(Long idOrden, Long idServicio, String username) {
+    public OrdenServicioDTO iniciarServicio(Long idOrden, Long idServicio, String comentario, String username) {
         OrdenServicio ordenServicio = getOrdenServicio(idOrden, idServicio);
 
         Empleado empleado = empleadoRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        if ("ENTREGADO".equals(ordenServicio.getOrden().getEstadoOrden())) {
+            throw new RuntimeException("La orden ya fue entregada y no puede modificarse");
+        }
 
         if (!"PENDIENTE".equals(ordenServicio.getEstadoServicioOrden())) {
             throw new RuntimeException("El servicio debe estar PENDIENTE para iniciarlo");
@@ -211,10 +234,13 @@ public class OrdenService {
 
         Orden orden = ordenServicio.getOrden();
 
-        registrarHistorial(orden, estadoAnterior, "EN_PROCESO",
-                "Servicio " + ordenServicio.getServicio().getNombreServicio() +
-                        " iniciado por " + empleado.getNombreEmpleado(),
-                empleado);
+        String mensaje = "Servicio " + ordenServicio.getServicio().getNombreServicio() +
+                " iniciado por " + empleado.getNombreEmpleado();
+        if (comentario != null && !comentario.isBlank()) {
+            mensaje += " - \"" + comentario.trim() + "\"";
+        }
+
+        registrarHistorial(orden, estadoAnterior, "EN_PROCESO", mensaje, empleado);
 
         return convertToServicioDTO(ordenServicio);
     }
@@ -226,6 +252,10 @@ public class OrdenService {
 
         Empleado empleado = empleadoRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        if ("ENTREGADO".equals(ordenServicio.getOrden().getEstadoOrden())) {
+            throw new RuntimeException("La orden ya fue entregada y no puede modificarse");
+        }
 
         if (!"EN_PROCESO".equals(ordenServicio.getEstadoServicioOrden())) {
             throw new RuntimeException("El servicio debe estar EN_PROCESO para finalizarlo");
@@ -258,10 +288,13 @@ public class OrdenService {
 
         Orden orden = ordenServicio.getOrden();
 
-        registrarHistorial(orden, estadoAnterior, "FINALIZADO",
-                "Servicio " + servicio.getNombreServicio() + " finalizado por " +
-                        empleado.getNombreEmpleado() + " - Precio: $" + ordenServicio.getPrecioAplicado(),
-                empleado);
+        String mensaje = "Servicio " + servicio.getNombreServicio() + " finalizado por " +
+                empleado.getNombreEmpleado() + " - Precio: $" + ordenServicio.getPrecioAplicado();
+        if (request.getComentario() != null && !request.getComentario().isBlank()) {
+            mensaje += " - \"" + request.getComentario().trim() + "\"";
+        }
+
+        registrarHistorial(orden, estadoAnterior, "FINALIZADO", mensaje, empleado);
 
         return convertToServicioDTO(ordenServicio);
     }
@@ -477,7 +510,11 @@ public class OrdenService {
         return stats;
     }
 
-    public List<HistorialEstadoDTO> getHistorial(Long idOrden) {
+    public List<HistorialEstadoDTO> getHistorial(Long idOrden, String username) {
+        Orden orden = ordenRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+        verificarAccesoOrden(orden, username);
+
         return historialEstadoOrdenRepository.findByOrdenIdOrderByFechaCambioAsc(idOrden).stream()
                 .map(this::convertToHistorialDTO)
                 .collect(Collectors.toList());

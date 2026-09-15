@@ -1,18 +1,26 @@
 import { NavLink } from 'react-router-dom';
+import { getUsuarioActual, esAdministrador } from '../../../utils/authUser';
 import './Sidebar.css';
 
+const MENU_ADMIN = [
+    { id: 'inicio', label: 'Inicio', path: '/', icon: 'home' },
+    { id: 'vehiculos', label: 'Vehículos', path: '/vehiculos', icon: 'car' },
+    { id: 'clientes', label: 'Clientes', path: '/clientes', icon: 'users' },
+    { id: 'ordenes', label: 'Órdenes de Trabajo', path: '/ordenes', icon: 'clipboard' },
+    { id: 'inventario', label: 'Inventario', path: '/inventario', icon: 'package' },
+    { id: 'facturacion', label: 'Facturación', path: '/cobros/registrar', icon: 'credit-card' },
+    { id: 'reportes', label: 'Informes', path: '/reportes', icon: 'bar-chart' },
+    { id: 'empleados', label: 'Empleados', path: '/empleados', icon: 'briefcase' },
+    { id: 'servicios', label: 'Servicios', path: '/servicios', icon: 'wrench' },
+];
+
+const MENU_EMPLEADO = [
+    { id: 'mis-ordenes', label: 'Mis Órdenes', path: '/mis-ordenes', icon: 'clipboard' },
+];
+
 const Sidebar = () => {
-    const menuItems = [
-        { id: 'inicio', label: 'Inicio', path: '/', icon: 'home' },
-        { id: 'vehiculos', label: 'Vehículos', path: '/vehiculos', icon: 'car' },
-        { id: 'clientes', label: 'Clientes', path: '/clientes', icon: 'users' },
-        { id: 'ordenes', label: 'Órdenes de Trabajo', path: '/ordenes', icon: 'clipboard' }, ,
-        { id: 'inventario', label: 'Inventario', path: '/inventario', icon: 'package' },
-        { id: 'facturacion', label: 'Facturación', path: '/cobros/registrar', icon: 'credit-card' },
-        { id: 'reportes', label: 'Informes', path: '/reportes', icon: 'bar-chart' },
-        { id: 'empleados', label: 'Empleados', path: '/empleados', icon: 'briefcase' },
-        { id: 'servicios', label: 'Servicios', path: '/servicios', icon: 'wrench' },
-    ];
+    const usuario = getUsuarioActual();
+    const menuItems = esAdministrador(usuario) ? MENU_ADMIN : MENU_EMPLEADO;
 
     const getIcon = (iconName) => {
         switch (iconName) {

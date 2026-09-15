@@ -5,6 +5,7 @@ import com.taller.dto.VehiculoRequestDTO;
 import com.taller.dto.VehiculoResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/vehiculos")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 public class VehiculoController {
 
     private final VehiculoService vehiculoService;

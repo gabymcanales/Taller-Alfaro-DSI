@@ -3,6 +3,7 @@ package com.taller.empleados;
 import com.taller.dto.EmpleadoDTO;
 import com.taller.dto.EmpleadoRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/empleados")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 public class EmpleadoController {
 
     private final EmpleadoService empleadoService;

@@ -62,9 +62,9 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
 
         try {
             if (estadoSeleccionado === 'EN_PROCESO') {
-                await iniciarServicio(ordenId, servicio.idServicio);
+                await iniciarServicio(ordenId, servicio.idServicio, { comentario });
             } else if (estadoSeleccionado === 'FINALIZADO') {
-                const payload = {};
+                const payload = { comentario };
                 if (esVariable && precioFinal) {
                     payload.precioFinal = parseFloat(precioFinal);
                 }

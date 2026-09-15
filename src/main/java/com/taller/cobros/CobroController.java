@@ -7,6 +7,7 @@ import com.taller.model.Cliente;
 import com.taller.model.Servicio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.taller.dto.ArqueoDiarioDTO;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/cobros")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 public class CobroController {
 
     private final CobrosService cobrosService;
@@ -77,7 +79,7 @@ public class CobroController {
 
     
     @GetMapping("/orden/{id}")
-    public ResponseEntity<OrdenResponseDTO> getOrdenDetalle(@PathVariable Long id) {
-        return ResponseEntity.ok(ordenService.getOrdenById(id));
+    public ResponseEntity<OrdenResponseDTO> getOrdenDetalle(@PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(ordenService.getOrdenById(id, authentication.getName()));
     }
 }

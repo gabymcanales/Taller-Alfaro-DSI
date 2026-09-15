@@ -17,8 +17,8 @@ export const cambiarEstadoOrden = (id, estado) =>
 export const getHistorialOrden = (id) =>
     axiosInstance.get(`/ordenes/${id}/historial`);
 
-export const iniciarServicio = (idOrden, idServicio) =>
-    axiosInstance.patch(`/ordenes/${idOrden}/servicios/${idServicio}/iniciar`);
+export const iniciarServicio = (idOrden, idServicio, data) =>
+    axiosInstance.patch(`/ordenes/${idOrden}/servicios/${idServicio}/iniciar`, data);
 
 export const finalizarServicio = (idOrden, idServicio, data) =>
     axiosInstance.patch(`/ordenes/${idOrden}/servicios/${idServicio}/finalizar`, data);

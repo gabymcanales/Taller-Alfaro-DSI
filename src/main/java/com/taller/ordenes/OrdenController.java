@@ -3,6 +3,7 @@ package com.taller.ordenes;
 import com.taller.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,11 +17,13 @@ public class OrdenController {
 
     private final OrdenService ordenService;
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @GetMapping
     public ResponseEntity<List<OrdenResponseDTO>> getOrdenes() {
         return ResponseEntity.ok(ordenService.getOrdenes());
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @GetMapping("/estadisticas")
     public ResponseEntity<Map<String, Long>> getEstadisticas() {
         return ResponseEntity.ok(ordenService.getEstadisticas());
@@ -33,26 +36,30 @@ public class OrdenController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrdenResponseDTO> getOrdenById(@PathVariable Long id) {
-        return ResponseEntity.ok(ordenService.getOrdenById(id));
+    public ResponseEntity<OrdenResponseDTO> getOrdenById(@PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(ordenService.getOrdenById(id, authentication.getName()));
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<List<OrdenResponseDTO>> getOrdenesByCliente(@PathVariable Long clienteId) {
         return ResponseEntity.ok(ordenService.getOrdenesByCliente(clienteId));
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<OrdenResponseDTO>> getOrdenesByEstado(@PathVariable String estado) {
         return ResponseEntity.ok(ordenService.getOrdenesByEstado(estado));
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @GetMapping("/servicios/{idServicio}/empleados")
     public ResponseEntity<List<EmpleadoDTO>> getEmpleadosPorServicio(
             @PathVariable Long idServicio) {
         return ResponseEntity.ok(ordenService.getEmpleadosPorServicio(idServicio));
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @PostMapping
     public ResponseEntity<OrdenResponseDTO> crearOrden(
             @RequestBody OrdenRequestDTO request,
@@ -65,9 +72,11 @@ public class OrdenController {
     public ResponseEntity<OrdenServicioDTO> iniciarServicio(
             @PathVariable Long idOrden,
             @PathVariable Long idServicio,
+            @RequestBody(required = false) IniciarServicioRequest request,
             Authentication authentication) {
         String username = authentication.getName();
-        return ResponseEntity.ok(ordenService.iniciarServicio(idOrden, idServicio, username));
+        String comentario = request != null ? request.getComentario() : null;
+        return ResponseEntity.ok(ordenService.iniciarServicio(idOrden, idServicio, comentario, username));
     }
 
     @PatchMapping("/{idOrden}/servicios/{idServicio}/finalizar")
@@ -80,6 +89,7 @@ public class OrdenController {
         return ResponseEntity.ok(ordenService.finalizarServicio(idOrden, idServicio, request, username));
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     @PatchMapping("/{id}/estado")
     public ResponseEntity<OrdenResponseDTO> cambiarEstado(
             @PathVariable Long id,
@@ -90,8 +100,8 @@ public class OrdenController {
     }
 
     @GetMapping("/{id}/historial")
-    public ResponseEntity<List<HistorialEstadoDTO>> getHistorial(@PathVariable Long id) {
-        return ResponseEntity.ok(ordenService.getHistorial(id));
+    public ResponseEntity<List<HistorialEstadoDTO>> getHistorial(@PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(ordenService.getHistorial(id, authentication.getName()));
     }
 
     @GetMapping("/estadisticas/empleado")

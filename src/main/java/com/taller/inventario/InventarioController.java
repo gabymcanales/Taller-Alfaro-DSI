@@ -4,6 +4,7 @@ import com.taller.model.MovimientoInventario;
 import com.taller.model.Producto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.taller.dto.MovimientoInventarioDTO;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/inventario")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 public class InventarioController {
 
     private final InventarioService inventarioService;
