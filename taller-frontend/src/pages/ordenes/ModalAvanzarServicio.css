@@ -1,3 +1,7 @@
+/* ============================================================
+   MODAL AVANZAR SERVICIO
+   ============================================================ */
+
 .modal-content-avanzar {
     background: #1a1a1a;
     border: 1px solid #333;
@@ -9,6 +13,7 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
+/* ========== HEADER ========== */
 .modal-header-avanzar {
     padding: 20px 24px;
     border-bottom: 1px solid #333;
@@ -23,11 +28,26 @@
     color: #fff;
 }
 
+.modal-close {
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    font-size: 28px;
+    cursor: pointer;
+    transition: color 0.15s;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #ff4000;
+}
+
+/* ========== BODY ========== */
 .modal-body-avanzar {
     padding: 24px;
 }
 
-
+/* ========== INFO SERVICIO ========== */
 .avanzar-info-servicio {
     background: #111;
     border: 1px solid #2a2a2a;
@@ -54,12 +74,22 @@
 }
 
 .servicio-empleado-asignado {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 13px;
     color: #a0a0a0;
-    margin-top: 4px;
+    margin-top: 6px;
 }
 
+.servicio-empleado-asignado svg {
+    width: 14px;
+    height: 14px;
+    stroke: #a0a0a0;
+    flex-shrink: 0;
+}
 
+/* ========== ESTADO ACTUAL ========== */
 .estado-actual-container {
     display: flex;
     align-items: center;
@@ -85,16 +115,27 @@
     font-weight: 600;
 }
 
+.estado-actual-badge svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
 
+/* ========== FLECHA DE TRANSICIÓN ========== */
 .transicion-flecha {
     text-align: center;
     padding: 10px 0 6px 0;
     color: #555;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
 }
 
-.flecha-icono {
-    font-size: 22px;
-    display: block;
+.flecha-icono svg {
+    width: 20px;
+    height: 20px;
+    stroke: #555;
 }
 
 .flecha-texto {
@@ -102,6 +143,7 @@
     color: #888;
 }
 
+/* ========== ESTADO SIGUIENTE (CARD) ========== */
 .estado-siguiente-card {
     display: flex;
     align-items: center;
@@ -127,9 +169,18 @@
 }
 
 .estado-siguiente-icono {
-    font-size: 26px;
     width: 40px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    
+}
+
+.estado-siguiente-icono svg {
+    width: 24px;
+    height: 24px;
+    stroke: rgb(109, 233, 104); 
 }
 
 .estado-siguiente-info {
@@ -157,11 +208,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: 700;
     color: #fff;
     transition: all 0.25s ease;
     flex-shrink: 0;
+}
+
+.estado-siguiente-check svg {
+    width: 14px;
+    height: 14px;
+    stroke: #ffffff;
 }
 
 .estado-siguiente-check.checked {
@@ -170,7 +225,7 @@
     box-shadow: 0 0 16px rgba(255, 64, 0, 0.3);
 }
 
-
+/* ========== COMENTARIO ========== */
 .avanzar-comentario {
     margin: 16px 0;
 }
@@ -200,7 +255,7 @@
     border-color: #ff4000;
 }
 
-
+/* ========== PRECIO VARIABLE ========== */
 .avanzar-precio {
     margin: 16px 0;
 }
@@ -244,13 +299,23 @@
 }
 
 .precio-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 11px;
     color: #f59e0b;
     margin-top: 6px;
-    opacity: 0.8;
+    opacity: 0.85;
 }
 
+.precio-note svg {
+    width: 14px;
+    height: 14px;
+    stroke: #f59e0b;
+    flex-shrink: 0;
+}
 
+/* ========== MENSAJE INFORMATIVO ========== */
 .avanzar-info {
     background: rgba(239, 159, 39, 0.05);
     border: 1px solid rgba(239, 159, 39, 0.15);
@@ -260,13 +325,24 @@
 }
 
 .info-text {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
     font-size: 12px;
     color: #ef9f27;
     line-height: 1.5;
     margin: 0;
 }
 
+.info-text svg {
+    width: 16px;
+    height: 16px;
+    stroke: #ef9f27;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
 
+/* ========== ERROR ========== */
 .error-message {
     background: rgba(226, 75, 74, 0.1);
     border: 1px solid rgba(226, 75, 74, 0.3);
@@ -277,7 +353,7 @@
     margin-top: 12px;
 }
 
-
+/* ========== FOOTER ========== */
 .modal-footer-avanzar {
     padding: 16px 24px 20px;
     border-top: 1px solid #333;
@@ -320,17 +396,4 @@
 .btn-confirmar-avanzar:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    color: #a0a0a0;
-    font-size: 28px;
-    cursor: pointer;
-    transition: color 0.15s;
-}
-
-.modal-close:hover {
-    color: #ff4000;
 }

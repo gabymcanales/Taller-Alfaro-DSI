@@ -73,10 +73,10 @@
     border-color: #555;
 }
 
-.stat-icon {
+.stat-icon.green {
     width: 32px;
     height: 32px;
-    background: rgba(255, 64, 0, 0.15);
+    background: rgba(127, 231, 42, 0.705);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -85,13 +85,37 @@
     flex-shrink: 0;
 }
 
+.stat-icon.yellows {
+    width: 32px;
+    height: 32px;
+    background: rgba(238, 255, 7, 0.705);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+.stat-icon.blue {
+    width: 32px;
+    height: 32px;
+    background: rgba(42, 124, 231, 0.705);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+
+
 .stat-icon svg {
     width: 18px;
     height: 18px;
     stroke: #fff;
 }
 
-.stat-number {
+.stats-number {
     font-size: 24px;
     font-weight: 700;
     color: #ffffff;

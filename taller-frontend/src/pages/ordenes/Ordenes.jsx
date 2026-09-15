@@ -339,7 +339,9 @@ const Ordenes = () => {
                                                         .map((servicio, i) => (
                                                             <div key={i} className="servicio-item">
                                                                 {servicio.nombreServicio}
-                                                                <span className="mi-servicio-tag">(Tuyo)</span>
+                                                                <span className="mi-servicio-tag">
+                                                                    {servicio.empleado?.nombreEmpleado || 'Sin asignar'}
+                                                                </span>
                                                             </div>
                                                         ))
                                                 )}
