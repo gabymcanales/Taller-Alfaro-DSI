@@ -51,7 +51,6 @@
     stroke: #fff;
 }
 
-
 .stats-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -84,7 +83,6 @@
     margin-top: 4px;
 }
 
-
 .tabla-container {
     background: #1a1a1a;
     border: 1px solid #333;
@@ -93,7 +91,7 @@
 }
 
 .tabla-header {
-    padding: 14px 20px;
+    padding: 16px 20px;
     border-bottom: 1px solid #333;
     display: flex;
     align-items: center;
@@ -102,11 +100,34 @@
     gap: 12px;
 }
 
-.tabla-titulo {
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #0d0d0d;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    padding: 8px 14px;
+    flex: 1;
+    max-width: 380px;
+    transition: border-color 0.2s;
+}
+
+.search-box:focus-within {
+    border-color: #ff4000;
+}
+
+.search-box input {
+    background: transparent;
+    border: none;
+    color: #fff;
     font-size: 13px;
-    font-weight: 600;
-    color: #a0a0a0;
-    letter-spacing: 0.5px;
+    outline: none;
+    width: 100%;
+}
+
+.search-box input::placeholder {
+    color: #555;
 }
 
 .filtros-ordenes {
@@ -136,11 +157,9 @@
     color: #a0a0a0;
 }
 
-
 .tabla-scroll {
     overflow-x: auto;
 }
-
 
 .ordenes-tabla {
     width: 100%;
@@ -174,7 +193,6 @@
     background: rgba(255, 255, 255, 0.03);
 }
 
-
 .orden-numero {
     color: #ff8c42;
     font-weight: 600;
@@ -206,7 +224,6 @@
     color: #a0a0a0;
 }
 
-
 .badge-estado {
     display: inline-flex;
     align-items: center;
@@ -237,7 +254,6 @@
     color: #9ca3af;
 }
 
-
 .mi-servicio-tag {
     font-size: 10px;
     background: rgba(59, 130, 246, 0.15);
@@ -248,7 +264,6 @@
     font-weight: 500;
     display: inline-block;
 }
-
 
 .btn-ver-detalle {
     background: transparent;
@@ -274,13 +289,11 @@
     font-size: 14px;
 }
 
-
 .loading {
     text-align: center;
     padding: 40px;
     color: #a0a0a0;
 }
-
 
 .error-message {
     text-align: center;
@@ -288,21 +301,30 @@
     color: #f09595;
 }
 
-
 @media (max-width: 1100px) {
     .stats-row {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-@media (max-width: 768px) {
-    .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
+@media (max-width: 900px) {
     .tabla-header {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .search-box {
+        max-width: 100%;
+    }
+
+    .filtros-ordenes {
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .filtros-ordenes {

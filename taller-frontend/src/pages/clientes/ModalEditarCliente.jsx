@@ -7,6 +7,7 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
         nombreCliente: '',
         telefonoCliente: ''
     });
+    const [errores, setErrores] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -31,17 +32,52 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
         }
     };
 
+    const validarNombre = (nombre) => {
+        if (!nombre.trim()) return 'El nombre completo es obligatorio';
+        if (nombre.trim().length < 3) return 'El nombre debe tener al menos 3 caracteres';
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) return 'El nombre solo puede contener letras';
+        return '';
+    };
+
+    const validarTelefono = (tel) => {
+        if (!tel.trim()) return 'El teléfono es obligatorio';
+        if (!/^\d{4}-\d{4}$/.test(tel)) return 'El teléfono debe tener el formato 0000-0000';
+        return '';
+    };
+
+    const validarFormulario = () => {
+        const nuevosErrores = {
+            nombreCliente: validarNombre(formData.nombreCliente),
+            telefonoCliente: validarTelefono(formData.telefonoCliente)
+        };
+        setErrores(nuevosErrores);
+        return !Object.values(nuevosErrores).some(e => e !== '');
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === 'telefonoCliente') {
+            let v = value.replace(/[^0-9-]/g, '');
+            if (v.length > 9) v = v.slice(0, 9);
+            setFormData(prev => ({ ...prev, telefonoCliente: v }));
+            const error = validarTelefono(v);
+            setErrores(prev => ({ ...prev, telefonoCliente: error }));
+            return;
+        }
+
         setFormData(prev => ({ ...prev, [name]: value }));
+        setErrores(prev => ({ ...prev, [name]: '' }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError('');
         setSuccess(false);
 
+        if (!validarFormulario()) return;
+
+        setLoading(true);
         try {
             await actualizarCliente(cliente.idCliente, formData);
             setSuccess(true);
@@ -68,10 +104,10 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
                 <div className="modal-body">
                     {success ? (
                         <div className="alert-success">
-                            ✅ Cliente actualizado correctamente
+
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} noValidate>
                             <div className="form-group">
                                 <label>Nombre completo *</label>
                                 <input
@@ -80,23 +116,28 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
                                     value={formData.nombreCliente}
                                     onChange={handleChange}
                                     placeholder="Ej: Guadalupe Alfaro"
-                                    required
+                                    className={errores.nombreCliente ? 'input-error' : ''}
                                 />
+                                {errores.nombreCliente && <span className="error-msg">{errores.nombreCliente}</span>}
                             </div>
+
                             <div className="form-group">
-                                <label>Teléfono</label>
+                                <label>Teléfono *</label>
                                 <input
                                     type="text"
                                     name="telefonoCliente"
                                     value={formData.telefonoCliente}
                                     onChange={handleChange}
-                                    placeholder="Ej: 7412-3300"
+                                    placeholder="7412-3300"
+                                    maxLength={9}
+                                    className={errores.telefonoCliente ? 'input-error' : ''}
                                 />
+                                {errores.telefonoCliente && <span className="error-msg">{errores.telefonoCliente}</span>}
                             </div>
 
                             {error && (
                                 <div className="alert-error">
-                                    <span>⚠️</span> {error}
+                                    <span></span> {error}
                                 </div>
                             )}
 

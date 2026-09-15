@@ -84,6 +84,20 @@
     border-color: #ff4000;
 }
 
+.form-select.input-error {
+    border-color: #ef4444;
+}
+
+.form-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.form-select option {
+    background: #ffffff;
+    color: #000000;
+}
+
 .servicios-section {
     margin: 20px 0;
 }
@@ -231,6 +245,11 @@
     border: none;
 }
 
+.empleado-selector .form-select option {
+    background: #ffffff;
+    color: #000000;
+}
+
 .total-calculado {
     display: flex;
     justify-content: space-between;
@@ -261,6 +280,13 @@
     border-radius: 8px;
     font-size: 13px;
     margin-top: 12px;
+}
+
+.error-msg {
+    font-size: 11px;
+    color: #f09595;
+    margin-top: 4px;
+    display: block;
 }
 
 .modal-footer-orden {
@@ -325,6 +351,10 @@
 .buscador-cliente input:focus {
     border-color: #ff4000;
     box-shadow: 0 0 0 2px rgba(255, 64, 0, 0.1);
+}
+
+.buscador-cliente input.input-error {
+    border-color: #ef4444;
 }
 
 .resultados-clientes {

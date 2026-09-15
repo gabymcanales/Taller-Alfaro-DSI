@@ -11,14 +11,12 @@ const Clientes = () => {
     const [estadisticas, setEstadisticas] = useState({
         totalClientes: 0,
         totalVehiculos: 0,
-        nuevosEsteMes: 0,
         ordenesActivas: 0
     });
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
     const [error, setError] = useState('');
 
-    // Estados para los modales
     const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
     const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
     const [showEditar, setShowEditar] = useState(false);
@@ -41,7 +39,6 @@ const Clientes = () => {
             setEstadisticas(statsRes.data || {
                 totalClientes: 0,
                 totalVehiculos: 0,
-                nuevosEsteMes: 0,
                 ordenesActivas: 0
             });
         } catch (err) {
@@ -56,14 +53,6 @@ const Clientes = () => {
         setBusqueda(e.target.value);
     };
 
-    const getIniciales = (nombre) => {
-        if (!nombre) return '??';
-        const partes = nombre.split(' ');
-        if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
-        return (partes[0][0] + (partes[partes.length - 1]?.[0] || '')).toUpperCase();
-    };
-
-    // ========== FUNCIONES PARA ABRIR MODALES ==========
     const handleAgregarVehiculo = (cliente) => {
         setClienteSeleccionado(cliente);
         setShowAgregarVehiculo(true);
@@ -84,9 +73,9 @@ const Clientes = () => {
         cliente.telefonoCliente?.includes(busqueda)
     );
 
-    // ========== ICONOS ==========
+    
     const AgregarVehiculoIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
             <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
             <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
@@ -94,14 +83,14 @@ const Clientes = () => {
     );
 
     const EditarIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 21h4l13 -13a1.5 1.5 0 0 0 -4 -4l-13 13v4" />
             <path d="M14.5 5.5l4 4" />
         </svg>
     );
 
     const EliminarIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18" />
             <path d="M8 6v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2" />
             <path d="M19 6l-1 14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l-1 -14" />
@@ -128,11 +117,9 @@ const Clientes = () => {
 
     return (
         <div className="clientes-container">
-            {/* ========== HEADER ========== */}
             <div className="clientes-header">
                 <div className="header-left">
                     <h1>Clientes</h1>
-                    <p className="header-subtitle">Expediente de clientes y vehículos — Módulo 2</p>
                 </div>
                 <button className="btn-registrar" onClick={() => setShowRegistrarCliente(true)}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -145,21 +132,43 @@ const Clientes = () => {
             {/* ========== STATS ========== */}
             <div className="stats-grid">
                 <div className="stat-card">
+                    <div className="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+                        </svg>
+                    </div>
                     <div className="stat-number">{estadisticas?.totalClientes ?? 0}</div>
                     <div className="stat-label">Clientes registrados</div>
                     <div className="stat-sub">En expediente</div>
                 </div>
+
                 <div className="stat-card">
+                    <div className="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                            <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                            <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
+                        </svg>
+                    </div>
                     <div className="stat-number">{estadisticas?.totalVehiculos ?? 0}</div>
                     <div className="stat-label">Vehículos registrados</div>
                     <div className="stat-sub">Con propietario vinculado</div>
                 </div>
+
                 <div className="stat-card">
-                    <div className="stat-number">{estadisticas?.nuevosEsteMes ?? 0}</div>
-                    <div className="stat-label">Nuevos este mes</div>
-                    <div className="stat-sub">Clientes</div>
-                </div>
-                <div className="stat-card">
+                    <div className="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                            <path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" />
+                            <path d="M9 12l.01 0" />
+                            <path d="M13 12l2 0" />
+                            <path d="M9 16l.01 0" />
+                            <path d="M13 16l2 0" />
+                        </svg>
+                    </div>
                     <div className="stat-number">{estadisticas?.ordenesActivas ?? 0}</div>
                     <div className="stat-label">Órdenes activas</div>
                     <div className="stat-sub">Vinculadas a clientes</div>
@@ -206,9 +215,10 @@ const Clientes = () => {
                                     <tr key={cliente.idCliente} className="client-row">
                                         <td className="client-cell">
                                             <div className="client-avatar">
-                                                <span className="avatar-initials">
-                                                    {getIniciales(cliente.nombreCliente)}
-                                                </span>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M12 12a4 4 0 1 0 0 -8a4 4 0 0 0 0 8" />
+                                                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                                                </svg>
                                             </div>
                                             <span className="client-name">{cliente.nombreCliente}</span>
                                         </td>
@@ -255,7 +265,7 @@ const Clientes = () => {
                 </div>
             </div>
 
-            {/* ========== MODALES (TODOS FUNCIONANDO) ========== */}
+            {/* ========== MODALES ========== */}
             {showAgregarVehiculo && (
                 <ModalAgregarVehiculo
                     cliente={clienteSeleccionado}

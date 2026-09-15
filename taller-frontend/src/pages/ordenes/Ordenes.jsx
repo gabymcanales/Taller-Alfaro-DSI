@@ -21,6 +21,7 @@ const Ordenes = () => {
     const [showDetalleModal, setShowDetalleModal] = useState(false);
     const [ordenSeleccionadaId, setOrdenSeleccionadaId] = useState(null);
     const [filtroEstado, setFiltroEstado] = useState('');
+    const [busqueda, setBusqueda] = useState('');
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -54,6 +55,7 @@ const Ordenes = () => {
                 entregadas: 0
             });
         } catch (err) {
+            console.error('Error cargando datos:', err);
             setError(err.response?.data?.mensaje || 'Error al cargar las órdenes');
         } finally {
             setLoading(false);
@@ -85,31 +87,49 @@ const Ordenes = () => {
         setShowDetalleModal(true);
     };
 
-    const aplicarFiltros = () => {
-        let filtradas = [...ordenes];
+    const filtrarOrdenes = (lista) => {
+        let filtradas = [...lista];
 
         if (filtroEstado) {
             filtradas = filtradas.filter(o => o.estadoOrden === filtroEstado);
         }
 
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const paginadas = filtradas.slice(startIndex, endIndex);
+        if (busqueda.trim()) {
+            const termino = busqueda.toLowerCase();
+            filtradas = filtradas.filter(o => {
+                const numOrden = o.numOrden?.toLowerCase() || '';
+                const cliente = o.cliente?.nombreCliente?.toLowerCase() || '';
+                const vehiculo = o.vehiculo
+                    ? `${o.vehiculo.marca} ${o.vehiculo.modelo} ${o.vehiculo.placa} ${o.vehiculo.anio || ''}`.toLowerCase()
+                    : '';
+                const servicios = o.ordenServicios
+                    ?.map(s => s.nombreServicio?.toLowerCase())
+                    .join(' ') || '';
 
-        setOrdenesFiltradas(paginadas);
+                return (
+                    numOrden.includes(termino) ||
+                    cliente.includes(termino) ||
+                    vehiculo.includes(termino) ||
+                    servicios.includes(termino)
+                );
+            });
+        }
+
         return filtradas;
     };
 
     useEffect(() => {
-        aplicarFiltros();
-    }, [ordenes, filtroEstado, currentPage]);
+        const filtradas = filtrarOrdenes(ordenes);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setOrdenesFiltradas(filtradas.slice(startIndex, endIndex));
+    }, [ordenes, filtroEstado, busqueda, currentPage]);
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
 
-    const totalItems = ordenes.filter(o => !filtroEstado || o.estadoOrden === filtroEstado).length;
-
+    const totalItems = filtrarOrdenes(ordenes).length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
     if (loading) {
@@ -163,7 +183,22 @@ const Ordenes = () => {
             {/* Filtros y tabla */}
             <div className="tabla-container">
                 <div className="tabla-header">
-                    <span className="tabla-titulo">TODAS LAS ÓRDENES</span>
+                    <div className="search-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                            <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                            <path d="M21 21l-6 -6" />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Buscar por orden, cliente, vehículo o servicio..."
+                            value={busqueda}
+                            onChange={(e) => {
+                                setBusqueda(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                        />
+                    </div>
+
                     <div className="filtros-ordenes">
                         <select
                             value={filtroEstado}
@@ -200,7 +235,7 @@ const Ordenes = () => {
                             {ordenesFiltradas.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="sin-datos">
-                                        No hay órdenes registradas
+                                        No hay órdenes que coincidan
                                     </td>
                                 </tr>
                             ) : (

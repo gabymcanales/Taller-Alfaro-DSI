@@ -23,14 +23,26 @@
     border-radius: 6px;
     font-size: 13px;
     outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
 }
 
 .modal-editar-cliente .form-group input:focus {
     border-color: #ff4000;
 }
 
+.modal-editar-cliente .form-group input.input-error {
+    border-color: #ef4444;
+}
+
 .modal-editar-cliente .form-group input::placeholder {
     color: #555;
+}
+
+.modal-editar-cliente .error-msg {
+    font-size: 11px;
+    color: #f09595;
+    margin-top: 2px;
 }
 
 .alert-success {
@@ -75,4 +87,29 @@
 .btn-guardar:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.btn-cancelar {
+    background: transparent;
+    border: 1px solid #444;
+    color: #a0a0a0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+    border-color: #666;
+    color: #fff;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid #333;
+    padding-top: 16px;
+    margin-top: 16px;
 }
