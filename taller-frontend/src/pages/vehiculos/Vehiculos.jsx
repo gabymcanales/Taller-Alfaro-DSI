@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getVehiculos } from '../../services/vehiculoService';
+import { getEstadisticas } from '../../services/clienteService';
 import ModalHistorialVehiculo from './ModalHistorialVehiculo';
 import ModalEliminarVehiculo from './ModalEliminarVehiculo';
 import ModalEditarVehiculo from './ModalEditarVehiculo';
 import ModalRegistrarVehiculo from './ModalRegistrarVehiculo';
+import ModalRegistrarCliente from '../clientes/ModalRegistrarCliente';
 import './Vehiculos.css';
 
 const Vehiculos = () => {
@@ -11,7 +13,6 @@ const Vehiculos = () => {
     const [estadisticas, setEstadisticas] = useState({
         totalClientes: 0,
         totalVehiculos: 0,
-        nuevosEsteMes: 0,
         ordenesActivas: 0
     });
     const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ const Vehiculos = () => {
     const [showEliminar, setShowEliminar] = useState(false);
     const [showEditar, setShowEditar] = useState(false);
     const [showRegistrar, setShowRegistrar] = useState(false);
+    const [showRegistrarCliente, setShowRegistrarCliente] = useState(false);
 
     useEffect(() => {
         cargarDatos();
@@ -32,14 +34,14 @@ const Vehiculos = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await getVehiculos();
-            setVehiculos(response.data || []);
-            const totalVehiculos = response.data?.length || 0;
-            const clientesUnicos = new Set(response.data?.map(v => v.cliente?.idCliente) || []).size;
-            setEstadisticas({
-                totalClientes: clientesUnicos,
-                totalVehiculos: totalVehiculos,
-                nuevosEsteMes: 0,
+            const [vehiculosRes, statsRes] = await Promise.all([
+                getVehiculos(),
+                getEstadisticas()
+            ]);
+            setVehiculos(vehiculosRes.data || []);
+            setEstadisticas(statsRes.data || {
+                totalClientes: 0,
+                totalVehiculos: 0,
                 ordenesActivas: 0
             });
         } catch (err) {
@@ -69,6 +71,10 @@ const Vehiculos = () => {
         setShowEditar(true);
     };
 
+    const handleAbrirRegistrarCliente = () => {
+        setShowRegistrar(false);
+        setShowRegistrarCliente(true);
+    };
 
     const vehiculosFiltrados = vehiculos.filter(v =>
         v.placa?.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -135,33 +141,57 @@ const Vehiculos = () => {
                 </button>
             </div>
 
-            <div className="stats-row">
+            {/* ========== STATS ========== */}
+            <div className="stats-grid">
                 <div className="stat-card">
+                    <div className="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+                        </svg>
+                    </div>
                     <div className="stat-number">{estadisticas?.totalClientes ?? 0}</div>
                     <div className="stat-label">Clientes registrados</div>
                     <div className="stat-sub">Con vehículos</div>
                 </div>
+
                 <div className="stat-card">
+                    <div className="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                            <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                            <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
+                        </svg>
+                    </div>
                     <div className="stat-number">{estadisticas?.totalVehiculos ?? 0}</div>
                     <div className="stat-label">Vehículos registrados</div>
                     <div className="stat-sub">Con propietario vinculado</div>
                 </div>
+
                 <div className="stat-card">
-                    <div className="stat-number">{estadisticas?.nuevosEsteMes ?? 0}</div>
-                    <div className="stat-label">Nuevos este mes</div>
-                    <div className="stat-sub">Vehículos</div>
-                </div>
-                <div className="stat-card">
+                    <div className="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                            <path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" />
+                            <path d="M9 12l.01 0" />
+                            <path d="M13 12l2 0" />
+                            <path d="M9 16l.01 0" />
+                            <path d="M13 16l2 0" />
+                        </svg>
+                    </div>
                     <div className="stat-number">{estadisticas?.ordenesActivas ?? 0}</div>
                     <div className="stat-label">Órdenes activas</div>
                     <div className="stat-sub">Vinculadas a vehículos</div>
                 </div>
             </div>
 
+            {/* ========== TABLA ========== */}
             <div className="tabla-container">
                 <div className="tabla-header">
-                    <div className="buscador">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2">
+                    <div className="search-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                             <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
                             <path d="M21 21l-6 -6" />
                         </svg>
@@ -172,7 +202,7 @@ const Vehiculos = () => {
                             onChange={handleBuscar}
                         />
                     </div>
-                    <span className="total-vehiculos">Todos los vehículos</span>
+                    <span className="table-count">Todos los vehículos</span>
                 </div>
 
                 <div className="tabla-scroll">
@@ -184,7 +214,7 @@ const Vehiculos = () => {
                                 <th>AÑO</th>
                                 <th>COLOR</th>
                                 <th>PROPIETARIO</th>
-                                <th>ACCIONES</th>
+                                <th className="acciones-header">ACCIONES</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -201,7 +231,6 @@ const Vehiculos = () => {
                                         <td>{v.marca} {v.modelo}</td>
                                         <td>{v.anio || '—'}</td>
                                         <td>
-                                            <span className="color-dot" style={{ backgroundColor: v.color?.toLowerCase() || '#888' }} />
                                             {v.color || '—'}
                                         </td>
                                         <td>{v.cliente?.nombreCliente || 'Sin propietario'}</td>
@@ -236,6 +265,7 @@ const Vehiculos = () => {
                 </div>
             </div>
 
+            {/* ========== MODALES ========== */}
             {showHistorial && (
                 <ModalHistorialVehiculo
                     vehiculo={vehiculoSeleccionado}
@@ -263,6 +293,17 @@ const Vehiculos = () => {
                 <ModalRegistrarVehiculo
                     onClose={() => setShowRegistrar(false)}
                     onSuccess={cargarDatos}
+                    onRegistrarCliente={handleAbrirRegistrarCliente}
+                />
+            )}
+
+            {showRegistrarCliente && (
+                <ModalRegistrarCliente
+                    onClose={() => setShowRegistrarCliente(false)}
+                    onSuccess={() => {
+                        cargarDatos();
+                        setShowRegistrar(true);
+                    }}
                 />
             )}
         </div>

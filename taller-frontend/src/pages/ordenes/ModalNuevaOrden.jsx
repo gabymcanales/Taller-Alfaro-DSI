@@ -18,25 +18,23 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
     const [serviciosCatalogo, setServiciosCatalogo] = useState([]);
     const [empleadosDisponibles, setEmpleadosDisponibles] = useState({});
     const [loading, setLoading] = useState(false);
+    const [errores, setErrores] = useState({});
     const [error, setError] = useState('');
     const [servicioSeleccionado, setServicioSeleccionado] = useState('');
     const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState('');
-
 
     const [busquedaCliente, setBusquedaCliente] = useState('');
     const [clientesSugeridos, setClientesSugeridos] = useState([]);
     const [showClientes, setShowClientes] = useState(false);
     const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
-
     const buscadorClienteRef = useRef(null);
-
 
     useEffect(() => {
         if (isOpen) {
             cargarDatosIniciales();
         }
-        
+
         setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
         setBusquedaCliente('');
         setClienteSeleccionado(null);
@@ -45,9 +43,9 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         setVehiculos([]);
         setServicioSeleccionado('');
         setEmpleadoSeleccionado('');
+        setErrores({});
         setError('');
     }, [isOpen]);
-
 
     useEffect(() => {
         if (busquedaCliente.length >= 2) {
@@ -61,18 +59,14 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         }
     }, [busquedaCliente]);
 
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (buscadorClienteRef.current && !buscadorClienteRef.current.contains(event.target)) {
                 setShowClientes(false);
             }
         };
-
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const buscarClientes = async (termino) => {
@@ -90,6 +84,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         setBusquedaCliente(cliente.nombreCliente);
         setClientesSugeridos([]);
         setShowClientes(false);
+        setErrores(prev => ({ ...prev, idCliente: '' }));
         setFormData(prev => ({ ...prev, idCliente: cliente.idCliente, idVehiculo: '' }));
 
         try {
@@ -173,6 +168,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         setServicioSeleccionado('');
         setEmpleadoSeleccionado('');
         setError('');
+        setErrores(prev => ({ ...prev, servicios: '' }));
     };
 
     const eliminarServicio = (index) => {
@@ -182,24 +178,34 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (formData.servicios.length === 0) {
-            setError('Agregue al menos un servicio');
-            return;
-        }
+    const validarFormulario = () => {
+        const nuevosErrores = {};
 
         if (!formData.idCliente) {
-            setError('Seleccione un cliente');
-            return;
+            nuevosErrores.idCliente = 'Debe seleccionar un cliente';
+        }
+        if (!formData.idVehiculo) {
+            nuevosErrores.idVehiculo = 'Debe seleccionar un vehículo';
+        }
+        if (formData.servicios.length === 0) {
+            nuevosErrores.servicios = 'Debe agregar al menos un servicio';
         }
 
-        setLoading(true);
+        setErrores(nuevosErrores);
+        return !Object.values(nuevosErrores).some(e => e !== '');
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setError('');
+
+        if (!validarFormulario()) return;
+
+        setLoading(true);
         try {
             const payload = {
                 idCliente: parseInt(formData.idCliente),
-                idVehiculo: formData.idVehiculo ? parseInt(formData.idVehiculo) : null,
+                idVehiculo: parseInt(formData.idVehiculo),
                 servicios: formData.servicios.map(s => ({
                     idServicio: s.idServicio,
                     idEmpleado: s.idEmpleado
@@ -209,16 +215,16 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
             onOrdenCreada();
             onClose();
             setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
-            setError('');
             setBusquedaCliente('');
             setClienteSeleccionado(null);
+            setError('');
+            setErrores({});
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al crear la orden');
         } finally {
             setLoading(false);
         }
     };
-
 
     const handleClose = () => {
         setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
@@ -230,6 +236,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         setServicioSeleccionado('');
         setEmpleadoSeleccionado('');
         setError('');
+        setErrores({});
         onClose();
     };
 
@@ -255,10 +262,11 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                     <button className="modal-close" onClick={handleClose}>×</button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                     <div className="modal-body-orden">
                         <p className="modal-desc">Registra el vehículo entrante y los servicios a realizar.</p>
 
+                        {/* Cliente */}
                         <div className="form-group">
                             <label>Cliente *</label>
                             <div className="buscador-cliente" ref={buscadorClienteRef}>
@@ -269,6 +277,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                     onChange={(e) => {
                                         setBusquedaCliente(e.target.value);
                                         setShowClientes(true);
+                                        setErrores(prev => ({ ...prev, idCliente: '' }));
                                         if (!e.target.value) {
                                             setClienteSeleccionado(null);
                                             setFormData(prev => ({ ...prev, idCliente: '', idVehiculo: '' }));
@@ -280,6 +289,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                             setShowClientes(true);
                                         }
                                     }}
+                                    className={errores.idCliente ? 'input-error' : ''}
                                 />
                                 {showClientes && clientesSugeridos.length > 0 && (
                                     <div className="resultados-clientes">
@@ -306,26 +316,36 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                     </div>
                                 )}
                             </div>
+                            {errores.idCliente && <span className="error-msg">{errores.idCliente}</span>}
                         </div>
 
+                        {/* Vehículo */}
                         <div className="form-group">
                             <label>Vehículo *</label>
                             <select
-                                className="form-select"
+                                className={`form-select ${errores.idVehiculo ? 'input-error' : ''}`}
                                 value={formData.idVehiculo}
-                                onChange={(e) => setFormData(prev => ({ ...prev, idVehiculo: e.target.value }))}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, idVehiculo: e.target.value }));
+                                    setErrores(prev => ({ ...prev, idVehiculo: '' }));
+                                }}
+                                disabled={!formData.idCliente}
                             >
-                                <option value="">Sin vehículo registrado</option>
+                                <option value="">
+                                    {formData.idCliente ? '— Seleccionar vehículo —' : ' Primero seleccione cliente '}
+                                </option>
                                 {vehiculos.map(v => (
                                     <option key={v.idVehiculo} value={v.idVehiculo}>
                                         {v.marca} {v.modelo} {v.anio || ''} - {v.placa}
                                     </option>
                                 ))}
                             </select>
+                            {errores.idVehiculo && <span className="error-msg">{errores.idVehiculo}</span>}
                         </div>
 
+                        {/* Servicios */}
                         <div className="servicios-section">
-                            <label>Servicios de la orden y su responsable</label>
+                            <label>Servicios de la orden y su responsable *</label>
                             <p className="servicios-note">
                                 Cada servicio lleva su propio empleado y avanza de estado por separado
                             </p>
@@ -358,6 +378,8 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                     </div>
                                 ))}
                             </div>
+
+                            {errores.servicios && <span className="error-msg">{errores.servicios}</span>}
 
                             <div className="agregar-servicio-container">
                                 <div className="agregar-servicio-row">

@@ -58,6 +58,10 @@
     font-weight: 500;
 }
 
+.modal-agregar-vehiculo .form-group label .obligatorio {
+    color: #ff4000;
+}
+
 .modal-agregar-vehiculo .form-group input {
     background: #111;
     border: 1px solid #333;
@@ -66,10 +70,16 @@
     border-radius: 6px;
     font-size: 13px;
     outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
 }
 
 .modal-agregar-vehiculo .form-group input:focus {
     border-color: #ff4000;
+}
+
+.modal-agregar-vehiculo .form-group input.input-error {
+    border-color: #ef4444;
 }
 
 .modal-agregar-vehiculo .form-group input::placeholder {
@@ -78,6 +88,12 @@
 
 .modal-agregar-vehiculo .form-group.full-width {
     grid-column: span 2;
+}
+
+.modal-agregar-vehiculo .error-msg {
+    font-size: 11px;
+    color: #f09595;
+    margin-top: 2px;
 }
 
 .alert-info {
@@ -105,9 +121,9 @@
 }
 
 .alert-error {
-    background: rgba(234, 88, 12, 0.12); /* Fondo sutil estilo dark mode */
-    border: 1px solid rgba(234, 88, 12, 0.35); /* Borde naranja rojizo */
-    color: #f97316; /* Color de texto naranja vivo */
+    background: rgba(234, 88, 12, 0.12);
+    border: 1px solid rgba(234, 88, 12, 0.35);
+    color: #f97316;
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 13px;
@@ -116,11 +132,12 @@
     align-items: center;
     margin-top: 12px;
 }
+
 .alert-error-icon {
     width: 18px;
     height: 18px;
-    min-width: 18px; /* Evita que el SVG se encoja si el texto de error es largo */
-    stroke: #ff5722; /* Tono naranja oscuro para el contorno */
+    min-width: 18px;
+    stroke: #ff5722;
 }
 
 .btn-guardar {

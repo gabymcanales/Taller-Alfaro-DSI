@@ -48,11 +48,10 @@
     stroke: #fff;
 }
 
-
-.stats-row {
+.stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
     margin-bottom: 24px;
 }
 
@@ -60,26 +59,55 @@
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 10px;
-    padding: 16px 20px;
+    padding: 12px 20px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+    min-height: 110px;
+    transition: border-color 0.2s;
+}
+
+.stat-card:hover {
+    border-color: #555;
+}
+
+.stat-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 64, 0, 0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+
+.stat-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #fff;
 }
 
 .stat-number {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
-    color: #ff8c42;
+    color: #ffffff;
+    line-height: 1.1;
 }
 
 .stat-label {
-    font-size: 13px;
-    color: #fff;
-    margin-top: 4px;
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-top: 2px;
 }
 
 .stat-sub {
     font-size: 11px;
-    color: #a0a0a0;
-    margin-top: 2px;
+    color: #666;
+    margin-top: 1px;
 }
 
 
@@ -100,19 +128,25 @@
     gap: 12px;
 }
 
-.buscador {
+
+.search-box {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #111;
-    border: 1px solid #333;
+    background: #0d0d0d;
+    border: 1px solid #252525;
     border-radius: 8px;
     padding: 8px 14px;
     flex: 1;
-    max-width: 420px;
+    max-width: 380px;
+    transition: border-color 0.2s;
 }
 
-.buscador input {
+.search-box:focus-within {
+    border-color: #ff4000;
+}
+
+.search-box input {
     background: transparent;
     border: none;
     color: #fff;
@@ -121,14 +155,16 @@
     width: 100%;
 }
 
-.buscador input::placeholder {
-    color: #888;
+.search-box input::placeholder {
+    color: #555;
 }
 
-.total-vehiculos {
+.table-count {
     font-size: 13px;
-    color: #a0a0a0;
+    color: #666;
+    white-space: nowrap;
 }
+
 
 .tabla-scroll {
     overflow-x: auto;
@@ -171,22 +207,15 @@
     font-weight: 600;
 }
 
-
-.color-dot {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
-    border: 1px solid #444;
-    vertical-align: middle;
-}
-
-
 .acciones-cell {
     display: flex;
     gap: 4px;
     align-items: center;
+    justify-content: center;
+}
+
+.vehiculos-tabla th.acciones-header {
+    text-align: center;
 }
 
 .acciones-cell button {
@@ -239,7 +268,6 @@
     color: #555;
 }
 
-
 .loading {
     text-align: center;
     padding: 40px;
@@ -247,8 +275,14 @@
 }
 
 
+@media (max-width: 1100px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 900px) {
-    .stats-row {
+    .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
@@ -257,13 +291,13 @@
         align-items: stretch;
     }
 
-    .buscador {
+    .search-box {
         max-width: 100%;
     }
 }
 
 @media (max-width: 600px) {
-    .stats-row {
+    .stats-grid {
         grid-template-columns: 1fr;
     }
 

@@ -26,6 +26,7 @@ const Ordenes = () => {
     const [showDetalleModal, setShowDetalleModal] = useState(false);
     const [ordenSeleccionadaId, setOrdenSeleccionadaId] = useState(null);
     const [filtroEstado, setFiltroEstado] = useState('');
+    const [busqueda, setBusqueda] = useState('');
     const [usuario, setUsuario] = useState(null);
     const [esAdmin, setEsAdmin] = useState(false);
 
@@ -34,27 +35,18 @@ const Ordenes = () => {
 
     const obtenerUsuario = () => {
         const token = localStorage.getItem('token');
-        console.log(' Token:', token ? ' Existe' : ' No existe');
-
         if (token) {
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log(' Payload del token:', payload);
-
                 const username = payload.username || payload.sub;
                 setUsuario({ ...payload, username });
-
                 const isAdmin = payload?.rol === 'ADMINISTRADOR' || payload?.rol === 'ADMIN';
                 setEsAdmin(isAdmin);
-                console.log(' ¿Es administrador?', isAdmin);
-                console.log(' Username final:', username);
             } catch (e) {
-                console.error(' Error al decodificar token:', e);
                 setUsuario({ username: 'admin', rol: 'ADMINISTRADOR' });
                 setEsAdmin(true);
             }
         } else {
-            console.warn(' No hay token, usando admin por defecto');
             setUsuario({ username: 'admin', rol: 'ADMINISTRADOR' });
             setEsAdmin(true);
         }
@@ -73,47 +65,25 @@ const Ordenes = () => {
     const cargarDatos = async () => {
         setLoading(true);
         setError('');
-        console.log(' Cargando datos para usuario:', usuario?.username, 'esAdmin:', esAdmin);
-
         try {
             let ordenesRes, statsRes;
 
             if (esAdmin) {
-                console.log(' Cargando TODAS las órdenes (admin)');
                 [ordenesRes, statsRes] = await Promise.all([
                     getOrdenes(),
                     getEstadisticasOrdenes()
                 ]);
             } else {
-                console.log(' Cargando órdenes del empleado:', usuario?.username);
                 [ordenesRes, statsRes] = await Promise.all([
                     getOrdenesPorEmpleado(),
                     getEstadisticasPorEmpleado()
                 ]);
             }
 
-            console.log(' Datos recibidos:', {
-                ordenes: ordenesRes.data?.length || 0,
-                estadisticas: statsRes.data
-            });
-
             const ordenesData = (ordenesRes.data || []).sort((a, b) => {
                 const fechaA = new Date(a.fechaHoraOrden);
                 const fechaB = new Date(b.fechaHoraOrden);
                 return fechaB - fechaA;
-            });
-
-            console.log(' === DETALLE DE ÓRDENES ===');
-            ordenesData.forEach((orden, index) => {
-                console.log(`\n Orden ${index + 1}: ${orden.numOrden}`);
-                console.log(`   Estado ORDEN: ${orden.estadoOrden}`);
-                console.log(`   Servicios (${orden.ordenServicios?.length || 0}):`);
-                orden.ordenServicios?.forEach((s, i) => {
-                    console.log(`     ${i + 1}. ${s.nombreServicio}`);
-                    console.log(`        Estado servicio: ${s.estadoServicioOrden}`);
-                    console.log(`        Empleado: ${s.empleado?.nombreEmpleado || 'Sin asignar'}`);
-                    console.log(`        Username empleado: ${s.empleado?.username || 'N/A'}`);
-                });
             });
 
             setOrdenes(ordenesData);
@@ -125,7 +95,7 @@ const Ordenes = () => {
                 entregadas: 0
             });
         } catch (err) {
-            console.error(' Error cargando datos:', err);
+            console.error('Error cargando datos:', err);
             setError(err.response?.data?.mensaje || 'Error al cargar las órdenes');
         } finally {
             setLoading(false);
@@ -133,10 +103,7 @@ const Ordenes = () => {
     };
 
     const getEstadoParaUsuario = (orden, isAdmin, username) => {
-        console.log(` getEstadoParaUsuario - Orden: ${orden.numOrden}, isAdmin: ${isAdmin}, username: ${username}`);
-
         if (isAdmin) {
-            console.log(`    Admin → estado ORDEN: ${orden.estadoOrden}`);
             return orden.estadoOrden || 'PENDIENTE';
         }
 
@@ -145,27 +112,20 @@ const Ordenes = () => {
             return s.empleado.username === username;
         });
 
-        console.log(` Servicios del empleado "${username}":`, misServicios?.length || 0);
-
         if (!misServicios || misServicios.length === 0) {
-            console.log('    No tiene servicios asignados → PENDIENTE');
             return 'PENDIENTE';
         }
 
         if (orden.estadoOrden === 'ENTREGADO') {
-            console.log('    Orden entregada → ENTREGADO');
             return 'ENTREGADO';
         }
 
         if (misServicios.every(s => s.estadoServicioOrden === 'FINALIZADO')) {
-            console.log('    Todos finalizados → FINALIZADO');
             return 'FINALIZADO';
         }
         if (misServicios.some(s => s.estadoServicioOrden === 'EN_PROCESO')) {
-            console.log('    Alguno en proceso → EN_PROCESO');
             return 'EN_PROCESO';
         }
-        console.log('    Todos pendientes → PENDIENTE');
         return 'PENDIENTE';
     };
 
@@ -194,8 +154,10 @@ const Ordenes = () => {
         setShowDetalleModal(true);
     };
 
-    const aplicarFiltros = () => {
-        let filtradas = [...ordenes];
+
+    const filtrarOrdenes = (lista) => {
+        let filtradas = [...lista];
+
 
         if (filtroEstado) {
             filtradas = filtradas.filter(o => {
@@ -204,30 +166,43 @@ const Ordenes = () => {
             });
         }
 
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const paginadas = filtradas.slice(startIndex, endIndex);
 
-        setOrdenesFiltradas(paginadas);
+        if (busqueda.trim()) {
+            const termino = busqueda.toLowerCase();
+            filtradas = filtradas.filter(o => {
+                const numOrden = o.numOrden?.toLowerCase() || '';
+                const cliente = o.cliente?.nombreCliente?.toLowerCase() || '';
+                const vehiculo = o.vehiculo
+                    ? `${o.vehiculo.marca} ${o.vehiculo.modelo} ${o.vehiculo.placa} ${o.vehiculo.anio || ''}`.toLowerCase()
+                    : '';
+                const servicios = o.ordenServicios
+                    ?.map(s => s.nombreServicio?.toLowerCase())
+                    .join(' ') || '';
+
+                return (
+                    numOrden.includes(termino) ||
+                    cliente.includes(termino) ||
+                    vehiculo.includes(termino) ||
+                    servicios.includes(termino)
+                );
+            });
+        }
+
         return filtradas;
     };
 
     useEffect(() => {
-        aplicarFiltros();
-    }, [ordenes, filtroEstado, currentPage, esAdmin, usuario]);
+        const filtradas = filtrarOrdenes(ordenes);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setOrdenesFiltradas(filtradas.slice(startIndex, endIndex));
+    }, [ordenes, filtroEstado, busqueda, currentPage, esAdmin, usuario]);
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
 
-    const totalItems = ordenes.filter(o => {
-        if (filtroEstado) {
-            const estadoUsuario = getEstadoParaUsuario(o, esAdmin, usuario?.username);
-            return estadoUsuario === filtroEstado;
-        }
-        return true;
-    }).length;
-
+    const totalItems = filtrarOrdenes(ordenes).length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
     if (loading) {
@@ -238,11 +213,8 @@ const Ordenes = () => {
         return <div className="ordenes-container"><div className="error-message">{error}</div></div>;
     }
 
-    console.log(' Render final - ordenesFiltradas:', ordenesFiltradas.length);
-
     return (
         <div className="ordenes-container">
-            {/* Cabecera */}
             <div className="ordenes-header">
                 <div>
                     <h1>Órdenes de Trabajo</h1>
@@ -285,7 +257,22 @@ const Ordenes = () => {
             {/* Filtros y tabla */}
             <div className="tabla-container">
                 <div className="tabla-header">
-                    <span className="tabla-titulo">TODAS LAS ÓRDENES</span>
+                    <div className="search-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                            <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                            <path d="M21 21l-6 -6" />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Buscar por orden, cliente, vehículo o servicio..."
+                            value={busqueda}
+                            onChange={(e) => {
+                                setBusqueda(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                        />
+                    </div>
+
                     <div className="filtros-ordenes">
                         <select
                             value={filtroEstado}
@@ -322,18 +309,12 @@ const Ordenes = () => {
                             {ordenesFiltradas.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="sin-datos">
-                                        {esAdmin ? 'No hay órdenes registradas' : 'No tienes servicios asignados'}
+                                        {esAdmin ? 'No hay órdenes que coincidan' : 'No tienes servicios asignados'}
                                     </td>
                                 </tr>
                             ) : (
                                 ordenesFiltradas.map((orden) => {
                                     const estadoUsuario = getEstadoParaUsuario(orden, esAdmin, usuario?.username);
-                                    console.log(` Renderizando ${orden.numOrden}:`, {
-                                        estadoOrden: orden.estadoOrden,
-                                        estadoUsuario,
-                                        esAdmin,
-                                        username: usuario?.username
-                                    });
 
                                     return (
                                         <tr key={orden.idOrden} className="orden-fila">
