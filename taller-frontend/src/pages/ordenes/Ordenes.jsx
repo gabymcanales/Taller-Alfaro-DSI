@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getOrdenes, getEstadisticasOrdenes } from '../../services/ordenService';
 import ModalNuevaOrden from './ModalNuevaOrden';
 import ModalDetalleOrden from './ModalDetalleOrden';
 import Pagination from '../../components/common/Pagination/Pagination';
 import './Ordenes.css';
+
+const POLL_INTERVAL_MS = 90000;
 
 const Ordenes = () => {
     const [ordenes, setOrdenes] = useState([]);
@@ -25,13 +27,22 @@ const Ordenes = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const esPrimeraCarga = useRef(true);
 
     useEffect(() => {
         cargarDatos();
+
+        const intervalo = setInterval(cargarDatos, POLL_INTERVAL_MS);
+        window.addEventListener('focus', cargarDatos);
+
+        return () => {
+            clearInterval(intervalo);
+            window.removeEventListener('focus', cargarDatos);
+        };
     }, []);
 
     const cargarDatos = async () => {
-        setLoading(true);
+        if (esPrimeraCarga.current) setLoading(true);
         setError('');
 
         try {
@@ -59,6 +70,7 @@ const Ordenes = () => {
             setError(err.response?.data?.mensaje || 'Error al cargar las órdenes');
         } finally {
             setLoading(false);
+            esPrimeraCarga.current = false;
         }
     };
 
@@ -156,28 +168,48 @@ const Ordenes = () => {
                 </button>
             </div>
 
-            {/* Tarjetas de estadísticas */}
+            {/* Tarjetas de estadísticas (también funcionan como filtro) */}
             <div className="stats-row">
-                <div className="stat-card">
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === '' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(''); setCurrentPage(1); }}
+                >
                     <div className="stat-number">{estadisticas.totalOrdenes || 0}</div>
                     <div className="stat-label">Total órdenes</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'PENDIENTE' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'PENDIENTE' ? '' : 'PENDIENTE'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#f59e0b' }}>{estadisticas.pendientes || 0}</div>
                     <div className="stat-label">Pendientes</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'EN_PROCESO' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'EN_PROCESO' ? '' : 'EN_PROCESO'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#3b82f6' }}>{estadisticas.enProceso || 0}</div>
                     <div className="stat-label">En Proceso</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'FINALIZADO' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'FINALIZADO' ? '' : 'FINALIZADO'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#10b981' }}>{estadisticas.finalizadas || 0}</div>
                     <div className="stat-label">Finalizadas</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'ENTREGADO' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'ENTREGADO' ? '' : 'ENTREGADO'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#6b7280' }}>{estadisticas.entregadas || 0}</div>
                     <div className="stat-label">Entregadas</div>
-                </div>
+                </button>
             </div>
 
             {/* Filtros y tabla */}
@@ -200,20 +232,6 @@ const Ordenes = () => {
                     </div>
 
                     <div className="filtros-ordenes">
-                        <select
-                            value={filtroEstado}
-                            onChange={(e) => {
-                                setFiltroEstado(e.target.value);
-                                setCurrentPage(1);
-                            }}
-                            className="filtro-select"
-                        >
-                            <option value="">Todos los estados</option>
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="EN_PROCESO">En Proceso</option>
-                            <option value="FINALIZADO">Finalizado</option>
-                            <option value="ENTREGADO">Entregado</option>
-                        </select>
                         <span className="total-ordenes">{totalItems} órdenes</span>
                     </div>
                 </div>

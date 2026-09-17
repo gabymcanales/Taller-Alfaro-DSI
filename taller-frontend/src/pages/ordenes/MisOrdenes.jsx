@@ -16,7 +16,7 @@ const SECCIONES = [
     { key: 'FINALIZADO', label: 'Finalizadas', color: '#10b981' },
 ];
 
-const POLL_INTERVAL_MS = 20000;
+const POLL_INTERVAL_MS = 90000;
 
 const MisOrdenes = () => {
     const [usuario] = useState(getUsuarioActual());
