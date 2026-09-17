@@ -139,6 +139,105 @@ public class OrdenService {
         return convertToDTO(orden);
     }
 
+    @Transactional
+    public OrdenResponseDTO editarOrden(Long idOrden, EditarOrdenRequest request, String username) {
+        Orden orden = ordenRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
+        Empleado empleadoEdita = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        List<OrdenServicio> serviciosActuales = ordenServicioRepository.findByOrdenId(idOrden);
+
+        boolean algunoIniciado = serviciosActuales.stream()
+                .anyMatch(os -> !"PENDIENTE".equals(os.getEstadoServicioOrden()));
+        if (algunoIniciado) {
+            throw new RuntimeException(
+                    "La orden ya tiene servicios iniciados por el empleado y no puede editarse");
+        }
+
+        if (request.getServicios() == null || request.getServicios().isEmpty()) {
+            throw new RuntimeException("La orden debe tener al menos un servicio");
+        }
+
+        List<Long> idsNuevos = request.getServicios().stream()
+                .map(OrdenRequestDTO.ServicioAsignadoDTO::getIdServicio)
+                .collect(Collectors.toList());
+
+        for (OrdenServicio actual : serviciosActuales) {
+            if (!idsNuevos.contains(actual.getServicio().getIdServicio())) {
+                ordenServicioRepository.delete(actual);
+            }
+        }
+
+        BigDecimal totalCalculado = BigDecimal.ZERO;
+
+        for (OrdenRequestDTO.ServicioAsignadoDTO servicioReq : request.getServicios()) {
+            Servicio servicio = servicioRepository.findById(servicioReq.getIdServicio())
+                    .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+            Empleado empleado = empleadoRepository.findById(servicioReq.getIdEmpleado())
+                    .orElseThrow(() -> new RuntimeException(
+                            "Empleado no encontrado para el servicio: " + servicioReq.getIdServicio()));
+
+            if (!empleado.getActivo()) {
+                throw new RuntimeException("El empleado " + empleado.getNombreEmpleado() + " no está activo");
+            }
+
+            if ("ADMINISTRADOR".equals(empleado.getRolEmpleado())) {
+                throw new RuntimeException("No se puede asignar un Administrador a un servicio");
+            }
+
+            boolean tieneEspecialidad = empleado.getServicios().stream()
+                    .anyMatch(s -> s.getIdServicio().equals(servicio.getIdServicio()));
+
+            if (!tieneEspecialidad) {
+                throw new RuntimeException("El empleado " + empleado.getNombreEmpleado() +
+                        " no tiene la especialidad para " + servicio.getNombreServicio());
+            }
+
+            OrdenServicioId id = new OrdenServicioId();
+            id.setIdOrden(idOrden);
+            id.setIdServicio(servicio.getIdServicio());
+
+            OrdenServicio ordenServicio = ordenServicioRepository.findById(id).orElse(null);
+            if (ordenServicio == null) {
+                ordenServicio = new OrdenServicio();
+                ordenServicio.setId(id);
+                ordenServicio.setOrden(orden);
+                ordenServicio.setServicio(servicio);
+                ordenServicio.setEstadoServicioOrden("PENDIENTE");
+            }
+
+            ordenServicio.setEmpleado(empleado);
+
+            if ("FIJO".equals(servicio.getTipoPrecio())) {
+                BigDecimal precio = servicio.getPrecioSugerido();
+                if (precio == null || precio.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new RuntimeException("El servicio fijo " + servicio.getNombreServicio() +
+                            " no tiene precio definido");
+                }
+                ordenServicio.setPrecioAplicado(precio);
+                totalCalculado = totalCalculado.add(precio);
+            } else if ("VARIABLE".equals(servicio.getTipoPrecio())) {
+                ordenServicio.setPrecioAplicado(null);
+            } else {
+                throw new RuntimeException("Tipo de precio no válido: " + servicio.getTipoPrecio());
+            }
+
+            ordenServicioRepository.save(ordenServicio);
+        }
+
+        orden.setTotalCalculadoOrden(totalCalculado);
+        orden = ordenRepository.save(orden);
+
+        registrarHistorial(orden, orden.getEstadoOrden(), orden.getEstadoOrden(),
+                "Orden editada por " + empleadoEdita.getNombreEmpleado(), empleadoEdita);
+
+        log.info("Orden editada: {}", orden.getNumOrden());
+        return convertToDTO(orden);
+    }
+
     public List<OrdenResponseDTO> getOrdenes() {
         return ordenRepository.findAll().stream()
                 .map(this::convertToDTO)
@@ -406,6 +505,11 @@ public class OrdenService {
     }
 
     private void validarTransicionEstado(String estadoActual, String nuevoEstado) {
+        if ("ENTREGADO".equals(nuevoEstado)) {
+            throw new RuntimeException(
+                    "El estado ENTREGADO solo puede alcanzarse cobrando la orden desde Facturación");
+        }
+
         List<String> estados = List.of("PENDIENTE", "EN_PROCESO", "FINALIZADO", "ENTREGADO");
 
         if (!estados.contains(nuevoEstado)) {

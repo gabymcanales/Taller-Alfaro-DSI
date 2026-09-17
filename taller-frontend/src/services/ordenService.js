@@ -11,6 +11,8 @@ export const getOrdenById = (id) => axiosInstance.get(`/ordenes/${id}`);
 
 export const crearOrden = (data) => axiosInstance.post('/ordenes', data);
 
+export const editarOrden = (idOrden, data) => axiosInstance.put(`/ordenes/${idOrden}`, data);
+
 export const cambiarEstadoOrden = (id, estado) =>
     axiosInstance.patch(`/ordenes/${id}/estado?estado=${estado}`);
 

@@ -68,6 +68,16 @@ public class OrdenController {
         return ResponseEntity.ok(ordenService.crearOrden(request, username));
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PutMapping("/{id}")
+    public ResponseEntity<OrdenResponseDTO> editarOrden(
+            @PathVariable Long id,
+            @RequestBody EditarOrdenRequest request,
+            Authentication authentication) {
+        String username = authentication.getName();
+        return ResponseEntity.ok(ordenService.editarOrden(id, request, username));
+    }
+
     @PatchMapping("/{idOrden}/servicios/{idServicio}/iniciar")
     public ResponseEntity<OrdenServicioDTO> iniciarServicio(
             @PathVariable Long idOrden,
