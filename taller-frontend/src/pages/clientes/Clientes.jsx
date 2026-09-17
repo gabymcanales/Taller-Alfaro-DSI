@@ -132,7 +132,7 @@ const Clientes = () => {
             {/* ========== STATS ========== */}
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon">
+                    <div className="stat-icon verde">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
                             <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
@@ -140,26 +140,27 @@ const Clientes = () => {
                             <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
                         </svg>
                     </div>
-                    <div className="stat-number">{estadisticas?.totalClientes ?? 0}</div>
+                    <div className="stats-number">{estadisticas?.totalClientes ?? 0}</div>
                     <div className="stat-label">Clientes registrados</div>
                     <div className="stat-sub">En expediente</div>
                 </div>
 
                 <div className="stat-card">
-                    <div className="stat-icon">
+                    <div className="stat-icon amarillo">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
                             <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
                             <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
                         </svg>
                     </div>
-                    <div className="stat-number">{estadisticas?.totalVehiculos ?? 0}</div>
+                    <div className="stats-number">{estadisticas?.totalVehiculos ?? 0}</div>
                     <div className="stat-label">Vehículos registrados</div>
                     <div className="stat-sub">Con propietario vinculado</div>
                 </div>
 
                 <div className="stat-card">
-                    <div className="stat-icon">
+                    <div className="stat-icon azul">
+                   
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
                             <path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" />
@@ -169,7 +170,7 @@ const Clientes = () => {
                             <path d="M13 16l2 0" />
                         </svg>
                     </div>
-                    <div className="stat-number">{estadisticas?.ordenesActivas ?? 0}</div>
+                    <div className="stats-number">{estadisticas?.ordenesActivas ?? 0}</div>
                     <div className="stat-label">Órdenes activas</div>
                     <div className="stat-sub">Vinculadas a clientes</div>
                 </div>

@@ -21,7 +21,7 @@ const Dashboard = () => {
         }
     };
 
-    if (loading) return <div className="dashboard-loading">Cargando...</div>;
+    
 
     return (
         <div className="dashboard-container">
