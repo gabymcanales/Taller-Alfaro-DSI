@@ -3,6 +3,7 @@ package com.taller.ordenes;
 import com.taller.cobros.ServicioRepository;
 import com.taller.cobros.TransaccionRepository;
 import com.taller.dto.*;
+import com.taller.exception.AccesoDenegadoOrdenException;
 import com.taller.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -138,16 +139,133 @@ public class OrdenService {
         return convertToDTO(orden);
     }
 
+    @Transactional
+    public OrdenResponseDTO editarOrden(Long idOrden, EditarOrdenRequest request, String username) {
+        Orden orden = ordenRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
+        Empleado empleadoEdita = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        List<OrdenServicio> serviciosActuales = ordenServicioRepository.findByOrdenId(idOrden);
+
+        boolean algunoIniciado = serviciosActuales.stream()
+                .anyMatch(os -> !"PENDIENTE".equals(os.getEstadoServicioOrden()));
+        if (algunoIniciado) {
+            throw new RuntimeException(
+                    "La orden ya tiene servicios iniciados por el empleado y no puede editarse");
+        }
+
+        if (request.getServicios() == null || request.getServicios().isEmpty()) {
+            throw new RuntimeException("La orden debe tener al menos un servicio");
+        }
+
+        List<Long> idsNuevos = request.getServicios().stream()
+                .map(OrdenRequestDTO.ServicioAsignadoDTO::getIdServicio)
+                .collect(Collectors.toList());
+
+        for (OrdenServicio actual : serviciosActuales) {
+            if (!idsNuevos.contains(actual.getServicio().getIdServicio())) {
+                ordenServicioRepository.delete(actual);
+            }
+        }
+
+        BigDecimal totalCalculado = BigDecimal.ZERO;
+
+        for (OrdenRequestDTO.ServicioAsignadoDTO servicioReq : request.getServicios()) {
+            Servicio servicio = servicioRepository.findById(servicioReq.getIdServicio())
+                    .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+            Empleado empleado = empleadoRepository.findById(servicioReq.getIdEmpleado())
+                    .orElseThrow(() -> new RuntimeException(
+                            "Empleado no encontrado para el servicio: " + servicioReq.getIdServicio()));
+
+            if (!empleado.getActivo()) {
+                throw new RuntimeException("El empleado " + empleado.getNombreEmpleado() + " no está activo");
+            }
+
+            if ("ADMINISTRADOR".equals(empleado.getRolEmpleado())) {
+                throw new RuntimeException("No se puede asignar un Administrador a un servicio");
+            }
+
+            boolean tieneEspecialidad = empleado.getServicios().stream()
+                    .anyMatch(s -> s.getIdServicio().equals(servicio.getIdServicio()));
+
+            if (!tieneEspecialidad) {
+                throw new RuntimeException("El empleado " + empleado.getNombreEmpleado() +
+                        " no tiene la especialidad para " + servicio.getNombreServicio());
+            }
+
+            OrdenServicioId id = new OrdenServicioId();
+            id.setIdOrden(idOrden);
+            id.setIdServicio(servicio.getIdServicio());
+
+            OrdenServicio ordenServicio = ordenServicioRepository.findById(id).orElse(null);
+            if (ordenServicio == null) {
+                ordenServicio = new OrdenServicio();
+                ordenServicio.setId(id);
+                ordenServicio.setOrden(orden);
+                ordenServicio.setServicio(servicio);
+                ordenServicio.setEstadoServicioOrden("PENDIENTE");
+            }
+
+            ordenServicio.setEmpleado(empleado);
+
+            if ("FIJO".equals(servicio.getTipoPrecio())) {
+                BigDecimal precio = servicio.getPrecioSugerido();
+                if (precio == null || precio.compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new RuntimeException("El servicio fijo " + servicio.getNombreServicio() +
+                            " no tiene precio definido");
+                }
+                ordenServicio.setPrecioAplicado(precio);
+                totalCalculado = totalCalculado.add(precio);
+            } else if ("VARIABLE".equals(servicio.getTipoPrecio())) {
+                ordenServicio.setPrecioAplicado(null);
+            } else {
+                throw new RuntimeException("Tipo de precio no válido: " + servicio.getTipoPrecio());
+            }
+
+            ordenServicioRepository.save(ordenServicio);
+        }
+
+        orden.setTotalCalculadoOrden(totalCalculado);
+        orden = ordenRepository.save(orden);
+
+        registrarHistorial(orden, orden.getEstadoOrden(), orden.getEstadoOrden(),
+                "Orden editada por " + empleadoEdita.getNombreEmpleado(), empleadoEdita);
+
+        log.info("Orden editada: {}", orden.getNumOrden());
+        return convertToDTO(orden);
+    }
+
     public List<OrdenResponseDTO> getOrdenes() {
         return ordenRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public OrdenResponseDTO getOrdenById(Long id) {
+    public OrdenResponseDTO getOrdenById(Long id, String username) {
         Orden orden = ordenRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+        verificarAccesoOrden(orden, username);
         return convertToDTO(orden);
+    }
+
+    private void verificarAccesoOrden(Orden orden, String username) {
+        Empleado empleado = empleadoRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        if ("ADMINISTRADOR".equals(empleado.getRolEmpleado())) {
+            return;
+        }
+
+        boolean tieneServicioAsignado = ordenServicioRepository.findByOrdenId(orden.getIdOrden()).stream()
+                .anyMatch(os -> os.getEmpleado() != null &&
+                        os.getEmpleado().getIdEmpleado().equals(empleado.getIdEmpleado()));
+
+        if (!tieneServicioAsignado) {
+            throw new AccesoDenegadoOrdenException(orden.getNumOrden());
+        }
     }
 
     public List<OrdenResponseDTO> getOrdenesByCliente(Long clienteId) {
@@ -189,11 +307,15 @@ public class OrdenService {
     }
 
     @Transactional
-    public OrdenServicioDTO iniciarServicio(Long idOrden, Long idServicio, String username) {
+    public OrdenServicioDTO iniciarServicio(Long idOrden, Long idServicio, String comentario, String username) {
         OrdenServicio ordenServicio = getOrdenServicio(idOrden, idServicio);
 
         Empleado empleado = empleadoRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        if ("ENTREGADO".equals(ordenServicio.getOrden().getEstadoOrden())) {
+            throw new RuntimeException("La orden ya fue entregada y no puede modificarse");
+        }
 
         if (!"PENDIENTE".equals(ordenServicio.getEstadoServicioOrden())) {
             throw new RuntimeException("El servicio debe estar PENDIENTE para iniciarlo");
@@ -211,10 +333,13 @@ public class OrdenService {
 
         Orden orden = ordenServicio.getOrden();
 
-        registrarHistorial(orden, estadoAnterior, "EN_PROCESO",
-                "Servicio " + ordenServicio.getServicio().getNombreServicio() +
-                        " iniciado por " + empleado.getNombreEmpleado(),
-                empleado);
+        String mensaje = "Servicio " + ordenServicio.getServicio().getNombreServicio() +
+                " iniciado por " + empleado.getNombreEmpleado();
+        if (comentario != null && !comentario.isBlank()) {
+            mensaje += " - \"" + comentario.trim() + "\"";
+        }
+
+        registrarHistorial(orden, estadoAnterior, "EN_PROCESO", mensaje, empleado);
 
         return convertToServicioDTO(ordenServicio);
     }
@@ -226,6 +351,10 @@ public class OrdenService {
 
         Empleado empleado = empleadoRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        if ("ENTREGADO".equals(ordenServicio.getOrden().getEstadoOrden())) {
+            throw new RuntimeException("La orden ya fue entregada y no puede modificarse");
+        }
 
         if (!"EN_PROCESO".equals(ordenServicio.getEstadoServicioOrden())) {
             throw new RuntimeException("El servicio debe estar EN_PROCESO para finalizarlo");
@@ -258,10 +387,13 @@ public class OrdenService {
 
         Orden orden = ordenServicio.getOrden();
 
-        registrarHistorial(orden, estadoAnterior, "FINALIZADO",
-                "Servicio " + servicio.getNombreServicio() + " finalizado por " +
-                        empleado.getNombreEmpleado() + " - Precio: $" + ordenServicio.getPrecioAplicado(),
-                empleado);
+        String mensaje = "Servicio " + servicio.getNombreServicio() + " finalizado por " +
+                empleado.getNombreEmpleado() + " - Precio: $" + ordenServicio.getPrecioAplicado();
+        if (request.getComentario() != null && !request.getComentario().isBlank()) {
+            mensaje += " - \"" + request.getComentario().trim() + "\"";
+        }
+
+        registrarHistorial(orden, estadoAnterior, "FINALIZADO", mensaje, empleado);
 
         return convertToServicioDTO(ordenServicio);
     }
@@ -373,6 +505,11 @@ public class OrdenService {
     }
 
     private void validarTransicionEstado(String estadoActual, String nuevoEstado) {
+        if ("ENTREGADO".equals(nuevoEstado)) {
+            throw new RuntimeException(
+                    "El estado ENTREGADO solo puede alcanzarse cobrando la orden desde Facturación");
+        }
+
         List<String> estados = List.of("PENDIENTE", "EN_PROCESO", "FINALIZADO", "ENTREGADO");
 
         if (!estados.contains(nuevoEstado)) {
@@ -477,7 +614,11 @@ public class OrdenService {
         return stats;
     }
 
-    public List<HistorialEstadoDTO> getHistorial(Long idOrden) {
+    public List<HistorialEstadoDTO> getHistorial(Long idOrden, String username) {
+        Orden orden = ordenRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+        verificarAccesoOrden(orden, username);
+
         return historialEstadoOrdenRepository.findByOrdenIdOrderByFechaCambioAsc(idOrden).stream()
                 .map(this::convertToHistorialDTO)
                 .collect(Collectors.toList());

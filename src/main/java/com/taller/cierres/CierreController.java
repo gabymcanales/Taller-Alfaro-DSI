@@ -6,6 +6,7 @@ import com.taller.model.Empleado;
 import com.taller.ordenes.EmpleadoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.taller.dto.CierreMensualRequest;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/cierres")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 public class CierreController {
 
     private final CierreService cierreService;

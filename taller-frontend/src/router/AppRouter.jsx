@@ -23,8 +23,11 @@ import Vehiculos from '../pages/vehiculos/Vehiculos';
 import GestionEmpleados from '../pages/empleados/GestionEmpleados/GestionEmpleados';
 
 import Ordenes from '../pages/ordenes/Ordenes';
+import MisOrdenes from '../pages/ordenes/MisOrdenes';
 
 import GestionInventario from '../pages/inventario/GestionInventario/GestionInventario';
+
+import { getUsuarioActual, esAdministrador } from '../utils/authUser';
 
 
 const PrivateRoute = ({ children }) => {
@@ -32,6 +35,15 @@ const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem('token');
 
     return token ? children : <Navigate to="/login" />;
+
+};
+
+
+const RutaAdmin = ({ children }) => {
+
+    const usuario = getUsuarioActual();
+
+    return esAdministrador(usuario) ? children : <Navigate to="/mis-ordenes" />;
 
 };
 
@@ -50,66 +62,71 @@ const Layout = () => {
 
                     <Routes>
 
-                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/" element={<RutaAdmin><Dashboard /></RutaAdmin>} />
+
+                        <Route
+                            path="/mis-ordenes"
+                            element={<MisOrdenes />}
+                        />
 
                         <Route
                             path="/cobros/registrar"
-                            element={<RegistrarCobro />}
+                            element={<RutaAdmin><RegistrarCobro /></RutaAdmin>}
                         />
 
                         <Route
                             path="/cobros/arqueo"
-                            element={<ArqueoDiario />}
+                            element={<RutaAdmin><ArqueoDiario /></RutaAdmin>}
                         />
 
                         <Route
                             path="/cierres/diario"
-                            element={<CierreCaja />}
+                            element={<RutaAdmin><CierreCaja /></RutaAdmin>}
                         />
 
                         <Route
                             path="/cobros/cierres"
-                            element={<CierreCaja />}
+                            element={<RutaAdmin><CierreCaja /></RutaAdmin>}
                         />
 
                         <Route
                             path="/cobros/historial"
-                            element={<Historial />}
+                            element={<RutaAdmin><Historial /></RutaAdmin>}
                         />
 
                         <Route
                             path="/reportes"
-                            element={<ReporteDiario />}
+                            element={<RutaAdmin><ReporteDiario /></RutaAdmin>}
                         />
 
                         <Route
                             path="/clientes"
-                            element={<Clientes />}
+                            element={<RutaAdmin><Clientes /></RutaAdmin>}
                         />
 
                         <Route
                             path="/vehiculos"
-                            element={<Vehiculos />}
+                            element={<RutaAdmin><Vehiculos /></RutaAdmin>}
                         />
 
                         <Route
                             path="/servicios"
-                            element={<GestionServicios />}
+                            element={<RutaAdmin><GestionServicios /></RutaAdmin>}
                         />
 
                         <Route
                             path="/empleados"
-                            element={<GestionEmpleados />}
+                            element={<RutaAdmin><GestionEmpleados /></RutaAdmin>}
                         />
 
                         <Route
                             path="/ordenes"
-                            element={<Ordenes />}
+                            element={<RutaAdmin><Ordenes /></RutaAdmin>}
                         />
 
                         <Route
                             path="/inventario"
-                            element={<GestionInventario />}
+                            element={<RutaAdmin><GestionInventario /></RutaAdmin>}
                         />
 
                     </Routes>

@@ -3,6 +3,7 @@ package com.taller.servicios;
 import com.taller.model.Servicio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -11,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/servicios")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMINISTRADOR')")
 public class ServicioController {
 
     private final ServicioService servicioService;

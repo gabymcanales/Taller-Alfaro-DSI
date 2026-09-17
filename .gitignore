@@ -36,3 +36,6 @@ build/
 src/main/resources/application.properties
 application.properties
 application.properties
+
+### Node (por si se corre npm por error en la raiz) ###
+node_modules/

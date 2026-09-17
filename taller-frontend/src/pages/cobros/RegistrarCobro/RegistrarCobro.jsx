@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     registrarCobro,
     getOrdenesFinalizadas,
@@ -40,10 +41,23 @@ const RegistrarCobro = () => {
     const [success, setSuccess] = useState(null);
 
     const buscadorRef = useRef(null);
+    const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         cargarOrdenesFinalizadas();
     }, []);
+
+    useEffect(() => {
+        const idPreseleccionada = location.state?.idOrden;
+        if (!idPreseleccionada || ordenes.length === 0) return;
+
+        const orden = ordenes.find(o => o.idOrden === idPreseleccionada);
+        if (orden) {
+            seleccionarOrden(orden);
+        }
+        navigate(location.pathname, { replace: true, state: {} });
+    }, [ordenes]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {

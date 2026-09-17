@@ -1,14 +1,11 @@
-import { useState, useEffect } from 'react';
-import {
-    getOrdenes,
-    getOrdenesPorEmpleado,
-    getEstadisticasOrdenes,
-    getEstadisticasPorEmpleado
-} from '../../services/ordenService';
+import { useState, useEffect, useRef } from 'react';
+import { getOrdenes, getEstadisticasOrdenes } from '../../services/ordenService';
 import ModalNuevaOrden from './ModalNuevaOrden';
 import ModalDetalleOrden from './ModalDetalleOrden';
 import Pagination from '../../components/common/Pagination/Pagination';
 import './Ordenes.css';
+
+const POLL_INTERVAL_MS = 90000;
 
 const Ordenes = () => {
     const [ordenes, setOrdenes] = useState([]);
@@ -27,58 +24,32 @@ const Ordenes = () => {
     const [ordenSeleccionadaId, setOrdenSeleccionadaId] = useState(null);
     const [filtroEstado, setFiltroEstado] = useState('');
     const [busqueda, setBusqueda] = useState('');
-    const [usuario, setUsuario] = useState(null);
-    const [esAdmin, setEsAdmin] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-
-    const obtenerUsuario = () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const username = payload.username || payload.sub;
-                setUsuario({ ...payload, username });
-                const isAdmin = payload?.rol === 'ADMINISTRADOR' || payload?.rol === 'ADMIN';
-                setEsAdmin(isAdmin);
-            } catch (e) {
-                setUsuario({ username: 'admin', rol: 'ADMINISTRADOR' });
-                setEsAdmin(true);
-            }
-        } else {
-            setUsuario({ username: 'admin', rol: 'ADMINISTRADOR' });
-            setEsAdmin(true);
-        }
-    };
+    const esPrimeraCarga = useRef(true);
 
     useEffect(() => {
-        obtenerUsuario();
+        cargarDatos();
+
+        const intervalo = setInterval(cargarDatos, POLL_INTERVAL_MS);
+        window.addEventListener('focus', cargarDatos);
+
+        return () => {
+            clearInterval(intervalo);
+            window.removeEventListener('focus', cargarDatos);
+        };
     }, []);
 
-    useEffect(() => {
-        if (usuario !== null) {
-            cargarDatos();
-        }
-    }, [usuario]);
-
     const cargarDatos = async () => {
-        setLoading(true);
+        if (esPrimeraCarga.current) setLoading(true);
         setError('');
-        try {
-            let ordenesRes, statsRes;
 
-            if (esAdmin) {
-                [ordenesRes, statsRes] = await Promise.all([
-                    getOrdenes(),
-                    getEstadisticasOrdenes()
-                ]);
-            } else {
-                [ordenesRes, statsRes] = await Promise.all([
-                    getOrdenesPorEmpleado(),
-                    getEstadisticasPorEmpleado()
-                ]);
-            }
+        try {
+            const [ordenesRes, statsRes] = await Promise.all([
+                getOrdenes(),
+                getEstadisticasOrdenes()
+            ]);
 
             const ordenesData = (ordenesRes.data || []).sort((a, b) => {
                 const fechaA = new Date(a.fechaHoraOrden);
@@ -99,34 +70,8 @@ const Ordenes = () => {
             setError(err.response?.data?.mensaje || 'Error al cargar las órdenes');
         } finally {
             setLoading(false);
+            esPrimeraCarga.current = false;
         }
-    };
-
-    const getEstadoParaUsuario = (orden, isAdmin, username) => {
-        if (isAdmin) {
-            return orden.estadoOrden || 'PENDIENTE';
-        }
-
-        const misServicios = orden.ordenServicios?.filter(s => {
-            if (!s.empleado) return false;
-            return s.empleado.username === username;
-        });
-
-        if (!misServicios || misServicios.length === 0) {
-            return 'PENDIENTE';
-        }
-
-        if (orden.estadoOrden === 'ENTREGADO') {
-            return 'ENTREGADO';
-        }
-
-        if (misServicios.every(s => s.estadoServicioOrden === 'FINALIZADO')) {
-            return 'FINALIZADO';
-        }
-        if (misServicios.some(s => s.estadoServicioOrden === 'EN_PROCESO')) {
-            return 'EN_PROCESO';
-        }
-        return 'PENDIENTE';
     };
 
     const getEstadoBadge = (estado) => {
@@ -154,18 +99,12 @@ const Ordenes = () => {
         setShowDetalleModal(true);
     };
 
-
     const filtrarOrdenes = (lista) => {
         let filtradas = [...lista];
 
-
         if (filtroEstado) {
-            filtradas = filtradas.filter(o => {
-                const estadoUsuario = getEstadoParaUsuario(o, esAdmin, usuario?.username);
-                return estadoUsuario === filtroEstado;
-            });
+            filtradas = filtradas.filter(o => o.estadoOrden === filtroEstado);
         }
-
 
         if (busqueda.trim()) {
             const termino = busqueda.toLowerCase();
@@ -196,7 +135,7 @@ const Ordenes = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         setOrdenesFiltradas(filtradas.slice(startIndex, endIndex));
-    }, [ordenes, filtroEstado, busqueda, currentPage, esAdmin, usuario]);
+    }, [ordenes, filtroEstado, busqueda, currentPage]);
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -215,43 +154,62 @@ const Ordenes = () => {
 
     return (
         <div className="ordenes-container">
+            {/* Cabecera */}
             <div className="ordenes-header">
                 <div>
                     <h1>Órdenes de Trabajo</h1>
-                    <p>{esAdmin ? 'Gestión completa de órdenes' : 'Tus servicios asignados'}</p>
+                    <p>Gestión completa de órdenes</p>
                 </div>
-                {esAdmin && (
-                    <button className="btn-nueva-orden" onClick={() => setShowModal(true)}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        Nueva Orden
-                    </button>
-                )}
+                <button className="btn-nueva-orden" onClick={() => setShowModal(true)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Nueva Orden
+                </button>
             </div>
 
-            {/* Tarjetas de estadísticas */}
+            {/* Tarjetas de estadísticas (también funcionan como filtro) */}
             <div className="stats-row">
-                <div className="stat-card">
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === '' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(''); setCurrentPage(1); }}
+                >
                     <div className="stat-number">{estadisticas.totalOrdenes || 0}</div>
                     <div className="stat-label">Total órdenes</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'PENDIENTE' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'PENDIENTE' ? '' : 'PENDIENTE'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#f59e0b' }}>{estadisticas.pendientes || 0}</div>
                     <div className="stat-label">Pendientes</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'EN_PROCESO' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'EN_PROCESO' ? '' : 'EN_PROCESO'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#3b82f6' }}>{estadisticas.enProceso || 0}</div>
                     <div className="stat-label">En Proceso</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'FINALIZADO' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'FINALIZADO' ? '' : 'FINALIZADO'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#10b981' }}>{estadisticas.finalizadas || 0}</div>
                     <div className="stat-label">Finalizadas</div>
-                </div>
-                <div className="stat-card">
+                </button>
+                <button
+                    type="button"
+                    className={`stat-card ${filtroEstado === 'ENTREGADO' ? 'activa' : ''}`}
+                    onClick={() => { setFiltroEstado(filtroEstado === 'ENTREGADO' ? '' : 'ENTREGADO'); setCurrentPage(1); }}
+                >
                     <div className="stat-number" style={{ color: '#6b7280' }}>{estadisticas.entregadas || 0}</div>
                     <div className="stat-label">Entregadas</div>
-                </div>
+                </button>
             </div>
 
             {/* Filtros y tabla */}
@@ -274,20 +232,6 @@ const Ordenes = () => {
                     </div>
 
                     <div className="filtros-ordenes">
-                        <select
-                            value={filtroEstado}
-                            onChange={(e) => {
-                                setFiltroEstado(e.target.value);
-                                setCurrentPage(1);
-                            }}
-                            className="filtro-select"
-                        >
-                            <option value="">Todos los estados</option>
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="EN_PROCESO">En Proceso</option>
-                            <option value="FINALIZADO">Finalizado</option>
-                            <option value="ENTREGADO">Entregado</option>
-                        </select>
                         <span className="total-ordenes">{totalItems} órdenes</span>
                     </div>
                 </div>
@@ -309,68 +253,51 @@ const Ordenes = () => {
                             {ordenesFiltradas.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="sin-datos">
-                                        {esAdmin ? 'No hay órdenes que coincidan' : 'No tienes servicios asignados'}
+                                        No hay órdenes que coincidan
                                     </td>
                                 </tr>
                             ) : (
-                                ordenesFiltradas.map((orden) => {
-                                    const estadoUsuario = getEstadoParaUsuario(orden, esAdmin, usuario?.username);
-
-                                    return (
-                                        <tr key={orden.idOrden} className="orden-fila">
-                                            <td className="orden-numero">{orden.numOrden}</td>
-                                            <td>{orden.cliente?.nombreCliente || '—'}</td>
-                                            <td className="vehiculo-texto">
-                                                {orden.vehiculo
-                                                    ? `${orden.vehiculo.marca} ${orden.vehiculo.modelo} ${orden.vehiculo.anio || ''}`
-                                                    : 'Sin vehículo'
-                                                }
-                                            </td>
-                                            <td>
-                                                {esAdmin ? (
-                                                    orden.ordenServicios?.map((servicio, i) => (
-                                                        <div key={i} className="servicio-item">
-                                                            {servicio.nombreServicio} - {servicio.empleado?.nombreEmpleado || 'Sin asignar'}
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    orden.ordenServicios
-                                                        ?.filter(s => s.empleado?.username === usuario?.username)
-                                                        .map((servicio, i) => (
-                                                            <div key={i} className="servicio-item">
-                                                                {servicio.nombreServicio}
-                                                                <span className="mi-servicio-tag">
-                                                                    {servicio.empleado?.nombreEmpleado || 'Sin asignar'}
-                                                                </span>
-                                                            </div>
-                                                        ))
-                                                )}
-                                                {(!orden.ordenServicios || orden.ordenServicios.length === 0) && (
-                                                    <span style={{ color: '#888', fontSize: '12px' }}>Sin servicios</span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <span className={`badge-estado ${getEstadoBadge(estadoUsuario)}`}>
-                                                    ● {getEstadoDisplay(estadoUsuario)}
-                                                </span>
-                                            </td>
-                                            <td className="fecha-texto">
-                                                {orden.fechaHoraOrden
-                                                    ? new Date(orden.fechaHoraOrden).toLocaleDateString('es-ES') + ' ' + new Date(orden.fechaHoraOrden).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
-                                                    : '—'
-                                                }
-                                            </td>
-                                            <td>
-                                                <button
-                                                    className="btn-ver-detalle"
-                                                    onClick={() => handleVerDetalle(orden.idOrden)}
-                                                >
-                                                    Ver detalle
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
+                                ordenesFiltradas.map((orden) => (
+                                    <tr key={orden.idOrden} className="orden-fila">
+                                        <td className="orden-numero">{orden.numOrden}</td>
+                                        <td>{orden.cliente?.nombreCliente || '—'}</td>
+                                        <td className="vehiculo-texto">
+                                            {orden.vehiculo
+                                                ? `${orden.vehiculo.marca} ${orden.vehiculo.modelo} ${orden.vehiculo.anio || ''}`
+                                                : 'Sin vehículo'
+                                            }
+                                        </td>
+                                        <td>
+                                            {orden.ordenServicios?.map((servicio, i) => (
+                                                <div key={i} className="servicio-item">
+                                                    {servicio.nombreServicio} - {servicio.empleado?.nombreEmpleado || 'Sin asignar'}
+                                                </div>
+                                            ))}
+                                            {(!orden.ordenServicios || orden.ordenServicios.length === 0) && (
+                                                <span style={{ color: '#888', fontSize: '12px' }}>Sin servicios</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <span className={`badge-estado ${getEstadoBadge(orden.estadoOrden)}`}>
+                                                ● {getEstadoDisplay(orden.estadoOrden)}
+                                            </span>
+                                        </td>
+                                        <td className="fecha-texto">
+                                            {orden.fechaHoraOrden
+                                                ? new Date(orden.fechaHoraOrden).toLocaleDateString('es-ES') + ' ' + new Date(orden.fechaHoraOrden).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                                                : '—'
+                                            }
+                                        </td>
+                                        <td>
+                                            <button
+                                                className="btn-ver-detalle"
+                                                onClick={() => handleVerDetalle(orden.idOrden)}
+                                            >
+                                                Ver detalle
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
                             )}
                         </tbody>
                     </table>
@@ -383,21 +310,18 @@ const Ordenes = () => {
                 />
             </div>
 
-            {esAdmin && (
-                <ModalNuevaOrden
-                    isOpen={showModal}
-                    onClose={() => setShowModal(false)}
-                    onOrdenCreada={cargarDatos}
-                />
-            )}
+            <ModalNuevaOrden
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onOrdenCreada={cargarDatos}
+            />
 
             <ModalDetalleOrden
                 isOpen={showDetalleModal}
                 onClose={() => setShowDetalleModal(false)}
                 ordenId={ordenSeleccionadaId}
                 onOrdenActualizada={cargarDatos}
-                esAdmin={esAdmin}
-                username={usuario?.username}
+                esAdmin={true}
             />
         </div>
     );

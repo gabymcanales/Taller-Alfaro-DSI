@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getOrdenById, cambiarEstadoOrden } from '../../services/ordenService';
+import { useNavigate } from 'react-router-dom';
+import { getOrdenById } from '../../services/ordenService';
 import ModalAvanzarServicio from './ModalAvanzarServicio';
+import ModalEditarOrden from './ModalEditarOrden';
 import './ModalDetalleOrden.css';
 
 const ModalDetalleOrden = ({
@@ -16,6 +18,8 @@ const ModalDetalleOrden = ({
     const [error, setError] = useState('');
     const [showAvanzarModal, setShowAvanzarModal] = useState(false);
     const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
+    const [showEditarModal, setShowEditarModal] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (isOpen && ordenId) {
@@ -71,16 +75,15 @@ const ModalDetalleOrden = ({
         if (onOrdenActualizada) onOrdenActualizada();
     };
 
-    const handleCobrarOrden = async () => {
-        if (!window.confirm('¿Estás seguro de cobrar esta orden?')) return;
-        try {
-            await cambiarEstadoOrden(ordenId, 'ENTREGADO');
-            alert('Orden cobrada exitosamente');
-            cargarOrden();
-            if (onOrdenActualizada) onOrdenActualizada();
-        } catch (err) {
-            setError(err.response?.data?.mensaje || 'Error al cobrar la orden');
-        }
+    const handleIrACobrar = () => {
+        onClose();
+        navigate('/cobros/registrar', { state: { idOrden: ordenId } });
+    };
+
+    const handleOrdenEditada = () => {
+        setShowEditarModal(false);
+        cargarOrden();
+        if (onOrdenActualizada) onOrdenActualizada();
     };
 
     if (!isOpen) return null;
@@ -244,8 +247,13 @@ const ModalDetalleOrden = ({
                         {/* Botones de acción */}
                         <div className="detalle-footer">
                             <button className="btn-cancelar-detalle" onClick={onClose}>Cerrar</button>
+                            {isAdmin && orden.estadoOrden === 'PENDIENTE' && (
+                                <button className="btn-avanzar" onClick={() => setShowEditarModal(true)}>
+                                    Editar orden
+                                </button>
+                            )}
                             {isAdmin && todosFinalizados && orden.estadoOrden !== 'ENTREGADO' && (
-                                <button className="btn-cobrar" onClick={handleCobrarOrden}>
+                                <button className="btn-cobrar" onClick={handleIrACobrar}>
                                     Cobrar orden
                                 </button>
                             )}
@@ -264,6 +272,14 @@ const ModalDetalleOrden = ({
                 ordenId={ordenId}
                 servicio={servicioSeleccionado}
                 onServicioActualizado={handleServicioActualizado}
+            />
+
+            {/* Modal de Editar Orden */}
+            <ModalEditarOrden
+                isOpen={showEditarModal}
+                onClose={() => setShowEditarModal(false)}
+                ordenId={ordenId}
+                onOrdenEditada={handleOrdenEditada}
             />
         </>
     );

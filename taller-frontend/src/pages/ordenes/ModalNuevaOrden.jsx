@@ -350,37 +350,6 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                 Cada servicio lleva su propio empleado y avanza de estado por separado
                             </p>
 
-                            <div className="servicios-lista">
-                                {formData.servicios.map((s, index) => (
-                                    <div key={index} className="servicio-asignado">
-                                        <div className="servicio-info">
-                                            <span className="servicio-nombre">{s.nombreServicio}</span>
-                                            <span className="servicio-area">{s.area}</span>
-                                            <span className="servicio-empleado">👤 {s.empleadoNombre}</span>
-                                            {s.tipoPrecio === 'VARIABLE' && (
-                                                <span className="servicio-variable-tag">Precio variable</span>
-                                            )}
-                                        </div>
-                                        <div className="servicio-precio">
-                                            {s.tipoPrecio === 'VARIABLE' ? (
-                                                <span className="precio-variable">Se define al finalizar</span>
-                                            ) : (
-                                                <span>${(s.precio || 0).toFixed(2)}</span>
-                                            )}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="btn-eliminar-servicio"
-                                            onClick={() => eliminarServicio(index)}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {errores.servicios && <span className="error-msg">{errores.servicios}</span>}
-
                             <div className="agregar-servicio-container">
                                 <div className="agregar-servicio-row">
                                     <select
@@ -419,6 +388,37 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                         </select>
                                     </div>
                                 )}
+                            </div>
+
+                            {errores.servicios && <span className="error-msg">{errores.servicios}</span>}
+
+                            <div className="servicios-lista">
+                                {formData.servicios.map((s, index) => (
+                                    <div key={index} className="servicio-asignado">
+                                        <div className="servicio-info">
+                                            <span className="servicio-nombre">{s.nombreServicio}</span>
+                                            <span className="servicio-area">{s.area}</span>
+                                            <span className="servicio-empleado">👤 {s.empleadoNombre}</span>
+                                            {s.tipoPrecio === 'VARIABLE' && (
+                                                <span className="servicio-variable-tag">Precio variable</span>
+                                            )}
+                                        </div>
+                                        <div className="servicio-precio">
+                                            {s.tipoPrecio === 'VARIABLE' ? (
+                                                <span className="precio-variable">Se define al finalizar</span>
+                                            ) : (
+                                                <span>${(s.precio || 0).toFixed(2)}</span>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="btn-eliminar-servicio"
+                                            onClick={() => eliminarServicio(index)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
