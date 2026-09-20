@@ -613,3 +613,37 @@
     color: #888;
     font-size: 11px;
 }
+
+.unidad-medida {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.unidad-medida input {
+    flex: 1;
+}
+
+.unidad-medida select {
+    width: 100px;
+}
+
+.campo-precio {
+    position: relative;
+    flex: 1;
+}
+
+.campo-precio span {
+    position: absolute;
+    left: 10px;
+    top: 9px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.campo-precio input {
+    width: 100%;
+    padding-left: 25px;
+    box-sizing: border-box;
+}

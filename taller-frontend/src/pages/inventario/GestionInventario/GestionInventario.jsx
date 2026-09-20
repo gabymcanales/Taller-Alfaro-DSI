@@ -42,6 +42,9 @@ const GestionInventario = () => {
     const [nuevoProducto, setNuevoProducto] = useState({
         nombre: '',
         descripcion: '',
+        categoria: '',
+        marca: '',
+        cantidadUnidad: '',
         unidadMedida: '',
         categoriaProducto: '',
         precio: '',
@@ -146,10 +149,14 @@ const GestionInventario = () => {
 
             if (
                 !nuevoProducto.nombre ||
+                !nuevoProducto.cantidadUnidad ||
+                !nuevoProducto.unidadMedida ||
                 !nuevoProducto.precio ||
                 (!modoEdicion && nuevoProducto.stockActual === '') ||
                 nuevoProducto.stockMinimo === ''
-            ) {
+            )
+            
+            {
 
                 toast.error('Complete los campos obligatorios');
 
@@ -157,23 +164,16 @@ const GestionInventario = () => {
             }
 
             const datosProducto = {
-
                 nombre: nuevoProducto.nombre,
-
                 descripcion: nuevoProducto.descripcion,
-
-                unidadMedida: nuevoProducto.unidadMedida,
-
+                categoria: nuevoProducto.categoria,
+                marca: nuevoProducto.marca,
+                unidadMedida: `${nuevoProducto.cantidadUnidad} ${nuevoProducto.unidadMedida}`.trim(),
                 categoriaProducto: nuevoProducto.categoriaProducto || null,
-
                 precio: Number(nuevoProducto.precio),
-
                 stockActual: Number(nuevoProducto.stockActual),
-
                 stockMinimo: Number(nuevoProducto.stockMinimo),
-
                 estado: nuevoProducto.estado
-
             };
 
             if (modoEdicion) {
@@ -241,6 +241,26 @@ const GestionInventario = () => {
             return;
         }
 
+        if (!nuevoProducto.categoria) {
+            toast.error('Seleccione una categoría');
+            return;
+        }
+
+        if (!nuevoProducto.marca.trim()) {
+            toast.error('Ingrese la marca del producto');
+            return;
+        }
+
+        if (!nuevoProducto.cantidadUnidad || Number(nuevoProducto.cantidadUnidad) <= 0) {
+            toast.error('Ingrese un contenido válido');
+            return;
+        }
+
+        if (!nuevoProducto.unidadMedida) {
+            toast.error('Seleccione una unidad de medida');
+            return;
+        }
+
         try {
 
             await registrarMovimiento({
@@ -305,13 +325,17 @@ const GestionInventario = () => {
 
         setIdEditar(producto.idProducto);
 
+        const partesUnidad = (producto.unidadMedida || '').split(' ');
+
         setNuevoProducto({
 
             nombre: producto.nombre,
 
             descripcion: producto.descripcion,
 
-            unidadMedida: producto.unidadMedida,
+            cantidadUnidad: partesUnidad[0] || '',
+
+            unidadMedida: partesUnidad.slice(1).join(' ') || '',
 
             categoriaProducto: producto.categoriaProducto || '',
 
@@ -386,16 +410,17 @@ const GestionInventario = () => {
         setIdEditar(null);
 
         setNuevoProducto({
-
             nombre: '',
             descripcion: '',
+            categoria: '',
+            marca: '',
+            cantidadUnidad: '',
             unidadMedida: '',
             categoriaProducto: '',
             precio: '',
             stockActual: '',
             stockMinimo: '',
             estado: 'ACTIVO'
-
         });
 
     };
@@ -551,6 +576,14 @@ const GestionInventario = () => {
                         </p>
 
                         <div className="producto-info">
+
+                            <span>
+                                Categoría: {producto.categoria || 'Sin categoría'}
+                            </span>
+
+                            <span>
+                                Marca: {producto.marca || 'Sin marca'}
+                            </span>
 
                             <span>
                                 Precio: ${producto.precio}
@@ -750,16 +783,73 @@ const GestionInventario = () => {
                             }
                         />
 
-                        <input
-                            placeholder="Unidad de medida"
-                            value={nuevoProducto.unidadMedida}
+                        <select
+                            value={nuevoProducto.categoria}
                             onChange={(e) =>
                                 setNuevoProducto({
                                     ...nuevoProducto,
-                                    unidadMedida: e.target.value
+                                    categoria: e.target.value
+                                })
+                            }
+                        >
+                            <option value="">Seleccionar categoría</option>
+                            <option value="Aceites">Aceites</option>
+                            <option value="Filtros">Filtros</option>
+                            <option value="Químicos">Químicos</option>
+                            <option value="Carwash">Carwash</option>
+                            <option value="Repuestos">Repuestos</option>
+                            <option value="Accesorios">Accesorios</option>
+                        </select>
+
+                        <input
+                            type="text"
+                            placeholder="Marca"
+                            value={nuevoProducto.marca}
+                            onChange={(e) =>
+                                setNuevoProducto({
+                                    ...nuevoProducto,
+                                    marca: e.target.value
                                 })
                             }
                         />
+
+                        <div className="unidad-medida">
+
+                            <input
+                                type="number"
+                                min="0"
+                                step="any"
+                                placeholder="Contenido"
+                                value={nuevoProducto.cantidadUnidad}
+                                onChange={(e) =>
+                                    setNuevoProducto({
+                                        ...nuevoProducto,
+                                        cantidadUnidad: e.target.value
+                                    })
+                                }
+                            />
+
+                            <select
+                                value={nuevoProducto.unidadMedida}
+                                onChange={(e) =>
+                                    setNuevoProducto({
+                                        ...nuevoProducto,
+                                        unidadMedida: e.target.value
+                                    })
+                                }
+                            >
+                                <option value="">Unidad</option>
+                                <option value="mL">mL</option>
+                                <option value="L">L</option>
+                                <option value="Gal">Gal</option>
+                                <option value="g">g</option>
+                                <option value="kg">kg</option>
+                                <option value="oz">oz</option>
+                                <option value="lb">lb</option>
+                                <option value="Unidad">Unidad</option>
+                            </select>
+
+                        </div>
 
                         <select
                             value={nuevoProducto.categoriaProducto}
@@ -788,17 +878,21 @@ const GestionInventario = () => {
 
                         <div className="campos-stock">
 
-                            <input
-                                type="number"
-                                placeholder="Precio"
-                                value={nuevoProducto.precio}
-                                onChange={(e) =>
-                                    setNuevoProducto({
-                                        ...nuevoProducto,
-                                        precio: e.target.value
-                                    })
-                                }
-                            />
+                            <div className="campo-precio">
+                                <span>$</span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Precio"
+                                    value={nuevoProducto.precio}
+                                    onChange={(e) =>
+                                        setNuevoProducto({
+                                            ...nuevoProducto,
+                                            precio: e.target.value
+                                        })
+                                    }
+                                />
+                            </div>
 
                             {!modoEdicion && (
                                 <input

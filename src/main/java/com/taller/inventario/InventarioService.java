@@ -33,19 +33,21 @@ public class InventarioService {
 
     public Producto actualizarProducto(Long id, Producto productoActualizado) {
 
-        Producto producto = productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    Producto producto = productoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         producto.setNombre(productoActualizado.getNombre());
         producto.setDescripcion(productoActualizado.getDescripcion());
+        producto.setCategoria(productoActualizado.getCategoria());
+        producto.setMarca(productoActualizado.getMarca());
         producto.setUnidadMedida(productoActualizado.getUnidadMedida());
         producto.setCategoriaProducto(productoActualizado.getCategoriaProducto());
         producto.setPrecio(productoActualizado.getPrecio());
         producto.setStockMinimo(productoActualizado.getStockMinimo());
         producto.setEstado(productoActualizado.getEstado());
 
-        return productoRepository.save(producto);
-    }
+    return productoRepository.save(producto);
+}
 
     public void eliminarProducto(Long id) {
 
