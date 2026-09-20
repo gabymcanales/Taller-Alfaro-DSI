@@ -20,8 +20,8 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
 
     useEffect(() => {
         if (isOpen && esCambioAceite) {
-            getProductosPorCategoria('ACEITE').then(res => setAceites(res.data)).catch(() => setAceites([]));
-            getProductosPorCategoria('FILTRO').then(res => setFiltros(res.data)).catch(() => setFiltros([]));
+            getProductosPorCategoria('Aceites').then(res => setAceites(res.data)).catch(() => setAceites([]));
+            getProductosPorCategoria('Filtros').then(res => setFiltros(res.data)).catch(() => setFiltros([]));
         }
     }, [isOpen, esCambioAceite]);
 

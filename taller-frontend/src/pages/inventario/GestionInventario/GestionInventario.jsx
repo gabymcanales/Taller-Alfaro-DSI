@@ -46,7 +46,6 @@ const GestionInventario = () => {
         marca: '',
         cantidadUnidad: '',
         unidadMedida: '',
-        categoriaProducto: '',
         precio: '',
         stockActual: '',
         stockMinimo: '',
@@ -169,7 +168,6 @@ const GestionInventario = () => {
                 categoria: nuevoProducto.categoria,
                 marca: nuevoProducto.marca,
                 unidadMedida: `${nuevoProducto.cantidadUnidad} ${nuevoProducto.unidadMedida}`.trim(),
-                categoriaProducto: nuevoProducto.categoriaProducto || null,
                 precio: Number(nuevoProducto.precio),
                 stockActual: Number(nuevoProducto.stockActual),
                 stockMinimo: Number(nuevoProducto.stockMinimo),
@@ -337,8 +335,6 @@ const GestionInventario = () => {
 
             unidadMedida: partesUnidad.slice(1).join(' ') || '',
 
-            categoriaProducto: producto.categoriaProducto || '',
-
             precio: producto.precio,
 
             stockActual: producto.stockActual,
@@ -416,7 +412,6 @@ const GestionInventario = () => {
             marca: '',
             cantidadUnidad: '',
             unidadMedida: '',
-            categoriaProducto: '',
             precio: '',
             stockActual: '',
             stockMinimo: '',
@@ -448,6 +443,11 @@ const GestionInventario = () => {
             .includes(busqueda.toLowerCase())
 
     );
+
+    // Nombres y marcas ya usados en productos existentes, para sugerirlos
+    // como autocompletado al escribir en el formulario de nuevo producto.
+    const nombresUnicos = [...new Set(productos.map(p => p.nombre).filter(Boolean))];
+    const marcasUnicas = [...new Set(productos.map(p => p.marca).filter(Boolean))];
 
     const movimientosFiltrados = movimientos.filter(movimiento => {
 
@@ -781,7 +781,14 @@ const GestionInventario = () => {
                                     nombre: e.target.value
                                 })
                             }
+                            list="nombres-productos"
+                            autoComplete="off"
                         />
+                        <datalist id="nombres-productos">
+                            {nombresUnicos.map((nombre) => (
+                                <option key={nombre} value={nombre} />
+                            ))}
+                        </datalist>
 
                         <select
                             value={nuevoProducto.categoria}
@@ -811,7 +818,14 @@ const GestionInventario = () => {
                                     marca: e.target.value
                                 })
                             }
+                            list="marcas-productos"
+                            autoComplete="off"
                         />
+                        <datalist id="marcas-productos">
+                            {marcasUnicas.map((marca) => (
+                                <option key={marca} value={marca} />
+                            ))}
+                        </datalist>
 
                         <div className="unidad-medida">
 
@@ -850,20 +864,6 @@ const GestionInventario = () => {
                             </select>
 
                         </div>
-
-                        <select
-                            value={nuevoProducto.categoriaProducto}
-                            onChange={(e) =>
-                                setNuevoProducto({
-                                    ...nuevoProducto,
-                                    categoriaProducto: e.target.value
-                                })
-                            }
-                        >
-                            <option value="">Categoría: General</option>
-                            <option value="ACEITE">Categoría: Aceite</option>
-                            <option value="FILTRO">Categoría: Filtro</option>
-                        </select>
 
                         <textarea
                             placeholder="Descripción"

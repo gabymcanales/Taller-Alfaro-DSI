@@ -41,7 +41,6 @@ public class InventarioService {
         producto.setCategoria(productoActualizado.getCategoria());
         producto.setMarca(productoActualizado.getMarca());
         producto.setUnidadMedida(productoActualizado.getUnidadMedida());
-        producto.setCategoriaProducto(productoActualizado.getCategoriaProducto());
         producto.setPrecio(productoActualizado.getPrecio());
         producto.setStockMinimo(productoActualizado.getStockMinimo());
         producto.setEstado(productoActualizado.getEstado());

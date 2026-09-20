@@ -458,7 +458,7 @@ public class OrdenService {
     }
 
     public List<ProductoSimpleDTO> getProductosPorCategoria(String categoria) {
-        return productoRepository.findByCategoriaProductoAndEstado(categoria, "ACTIVO").stream()
+        return productoRepository.findByCategoriaAndEstado(categoria, "ACTIVO").stream()
                 .map(p -> {
                     ProductoSimpleDTO dto = new ProductoSimpleDTO();
                     dto.setIdProducto(p.getIdProducto());
