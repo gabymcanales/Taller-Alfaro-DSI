@@ -1,4 +1,4 @@
-package com.taller.model;
+package com.taller.model; 
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -26,6 +26,12 @@ public class Producto {
 
     @Column(name = "descripcion", length = 255)
     private String descripcion;
+
+    @Column(name = "categoria", length = 30)
+    private String categoria;
+
+    @Column(name = "marca", length = 100)
+    private String marca;
 
     @Column(name = "unidad_medida", length = 20)
     private String unidadMedida;
