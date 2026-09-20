@@ -113,7 +113,7 @@ const MisOrdenes = () => {
             <div className="mis-ordenes-header">
                 <div>
                     <h1>Mis Órdenes</h1>
-                    <p>Servicios que tienes asignados</p>
+                    <p>{usuario?.nombre ? `Hola, ${usuario.nombre} — servicios que tienes asignados` : 'Servicios que tienes asignados'}</p>
                 </div>
             </div>
 

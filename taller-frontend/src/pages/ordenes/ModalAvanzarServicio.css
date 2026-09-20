@@ -255,6 +255,49 @@
     border-color: #ff4000;
 }
 
+.avanzar-comentario select,
+.avanzar-comentario input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s;
+}
+
+.avanzar-comentario select:focus,
+.avanzar-comentario input[type="number"]:focus {
+    border-color: #ff4000;
+}
+
+/* ========== ACEITE Y FILTRO ========== */
+.avanzar-aceite {
+    margin: 16px 0;
+    padding: 14px;
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+}
+
+.avanzar-aceite .avanzar-comentario {
+    margin: 0 0 14px;
+}
+
+.avanzar-aceite .avanzar-comentario:last-of-type {
+    margin-bottom: 0;
+}
+
+.avanzar-cantidad-aceite {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
 /* ========== PRECIO VARIABLE ========== */
 .avanzar-precio {
     margin: 16px 0;

@@ -22,8 +22,9 @@ const GestionServicios = () => {
         nombreServicio: '',
         descripcionServicio: '',
         areaServicio: '',
-        precioSugerido: '',       
-        tipoPrecio: 'FIJO',       
+        precioSugerido: '',
+        tipoPrecio: 'FIJO',
+        categoriaServicio: '',
         estadoServicio: 'ACTIVO'
     });
     const [servicios, setServicios] = useState([]);
@@ -70,6 +71,7 @@ const GestionServicios = () => {
                     ? Number(nuevoServicio.precioSugerido) 
                     : null,
                 tipoPrecio: nuevoServicio.tipoPrecio,
+                categoriaServicio: nuevoServicio.categoriaServicio || null,
                 estadoServicio: nuevoServicio.estadoServicio
             };
 
@@ -92,6 +94,7 @@ const GestionServicios = () => {
                 areaServicio: '',
                 precioSugerido: '',
                 tipoPrecio: 'FIJO',
+                categoriaServicio: '',
                 estadoServicio: 'ACTIVO'
             });
         } catch (error) {
@@ -128,6 +131,7 @@ const GestionServicios = () => {
             areaServicio: servicio.areaServicio || '',
             precioSugerido: servicio.precioSugerido || '',
             tipoPrecio: servicio.tipoPrecio || 'FIJO',
+            categoriaServicio: servicio.categoriaServicio || '',
             estadoServicio: servicio.estadoServicio || 'ACTIVO'
         });
         setMostrarModal(true);
@@ -264,7 +268,13 @@ const GestionServicios = () => {
                             />
                         )}
 
-                        
+                        <select
+                            value={nuevoServicio.categoriaServicio}
+                            onChange={(e) => setNuevoServicio({ ...nuevoServicio, categoriaServicio: e.target.value })}
+                        >
+                            <option value="">Categoría: General</option>
+                            <option value="ACEITE">Categoría: Cambio de aceite</option>
+                        </select>
 
                         <select
                             value={nuevoServicio.estadoServicio}
@@ -284,6 +294,7 @@ const GestionServicios = () => {
                                     areaServicio: '',
                                     precioSugerido: '',
                                     tipoPrecio: 'FIJO',
+                                    categoriaServicio: '',
                                     estadoServicio: 'ACTIVO'
                                 });
                             }}>

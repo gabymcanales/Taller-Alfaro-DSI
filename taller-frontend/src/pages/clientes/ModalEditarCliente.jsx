@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { getClienteById, actualizarCliente } from '../../services/clienteService';
 import './ModalEditarCliente.css';
 
@@ -9,8 +10,6 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
     });
     const [errores, setErrores] = useState({});
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
     useEffect(() => {
         if (cliente?.idCliente) {
@@ -28,7 +27,8 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
             });
         } catch (err) {
             console.error('Error cargando datos:', err);
-            setError('Error al cargar los datos del cliente');
+            toast.error('Error al cargar los datos del cliente');
+            onClose();
         }
     };
 
@@ -45,6 +45,11 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
         return '';
     };
 
+    const formatearTelefono = (value) => {
+        const digitos = value.replace(/\D/g, '').slice(0, 8);
+        return digitos.length > 4 ? `${digitos.slice(0, 4)}-${digitos.slice(4)}` : digitos;
+    };
+
     const validarFormulario = () => {
         const nuevosErrores = {
             nombreCliente: validarNombre(formData.nombreCliente),
@@ -58,8 +63,7 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
         const { name, value } = e.target;
 
         if (name === 'telefonoCliente') {
-            let v = value.replace(/[^0-9-]/g, '');
-            if (v.length > 9) v = v.slice(0, 9);
+            const v = formatearTelefono(value);
             setFormData(prev => ({ ...prev, telefonoCliente: v }));
             const error = validarTelefono(v);
             setErrores(prev => ({ ...prev, telefonoCliente: error }));
@@ -72,22 +76,18 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess(false);
 
         if (!validarFormulario()) return;
 
         setLoading(true);
         try {
             await actualizarCliente(cliente.idCliente, formData);
-            setSuccess(true);
-            setTimeout(() => {
-                onSuccess();
-                onClose();
-            }, 1000);
+            toast.success('Cliente actualizado correctamente');
+            onSuccess();
+            onClose();
         } catch (err) {
             console.error('Error al actualizar:', err);
-            setError(err.response?.data?.mensaje || 'Error al actualizar el cliente');
+            toast.error(err.response?.data?.mensaje || 'Error al actualizar el cliente');
         } finally {
             setLoading(false);
         }
@@ -102,12 +102,7 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
                 </div>
 
                 <div className="modal-body">
-                    {success ? (
-                        <div className="alert-success">
-
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} noValidate>
+                    <form onSubmit={handleSubmit} noValidate>
                             <div className="form-group">
                                 <label>Nombre completo *</label>
                                 <input
@@ -135,12 +130,6 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
                                 {errores.telefonoCliente && <span className="error-msg">{errores.telefonoCliente}</span>}
                             </div>
 
-                            {error && (
-                                <div className="alert-error">
-                                    <span></span> {error}
-                                </div>
-                            )}
-
                             <div className="modal-footer">
                                 <button type="button" className="btn-cancelar" onClick={onClose}>
                                     Cancelar
@@ -150,7 +139,6 @@ const ModalEditarCliente = ({ cliente, onClose, onSuccess }) => {
                                 </button>
                             </div>
                         </form>
-                    )}
                 </div>
             </div>
         </div>

@@ -170,6 +170,7 @@ public class ReportesService {
     private TransaccionDTO toTransaccionDTO(Transaccion t) {
         TransaccionDTO dto = new TransaccionDTO();
         dto.setIdTransaccion(t.getIdTransaccion());
+        dto.setIdOrden(t.getOrden().getIdOrden());
         dto.setNumOrden(t.getOrden().getNumOrden());
         dto.setNombreCliente(t.getOrden().getCliente().getNombreCliente());
         dto.setNombreEmpleado(t.getEmpleado() != null ?

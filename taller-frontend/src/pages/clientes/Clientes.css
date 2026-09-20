@@ -1,8 +1,10 @@
 .clientes-container {
     width: 100%;
+    padding: 24px;
     background: #111;
     min-height: 100vh;
     color: #fff;
+    box-sizing: border-box;
 }
 
 
@@ -73,6 +75,19 @@
 
 .stat-card:hover {
     border-color: #555;
+}
+
+.stat-card-clickable {
+    cursor: pointer;
+}
+
+.stat-card-clickable:hover {
+    border-color: #ff4000;
+}
+
+.stat-card-clickable:focus-visible {
+    outline: 2px solid #ff4000;
+    outline-offset: 2px;
 }
 
 .stat-icon.verde {

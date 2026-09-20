@@ -4,6 +4,8 @@ import com.taller.cobros.ServicioRepository;
 import com.taller.cobros.TransaccionRepository;
 import com.taller.dto.*;
 import com.taller.exception.AccesoDenegadoOrdenException;
+import com.taller.inventario.InventarioService;
+import com.taller.inventario.ProductoRepository;
 import com.taller.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,10 @@ public class OrdenService {
     private final EmpleadoRepository empleadoRepository;
     private final ServicioRepository servicioRepository;
     private final TransaccionRepository transaccionRepository;
+    private final ProductoRepository productoRepository;
+    private final InventarioService inventarioService;
+
+    private static final String CATEGORIA_ACEITE = "ACEITE";
 
     @Transactional
     public OrdenResponseDTO crearOrden(OrdenRequestDTO request, String username) {
@@ -377,6 +383,10 @@ public class OrdenService {
             }
         }
 
+        if (CATEGORIA_ACEITE.equalsIgnoreCase(servicio.getCategoriaServicio())) {
+            registrarConsumoAceiteYFiltro(ordenServicio.getOrden(), request, empleado);
+        }
+
         String estadoAnterior = ordenServicio.getEstadoServicioOrden();
         ordenServicio.setEstadoServicioOrden("FINALIZADO");
         ordenServicio = ordenServicioRepository.save(ordenServicio);
@@ -396,6 +406,68 @@ public class OrdenService {
         registrarHistorial(orden, estadoAnterior, "FINALIZADO", mensaje, empleado);
 
         return convertToServicioDTO(ordenServicio);
+    }
+
+    private void registrarConsumoAceiteYFiltro(Orden orden, FinalizarServicioRequest request, Empleado empleado) {
+
+        if (request.getIdProductoAceite() == null) {
+            throw new RuntimeException("Debe seleccionar el aceite utilizado");
+        }
+        if (request.getIdProductoFiltro() == null) {
+            throw new RuntimeException("Debe seleccionar el filtro utilizado");
+        }
+
+        int galones = request.getGalonesAceite() != null ? request.getGalonesAceite() : 0;
+        int cuartos = request.getCuartosAceite() != null ? request.getCuartosAceite() : 0;
+
+        if (galones < 0 || cuartos < 0 || cuartos > 3) {
+            throw new RuntimeException("La cantidad de aceite ingresada no es válida (los cuartos van de 0 a 3)");
+        }
+
+        int totalCuartos = galones * 4 + cuartos;
+
+        if (totalCuartos <= 0) {
+            throw new RuntimeException("Debe indicar la cantidad de aceite utilizada");
+        }
+
+        Producto aceite = productoRepository.findById(request.getIdProductoAceite())
+                .orElseThrow(() -> new RuntimeException("El aceite seleccionado no existe"));
+
+        Producto filtro = productoRepository.findById(request.getIdProductoFiltro())
+                .orElseThrow(() -> new RuntimeException("El filtro seleccionado no existe"));
+
+        String motivo = "Cambio de aceite - Orden " + orden.getNumOrden();
+
+        MovimientoInventario movimientoAceite = new MovimientoInventario();
+        movimientoAceite.setProducto(aceite);
+        movimientoAceite.setEmpleado(empleado);
+        movimientoAceite.setTipoMovimiento("USO");
+        movimientoAceite.setCantidad(totalCuartos);
+        movimientoAceite.setMotivo(motivo);
+        movimientoAceite.setOrden(orden);
+        inventarioService.registrarMovimiento(movimientoAceite);
+
+        MovimientoInventario movimientoFiltro = new MovimientoInventario();
+        movimientoFiltro.setProducto(filtro);
+        movimientoFiltro.setEmpleado(empleado);
+        movimientoFiltro.setTipoMovimiento("USO");
+        movimientoFiltro.setCantidad(1);
+        movimientoFiltro.setMotivo(motivo);
+        movimientoFiltro.setOrden(orden);
+        inventarioService.registrarMovimiento(movimientoFiltro);
+    }
+
+    public List<ProductoSimpleDTO> getProductosPorCategoria(String categoria) {
+        return productoRepository.findByCategoriaProductoAndEstado(categoria, "ACTIVO").stream()
+                .map(p -> {
+                    ProductoSimpleDTO dto = new ProductoSimpleDTO();
+                    dto.setIdProducto(p.getIdProducto());
+                    dto.setNombre(p.getNombre());
+                    dto.setUnidadMedida(p.getUnidadMedida());
+                    dto.setStockActual(p.getStockActual());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -671,6 +743,7 @@ public class OrdenService {
         dto.setNombreServicio(os.getServicio().getNombreServicio());
         dto.setAreaServicio(os.getServicio().getAreaServicio());
         dto.setTipoPrecio(os.getServicio().getTipoPrecio());
+        dto.setCategoriaServicio(os.getServicio().getCategoriaServicio());
         dto.setPrecioAplicado(os.getPrecioAplicado());
         dto.setEstadoServicioOrden(os.getEstadoServicioOrden());
         dto.setEsPrecioVariable("VARIABLE".equals(os.getServicio().getTipoPrecio()));

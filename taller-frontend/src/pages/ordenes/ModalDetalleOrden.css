@@ -76,8 +76,13 @@
     color: #fff;
 }
 
+.detalle-servicios {
+    overflow-x: auto;
+}
+
 .detalle-tabla-servicios {
     width: 100%;
+    min-width: 480px;
     border-collapse: collapse;
     font-size: 13px;
     margin-bottom: 24px;

@@ -39,6 +39,14 @@
     gap: 20px;
 }
 
+@media (max-width: 900px) {
+    /* Diario ya va primero en el HTML, así que con una sola columna
+       queda arriba y Mensual abajo automáticamente */
+    .two-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
 .panel {
     background: #1a1a1a;
     border: 1px solid #333;

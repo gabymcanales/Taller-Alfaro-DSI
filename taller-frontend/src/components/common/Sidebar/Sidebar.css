@@ -6,9 +6,43 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh; /* alto real visible en el navegador móvil (sin la barra de direcciones) */
     position: fixed;
     left: 0;
     top: 0;
+    transition: width 0.2s ease;
+    overflow: hidden;
+}
+
+/* Sidebar colapsado: solo íconos. Se activa al fijarlo con clic, y se
+   revela temporalmente (corriendo el contenido) mientras el cursor está encima. */
+.sidebar.colapsado {
+    width: 72px;
+    min-width: 72px;
+}
+
+.sidebar.colapsado .logo-text,
+.sidebar.colapsado .nav-label {
+    display: none;
+}
+
+.sidebar.colapsado .sidebar-logo {
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.sidebar.colapsado .nav-item {
+    justify-content: center;
+    padding: 10px;
+}
+
+/* El contenido principal acompaña el ancho visual del sidebar en todo momento */
+.layout-content {
+    transition: margin-left 0.2s ease;
+}
+
+body.sidebar-colapsado .layout-content {
+    margin-left: 72px;
 }
 
 .sidebar-logo {
@@ -22,12 +56,14 @@
 .logo-icon {
     width: 40px;
     height: 40px;
+    min-width: 40px;
     background: #ff4000;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
+    cursor: pointer;
 }
 
 .logo-text p {
@@ -43,6 +79,7 @@
 
 .nav {
     flex: 1;
+    min-height: 0; /* permite que el scroll interno funcione dentro de un flex column */
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -104,4 +141,230 @@
 
 .nav-item.active .nav-icon svg {
     stroke: #fff;
+}
+
+/* ========== HAMBURGUESA Y OVERLAY (solo pantallas chicas) ========== */
+
+.hamburger-btn {
+    display: none;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    align-items: center;
+    justify-content: center;
+    background: #ff4000;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.sidebar-backdrop {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hamburger-btn {
+        display: flex;
+    }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 150;
+    }
+
+    body.menu-movil-bloqueo {
+        overflow: hidden;
+    }
+
+    /* Sidebar oculto fuera de pantalla por defecto; el colapso de escritorio
+       (íconos solos) no aplica acá, solo importa si está abierto o no */
+    .sidebar {
+        width: 260px;
+        min-width: 260px;
+        /* Empieza debajo de la barra fija de arriba y llega hasta el fondo
+           real de la pantalla; top+bottom es más confiable que vh/dvh,
+           que no todos los navegadores móviles resuelven igual */
+        top: 72px;
+        height: auto;
+        bottom: 0;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 200;
+    }
+
+    .sidebar.menu-movil-abierto {
+        transform: translateX(0);
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .sidebar.colapsado .logo-text,
+    .sidebar.colapsado .nav-label {
+        display: block;
+    }
+
+    .sidebar.colapsado .sidebar-logo {
+        justify-content: flex-start;
+        padding: 20px 24px;
+    }
+
+    .sidebar.colapsado .nav-item {
+        justify-content: flex-start;
+        padding: 10px 14px;
+    }
+
+    /* En móvil el contenido nunca reserva espacio para el sidebar: siempre
+       está oculto salvo cuando se abre como overlay encima de todo */
+    .layout-content {
+        margin-left: 0;
+    }
+
+    body.sidebar-colapsado .layout-content {
+        margin-left: 0;
+    }
+
+    /* Vista de empleado en móvil: nada de hamburguesa ni sidebar oculto,
+       solo la barra fija de arriba con el usuario */
+    .sidebar.sidebar-empleado {
+        display: none;
+    }
+
+    body.vista-empleado .layout-content {
+        margin-top: 72px;
+    }
+
+    /* Admin en móvil: la barra de arriba se queda visible (con la
+       hamburguesa) por encima del sidebar cuando este se abre */
+    body.vista-admin .layout-content {
+        margin-top: 72px;
+    }
+}
+
+/* ========== BARRAS MÓVILES (empleado y admin) ========== */
+
+.mobile-empleado-bar,
+.mobile-admin-bar {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-empleado-bar,
+    .mobile-admin-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #0a0a0a;
+        border-bottom: 1px solid #333;
+        padding: 14px 16px;
+        z-index: 250;
+    }
+
+    .mobile-usuario-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .mobile-usuario-info .mobile-user-icon {
+        flex-shrink: 0;
+    }
+
+    .mobile-user-icon {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        background: #ff4000;
+        border: none;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .mobile-usuario-nombre {
+        color: #fff;
+        font-weight: 600;
+        font-size: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* ========== CONFIRMAR CIERRE DE SESIÓN (ícono de usuario en móvil) ========== */
+
+.confirmar-salir-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+}
+
+.modal-confirmar-salir {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+}
+
+.modal-confirmar-salir h3 {
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.modal-confirmar-salir-botones {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-confirmar-salir .btn-cancelar,
+.modal-confirmar-salir .btn-cerrar-sesion {
+    flex: 1;
+}
+
+.modal-confirmar-salir .btn-cancelar {
+    background: transparent;
+    border: 1px solid #444;
+    color: #ccc;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.modal-confirmar-salir .btn-cancelar:hover {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.modal-confirmar-salir .btn-cerrar-sesion {
+    background: #ff4000;
+    border: none;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.modal-confirmar-salir .btn-cerrar-sesion:hover {
+    background: #e03800;
 }

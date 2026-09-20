@@ -30,6 +30,9 @@ public class Producto {
     @Column(name = "unidad_medida", length = 20)
     private String unidadMedida;
 
+    @Column(name = "categoria_producto", length = 20)
+    private String categoriaProducto;
+
     @NotNull(message = "El precio del producto es obligatorio")
     @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
     @Column(name = "precio", nullable = false, precision = 10, scale = 2)

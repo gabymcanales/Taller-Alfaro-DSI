@@ -105,3 +105,12 @@
     border-radius: 8px;
     font-size: 13px;
 }
+
+.info {
+    background: rgba(255, 140, 66, 0.1);
+    border: 1px solid rgba(255, 140, 66, 0.3);
+    color: #ff8c42;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+}

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class TransaccionDTO {
     private Long idTransaccion;
+    private Long idOrden;
     private String numOrden;
     private String nombreCliente;
     private String nombreEmpleado;

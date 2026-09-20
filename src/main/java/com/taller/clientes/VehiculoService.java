@@ -7,6 +7,7 @@ import com.taller.model.Cliente;
 import com.taller.model.Orden;
 import com.taller.model.Vehiculo;
 import com.taller.ordenes.ClienteRepository;
+import com.taller.ordenes.OrdenRepository;
 import com.taller.ordenes.VehiculoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class VehiculoService {
 
     private final VehiculoRepository vehiculoRepository;
     private final ClienteRepository clienteRepository;
+    private final OrdenRepository ordenRepository;
 
     @Transactional
     public VehiculoResponseDTO crearVehiculo(VehiculoRequestDTO request) {
@@ -29,12 +31,17 @@ public class VehiculoService {
         if (request.getPlaca() == null || request.getPlaca().trim().isEmpty()) {
             throw new RuntimeException("La placa es obligatoria");
         }
+        PlacaValidator.validar(request.getPlaca());
         if (request.getMarca() == null || request.getMarca().trim().isEmpty()) {
             throw new RuntimeException("La marca es obligatoria");
         }
         if (request.getModelo() == null || request.getModelo().trim().isEmpty()) {
             throw new RuntimeException("El modelo es obligatorio");
         }
+        if (request.getAnio() == null) {
+            throw new RuntimeException("El año es obligatorio");
+        }
+        AnioValidator.validar(request.getAnio());
 
         Cliente cliente = clienteRepository.findById(request.getIdCliente())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
@@ -87,34 +94,12 @@ public class VehiculoService {
         Vehiculo vehiculo = vehiculoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
 
-        if (request.getPlaca() != null && !request.getPlaca().trim().isEmpty()) {
-            vehiculoRepository.findByPlaca(request.getPlaca().toUpperCase())
-                    .ifPresent(v -> {
-                        if (!v.getIdVehiculo().equals(id)) {
-                            throw new RuntimeException("Ya existe un vehículo con la placa " + request.getPlaca());
-                        }
-                    });
-            vehiculo.setPlaca(request.getPlaca().toUpperCase());
+        // Una vez registrado el vehículo, solo el color puede modificarse.
+        // Placa, marca, modelo, año y propietario quedan fijos.
+        if (request.getColor() == null || request.getColor().trim().isEmpty()) {
+            throw new RuntimeException("El color es obligatorio");
         }
-
-        if (request.getMarca() != null && !request.getMarca().trim().isEmpty()) {
-            vehiculo.setMarca(request.getMarca());
-        }
-        if (request.getModelo() != null && !request.getModelo().trim().isEmpty()) {
-            vehiculo.setModelo(request.getModelo());
-        }
-        if (request.getAnio() != null) {
-            vehiculo.setAnio(request.getAnio());
-        }
-        if (request.getColor() != null) {
-            vehiculo.setColor(request.getColor());
-        }
-
-        if (request.getIdCliente() != null) {
-            Cliente cliente = clienteRepository.findById(request.getIdCliente())
-                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-            vehiculo.setCliente(cliente);
-        }
+        vehiculo.setColor(request.getColor());
 
         vehiculo = vehiculoRepository.save(vehiculo);
         return convertToDTO(vehiculo);
@@ -124,6 +109,11 @@ public class VehiculoService {
     public void eliminarVehiculo(Long id) {
         Vehiculo vehiculo = vehiculoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehículo no encontrado"));
+
+        if (!ordenRepository.findByVehiculoId(id).isEmpty()) {
+            throw new RuntimeException("No se puede eliminar el vehículo porque tiene órdenes asociadas");
+        }
+
         vehiculoRepository.delete(vehiculo);
     }
 

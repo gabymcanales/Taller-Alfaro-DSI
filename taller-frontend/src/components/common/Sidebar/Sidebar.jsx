@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { getUsuarioActual, esAdministrador } from '../../../utils/authUser';
 import './Sidebar.css';
@@ -20,7 +21,63 @@ const MENU_EMPLEADO = [
 
 const Sidebar = () => {
     const usuario = getUsuarioActual();
-    const menuItems = esAdministrador(usuario) ? MENU_ADMIN : MENU_EMPLEADO;
+    const esAdmin = esAdministrador(usuario);
+    const menuItems = esAdmin ? MENU_ADMIN : MENU_EMPLEADO;
+
+    const [colapsado, setColapsado] = useState(() => localStorage.getItem('sidebarColapsado') === '1');
+    const [hover, setHover] = useState(false);
+    const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
+    const [mostrarConfirmarSalir, setMostrarConfirmarSalir] = useState(false);
+    const cerrarMenuMovil = () => setMenuMovilAbierto(false);
+
+    const cerrarSesion = () => {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    };
+
+    // Bloquea el scroll de la página de fondo mientras el menú móvil
+    // está abierto (evita que el contenido "detrás" se mueva y problemas
+    // de elementos fixed en iOS al hacer scroll con el panel abierto).
+    useEffect(() => {
+        if (menuMovilAbierto) {
+            document.body.classList.add('menu-movil-bloqueo');
+            return () => document.body.classList.remove('menu-movil-bloqueo');
+        }
+        return undefined;
+    }, [menuMovilAbierto]);
+
+    // En móvil, ambos roles tienen una barra fija de arriba (ícono +
+    // nombre), y el layout reserva espacio arriba para no quedar tapado.
+    // Para admin, esa misma barra incluye la hamburguesa a la derecha.
+    useEffect(() => {
+        const clase = esAdmin ? 'vista-admin' : 'vista-empleado';
+        document.body.classList.add(clase);
+        return () => document.body.classList.remove(clase);
+    }, [esAdmin]);
+
+    // Colapsado "visible": fijado (clic) o revelado temporalmente por hover.
+    // El contenido se corre acompañando este estado, nunca queda tapado.
+    const visualColapsado = colapsado && !hover;
+
+    useEffect(() => {
+        document.body.classList.toggle('sidebar-colapsado', visualColapsado);
+        return () => document.body.classList.remove('sidebar-colapsado');
+    }, [visualColapsado]);
+
+    useEffect(() => {
+        localStorage.setItem('sidebarColapsado', colapsado ? '1' : '0');
+    }, [colapsado]);
+
+    const toggleColapsado = () => {
+        setColapsado((prev) => {
+            const siguiente = !prev;
+            // Si se está colapsando, apaga el hover: el cursor sigue sobre el
+            // ícono en ese instante y si no, la vista previa lo mantendría
+            // visualmente expandido hasta que el mouse saliera y volviera a entrar.
+            if (siguiente) setHover(false);
+            return siguiente;
+        });
+    };
 
     const getIcon = (iconName) => {
         switch (iconName) {
@@ -115,9 +172,75 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="sidebar">
+        <>
+            {esAdmin && (
+                <div className="mobile-admin-bar">
+                    <button
+                        type="button"
+                        className="hamburger-btn"
+                        onClick={() => setMenuMovilAbierto((prev) => !prev)}
+                        aria-label={menuMovilAbierto ? 'Cerrar menú' : 'Abrir menú'}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <path d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <div className="mobile-usuario-info">
+                        <span className="mobile-usuario-nombre">{usuario?.nombre || usuario?.username}</span>
+                    </div>
+                </div>
+            )}
+
+            {!esAdmin && (
+                <div className="mobile-empleado-bar">
+                    <div className="mobile-usuario-info">
+                        <button
+                            type="button"
+                            className="mobile-user-icon"
+                            onClick={() => setMostrarConfirmarSalir(true)}
+                            aria-label="Cuenta"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 12a4 4 0 1 0 0 -8a4 4 0 0 0 0 8" />
+                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                            </svg>
+                        </button>
+                        <span className="mobile-usuario-nombre">{usuario?.nombre || usuario?.username}</span>
+                    </div>
+                </div>
+            )}
+
+            {menuMovilAbierto && esAdmin && (
+                <div className="sidebar-backdrop" onClick={cerrarMenuMovil} />
+            )}
+
+            {mostrarConfirmarSalir && (
+                <div className="confirmar-salir-overlay" onClick={() => setMostrarConfirmarSalir(false)}>
+                    <div className="modal-confirmar-salir" onClick={(e) => e.stopPropagation()}>
+                        <h3>¿Deseas cerrar sesión?</h3>
+                        <div className="modal-confirmar-salir-botones">
+                            <button className="btn-cancelar" onClick={() => setMostrarConfirmarSalir(false)}>
+                                Cancelar
+                            </button>
+                            <button className="btn-cerrar-sesion" onClick={cerrarSesion}>
+                                Cerrar sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <aside
+                className={`sidebar ${visualColapsado ? 'colapsado' : ''} ${menuMovilAbierto ? 'menu-movil-abierto' : ''} ${!esAdmin ? 'sidebar-empleado' : ''}`}
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+            >
             <div className="sidebar-logo">
-                <div className="logo-icon">
+                <div
+                    className="logo-icon"
+                    onClick={toggleColapsado}
+                    title={colapsado ? 'Mostrar menú' : 'Ocultar menú'}
+                >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5" />
                     </svg>
@@ -134,6 +257,7 @@ const Sidebar = () => {
                         key={item.id}
                         to={item.path}
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        onClick={cerrarMenuMovil}
                     >
                         <span className="nav-icon">{getIcon(item.icon)}</span>
                         <span className="nav-label">{item.label}</span>
@@ -142,10 +266,7 @@ const Sidebar = () => {
             </nav>
 
             <div className="sidebar-footer">
-                <div className="nav-item" onClick={() => {
-                    localStorage.removeItem('token');
-                    window.location.href = '/login';
-                }}>
+                <div className="nav-item" onClick={cerrarSesion}>
                     <span className="nav-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
@@ -156,7 +277,8 @@ const Sidebar = () => {
                     <span className="nav-label">Cerrar Sesión</span>
                 </div>
             </div>
-        </aside>
+            </aside>
+        </>
     );
 };
 

@@ -43,6 +43,7 @@ const GestionInventario = () => {
         nombre: '',
         descripcion: '',
         unidadMedida: '',
+        categoriaProducto: '',
         precio: '',
         stockActual: '',
         stockMinimo: '',
@@ -162,6 +163,8 @@ const GestionInventario = () => {
                 descripcion: nuevoProducto.descripcion,
 
                 unidadMedida: nuevoProducto.unidadMedida,
+
+                categoriaProducto: nuevoProducto.categoriaProducto || null,
 
                 precio: Number(nuevoProducto.precio),
 
@@ -310,6 +313,8 @@ const GestionInventario = () => {
 
             unidadMedida: producto.unidadMedida,
 
+            categoriaProducto: producto.categoriaProducto || '',
+
             precio: producto.precio,
 
             stockActual: producto.stockActual,
@@ -385,6 +390,7 @@ const GestionInventario = () => {
             nombre: '',
             descripcion: '',
             unidadMedida: '',
+            categoriaProducto: '',
             precio: '',
             stockActual: '',
             stockMinimo: '',
@@ -754,6 +760,20 @@ const GestionInventario = () => {
                                 })
                             }
                         />
+
+                        <select
+                            value={nuevoProducto.categoriaProducto}
+                            onChange={(e) =>
+                                setNuevoProducto({
+                                    ...nuevoProducto,
+                                    categoriaProducto: e.target.value
+                                })
+                            }
+                        >
+                            <option value="">Categoría: General</option>
+                            <option value="ACEITE">Categoría: Aceite</option>
+                            <option value="FILTRO">Categoría: Filtro</option>
+                        </select>
 
                         <textarea
                             placeholder="Descripción"

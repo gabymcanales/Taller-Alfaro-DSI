@@ -26,6 +26,6 @@ public class AuthService {
             throw new RuntimeException("El empleado está inhabilitado");
         }
 
-        return jwtUtil.generateToken(empleado.getUsername(), empleado.getRolEmpleado());
+        return jwtUtil.generateToken(empleado.getUsername(), empleado.getRolEmpleado(), empleado.getNombreEmpleado());
     }
 }

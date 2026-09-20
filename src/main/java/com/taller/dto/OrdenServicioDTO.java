@@ -9,7 +9,8 @@ public class OrdenServicioDTO {
     private Long idServicio;
     private String nombreServicio;
     private String areaServicio;
-    private String tipoPrecio; 
+    private String tipoPrecio;
+    private String categoriaServicio;
     private BigDecimal precioAplicado;
     private String estadoServicioOrden; 
     private Boolean esPrecioVariable; 

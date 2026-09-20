@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { getVehiculoById, actualizarVehiculo } from '../../services/vehiculoService';
 import './ModalEditarVehiculo.css';
 
 const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
-    const anioActual = new Date().getFullYear();
-
     const [formData, setFormData] = useState({
         placa: '',
         marca: '',
@@ -16,8 +15,6 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
 
     const [errores, setErrores] = useState({});
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
     useEffect(() => {
         if (vehiculo?.idVehiculo) {
@@ -39,36 +36,9 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
             });
         } catch (err) {
             console.error('Error cargando datos:', err);
-            setError('Error al cargar los datos del vehículo');
+            toast.error('Error al cargar los datos del vehículo');
+            onClose();
         }
-    };
-
-    const validarPlaca = (placa) => {
-        if (!placa.trim()) return 'La placa es obligatoria';
-        if (placa.length !== 7) return 'La placa debe tener exactamente 7 caracteres';
-        if (!/^[A-Z0-9]{3}-[A-Z0-9]{3}$/.test(placa)) return 'La placa debe tener el formato XXX-XXX';
-        return '';
-    };
-
-    const validarMarca = (marca) => {
-        if (!marca.trim()) return 'La marca es obligatoria';
-        if (marca.trim().length < 2) return 'La marca debe tener al menos 2 caracteres';
-        return '';
-    };
-
-    const validarModelo = (modelo) => {
-        if (!modelo.trim()) return 'El modelo es obligatorio';
-        if (modelo.trim().length < 1) return 'El modelo debe tener al menos 1 caracter';
-        return '';
-    };
-
-    const validarAnio = (anio) => {
-        if (!anio) return 'El año es obligatorio';
-        const num = Number(anio);
-        if (isNaN(num)) return 'El año debe ser un número';
-        if (num < 1950) return 'El año no puede ser menor a 1950';
-        if (num > anioActual) return `El año no puede ser mayor a ${anioActual}`;
-        return '';
     };
 
     const validarColor = (color) => {
@@ -78,10 +48,6 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
 
     const validarFormulario = () => {
         const nuevosErrores = {
-            placa: validarPlaca(formData.placa),
-            marca: validarMarca(formData.marca),
-            modelo: validarModelo(formData.modelo),
-            anio: validarAnio(formData.anio),
             color: validarColor(formData.color)
         };
         setErrores(nuevosErrores);
@@ -90,16 +56,6 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        if (name === 'placa') {
-            let v = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (v.length > 6) v = v.slice(0, 6);
-            setFormData(prev => ({ ...prev, placa: v }));
-            const error = validarPlaca(v);
-            setErrores(prev => ({ ...prev, placa: error }));
-            return;
-        }
-
         setFormData(prev => ({ ...prev, [name]: value }));
         setErrores(prev => ({ ...prev, [name]: '' }));
     };
@@ -107,25 +63,20 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
     // ========== SUBMIT ==========
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess(false);
 
         if (!validarFormulario()) return;
 
         setLoading(true);
         try {
             await actualizarVehiculo(vehiculo.idVehiculo, {
-                ...formData,
-                anio: Number(formData.anio)
+                color: formData.color
             });
-            setSuccess(true);
-            setTimeout(() => {
-                onSuccess();
-                onClose();
-            }, 1000);
+            toast.success('Vehículo actualizado correctamente');
+            onSuccess();
+            onClose();
         } catch (err) {
             console.error('Error al actualizar:', err);
-            setError(err.response?.data?.mensaje || 'Error al actualizar el vehículo');
+            toast.error(err.response?.data?.mensaje || 'Error al actualizar el vehículo');
         } finally {
             setLoading(false);
         }
@@ -140,63 +91,50 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
                 </div>
 
                 <div className="modal-body">
-                    {success ? (
-                        <div className="alert-success">
-                            Vehículo actualizado correctamente
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} noValidate>
+                    <form onSubmit={handleSubmit} noValidate>
+                            <p className="ayuda-solo-color">
+                                Una vez registrado, el vehículo no puede modificarse, salvo su color.
+                            </p>
                             <div className="form-grid">
                                 <div className="form-group">
-                                    <label>Placa *</label>
+                                    <label>Placa</label>
                                     <input
                                         type="text"
                                         name="placa"
                                         value={formData.placa}
-                                        onChange={handleChange}
-                                        placeholder="ABC-123"
-                                        maxLength={7}
-                                        className={errores.placa ? 'input-error' : ''}
+                                        disabled
+                                        readOnly
                                     />
-                                    {errores.placa && <span className="error-msg">{errores.placa}</span>}
                                 </div>
                                 <div className="form-group">
-                                    <label>Marca *</label>
+                                    <label>Marca</label>
                                     <input
                                         type="text"
                                         name="marca"
                                         value={formData.marca}
-                                        onChange={handleChange}
-                                        placeholder="Ej: Toyota"
-                                        className={errores.marca ? 'input-error' : ''}
+                                        disabled
+                                        readOnly
                                     />
-                                    {errores.marca && <span className="error-msg">{errores.marca}</span>}
                                 </div>
                                 <div className="form-group">
-                                    <label>Modelo *</label>
+                                    <label>Modelo</label>
                                     <input
                                         type="text"
                                         name="modelo"
                                         value={formData.modelo}
-                                        onChange={handleChange}
-                                        placeholder="Ej: Corolla"
-                                        className={errores.modelo ? 'input-error' : ''}
+                                        disabled
+                                        readOnly
                                     />
-                                    {errores.modelo && <span className="error-msg">{errores.modelo}</span>}
                                 </div>
                                 <div className="form-group">
-                                    <label>Año *</label>
+                                    <label>Año</label>
                                     <input
                                         type="number"
                                         name="anio"
                                         value={formData.anio}
-                                        onChange={handleChange}
-                                        placeholder={anioActual.toString()}
-                                        min={1950}
-                                        max={anioActual}
-                                        className={errores.anio ? 'input-error' : ''}
+                                        disabled
+                                        readOnly
                                     />
-                                    {errores.anio && <span className="error-msg">{errores.anio}</span>}
                                 </div>
                                 <div className="form-group">
                                     <label>Color *</label>
@@ -212,12 +150,6 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
                                 </div>
                             </div>
 
-                            {error && (
-                                <div className="alert-error">
-                                    <span></span> {error}
-                                </div>
-                            )}
-
                             <div className="modal-footer">
                                 <button type="button" className="btn-cancelar" onClick={onClose}>
                                     Cancelar
@@ -227,7 +159,6 @@ const ModalEditarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
                                 </button>
                             </div>
                         </form>
-                    )}
                 </div>
             </div>
         </div>

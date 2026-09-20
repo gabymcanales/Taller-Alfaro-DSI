@@ -40,6 +40,7 @@ public class ClienteService {
         if (vehiculoData.getPlaca() == null || vehiculoData.getPlaca().trim().isEmpty()) {
             throw new RuntimeException("La placa del vehículo es obligatoria");
         }
+        PlacaValidator.validar(vehiculoData.getPlaca());
         if (vehiculoData.getMarca() == null || vehiculoData.getMarca().trim().isEmpty()) {
             throw new RuntimeException("La marca del vehículo es obligatoria");
         }
@@ -49,6 +50,7 @@ public class ClienteService {
         if (vehiculoData.getAnio() == null) {
             throw new RuntimeException("El año del vehículo es obligatorio");
         }
+        AnioValidator.validar(vehiculoData.getAnio());
         if (vehiculoRepository.existsByPlaca(vehiculoData.getPlaca())) {
             throw new RuntimeException("Ya existe un vehículo con la placa " + vehiculoData.getPlaca());
         }
@@ -105,6 +107,14 @@ public class ClienteService {
     public void eliminarCliente(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        if (!vehiculoRepository.findByClienteId(id).isEmpty()) {
+            throw new RuntimeException("No se puede eliminar el cliente porque tiene vehículos asociados");
+        }
+        if (!ordenRepository.findByClienteId(id).isEmpty()) {
+            throw new RuntimeException("No se puede eliminar el cliente porque tiene órdenes asociadas");
+        }
+
         clienteRepository.delete(cliente);
     }
 
@@ -155,6 +165,16 @@ public class ClienteService {
     public VehiculoResponseDTO agregarVehiculo(Long clienteId, VehiculoRequestDTO request) {
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        if (request.getPlaca() == null || request.getPlaca().trim().isEmpty()) {
+            throw new RuntimeException("La placa del vehículo es obligatoria");
+        }
+        PlacaValidator.validar(request.getPlaca());
+
+        if (request.getAnio() == null) {
+            throw new RuntimeException("El año del vehículo es obligatorio");
+        }
+        AnioValidator.validar(request.getAnio());
 
         if (vehiculoRepository.existsByPlaca(request.getPlaca())) {
             throw new RuntimeException("Ya existe un vehículo con la placa " + request.getPlaca());

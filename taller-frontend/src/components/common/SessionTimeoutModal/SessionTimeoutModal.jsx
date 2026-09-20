@@ -6,7 +6,7 @@ const SessionTimeoutModal = ({ isOpen, onContinue, onLogout }) => {
     return (
         <div className="session-modal-overlay">
             <div className="session-modal-content">
-                <div className="session-modal-icon"></div>
+                <div className="session-modal-icon">⚠️</div>
                 <h3>Tu sesión está por expirar</h3>
                 <p>
                     Por seguridad, tu sesión expirará en breve.

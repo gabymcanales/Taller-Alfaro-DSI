@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { getClientes, getEstadisticas } from '../../services/clienteService';
 import ModalAgregarVehiculo from './ModalAgregarVehiculo';
 import ModalEditarCliente from './ModalEditarCliente';
 import ModalEliminarCliente from './ModalEliminarCliente';
 import ModalRegistrarCliente from './ModalRegistrarCliente';
+import Pagination from '../../components/common/Pagination/Pagination';
 import './Clientes.css';
 
 const Clientes = () => {
+    const navigate = useNavigate();
     const [clientes, setClientes] = useState([]);
     const [estadisticas, setEstadisticas] = useState({
         totalClientes: 0,
@@ -16,6 +21,9 @@ const Clientes = () => {
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
     const [error, setError] = useState('');
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
     const [showAgregarVehiculo, setShowAgregarVehiculo] = useState(false);
@@ -51,6 +59,7 @@ const Clientes = () => {
 
     const handleBuscar = (e) => {
         setBusqueda(e.target.value);
+        setCurrentPage(1);
     };
 
     const handleAgregarVehiculo = (cliente) => {
@@ -71,6 +80,12 @@ const Clientes = () => {
     const clientesFiltrados = clientes.filter(cliente =>
         cliente.nombreCliente?.toLowerCase().includes(busqueda.toLowerCase()) ||
         cliente.telefonoCliente?.includes(busqueda)
+    );
+
+    const totalPages = Math.ceil(clientesFiltrados.length / itemsPerPage);
+    const clientesPaginados = clientesFiltrados.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
     );
 
     
@@ -99,24 +114,14 @@ const Clientes = () => {
         </svg>
     );
 
-    if (loading) {
-        return (
-            <div className="clientes-container">
-                <div className="loading">Cargando clientes...</div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="clientes-container">
-                <div className="error-message">{error}</div>
-            </div>
-        );
-    }
-
     return (
         <div className="clientes-container">
+            {loading ? (
+                <div className="loading">Cargando clientes...</div>
+            ) : error ? (
+                <div className="error-message">{error}</div>
+            ) : (
+            <>
             <div className="clientes-header">
                 <div className="header-left">
                     <h1>Clientes</h1>
@@ -145,7 +150,13 @@ const Clientes = () => {
                     <div className="stat-sub">En expediente</div>
                 </div>
 
-                <div className="stat-card">
+                <div
+                    className="stat-card stat-card-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate('/vehiculos')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/vehiculos'); }}
+                >
                     <div className="stat-icon amarillo">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
@@ -158,9 +169,15 @@ const Clientes = () => {
                     <div className="stat-sub">Con propietario vinculado</div>
                 </div>
 
-                <div className="stat-card">
+                <div
+                    className="stat-card stat-card-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate('/ordenes')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/ordenes'); }}
+                >
                     <div className="stat-icon azul">
-                   
+
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
                             <path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2" />
@@ -212,7 +229,7 @@ const Clientes = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                clientesFiltrados.map((cliente) => (
+                                clientesPaginados.map((cliente) => (
                                     <tr key={cliente.idCliente} className="client-row">
                                         <td className="client-cell">
                                             <div className="client-avatar">
@@ -264,6 +281,12 @@ const Clientes = () => {
                         </tbody>
                     </table>
                 </div>
+
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </div>
 
             {/* ========== MODALES ========== */}
@@ -297,6 +320,10 @@ const Clientes = () => {
                     onSuccess={cargarDatos}
                 />
             )}
+            </>
+            )}
+
+            <ToastContainer position="bottom-right" autoClose={2500} theme="dark" />
         </div>
     );
 };

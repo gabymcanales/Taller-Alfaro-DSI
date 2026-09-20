@@ -19,13 +19,23 @@ axiosInstance.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Interceptor: maneja error 401 (token expirado)
+// Interceptor: maneja sesión inválida o vencida.
+// 401 siempre significa "no autenticado". Un 403 sin cuerpo también lo es: lo emite
+// directamente Spring Security cuando el JWT es inválido/venció (antes de llegar al
+// controlador), a diferencia de un 403 de negocio (rol insuficiente, regla de la app),
+// que siempre trae un cuerpo JSON con "mensaje" generado por el backend.
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const status = error.response?.status;
+        const sinCuerpo = !error.response?.data ||
+            (typeof error.response.data === 'string' && error.response.data.trim() === '');
+
+        if (status === 401 || (status === 403 && sinCuerpo)) {
             localStorage.removeItem('token');
-            window.location.href = '/login';
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login?sesion=expirada';
+            }
         }
         return Promise.reject(error);
     }

@@ -68,11 +68,12 @@
     cursor: pointer;
 }
 
-.cards-row {
+.informes-cards-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     margin-bottom: 24px;
+    width: 100%;
 }
 
 .card-stat {
@@ -83,6 +84,23 @@
     gap: 16px;
     align-items: flex-start;
     border: 1px solid #2a2a2a;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.card-stat-clickable {
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    width: 100%;
+}
+
+.card-stat-clickable:hover {
+    border-color: #555;
+}
+
+.card-stat-clickable:focus-visible {
+    outline: 2px solid #ff4000;
+    outline-offset: 2px;
 }
 
 .card-icon {
@@ -119,6 +137,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 24px;
+    width: 100%;
 }
 
 .chart-card, .ranking-card {
@@ -189,6 +208,9 @@
     border-radius: 12px;
     padding: 20px;
     border: 1px solid #2a2a2a;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
 }
 
 .tabla-header {
@@ -214,6 +236,7 @@
 
 .tabla-reportes {
     width: 100%;
+    min-width: 640px;
     border-collapse: collapse;
     font-size: 13px;
 }
@@ -235,8 +258,57 @@
 
 .monto { color: #f59e0b; font-weight: 500; }
 
+.order-highlight {
+    color: #ff8c42;
+    font-weight: 600;
+}
+
+.orden-clickable {
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s;
+}
+
+.orden-clickable:hover {
+    text-decoration-color: #ff8c42;
+}
+
 .sin-datos {
     text-align: center;
     color: #555;
     padding: 20px;
+}
+@media (max-width: 900px) {
+    .informes-cards-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    /* Los gráficos (barras + ranking) quedan uno debajo del otro en vez
+       de lado a lado, para que cada uno tenga espacio real para leerse */
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .informes-cards-row {
+        grid-template-columns: 1fr;
+    }
+
+    .card-stat {
+        padding: 14px;
+    }
+
+    .card-value {
+        font-size: 18px;
+    }
+
+    .reportes-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
 }

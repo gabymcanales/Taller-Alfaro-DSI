@@ -39,6 +39,7 @@ public class InventarioService {
         producto.setNombre(productoActualizado.getNombre());
         producto.setDescripcion(productoActualizado.getDescripcion());
         producto.setUnidadMedida(productoActualizado.getUnidadMedida());
+        producto.setCategoriaProducto(productoActualizado.getCategoriaProducto());
         producto.setPrecio(productoActualizado.getPrecio());
         producto.setStockMinimo(productoActualizado.getStockMinimo());
         producto.setEstado(productoActualizado.getEstado());

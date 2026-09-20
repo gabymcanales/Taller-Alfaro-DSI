@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { getVehiculos } from '../../services/vehiculoService';
 import { getEstadisticas } from '../../services/clienteService';
 import ModalHistorialVehiculo from './ModalHistorialVehiculo';
@@ -6,9 +9,11 @@ import ModalEliminarVehiculo from './ModalEliminarVehiculo';
 import ModalEditarVehiculo from './ModalEditarVehiculo';
 import ModalRegistrarVehiculo from './ModalRegistrarVehiculo';
 import ModalRegistrarCliente from '../clientes/ModalRegistrarCliente';
+import Pagination from '../../components/common/Pagination/Pagination';
 import './Vehiculos.css';
 
 const Vehiculos = () => {
+    const navigate = useNavigate();
     const [vehiculos, setVehiculos] = useState([]);
     const [estadisticas, setEstadisticas] = useState({
         totalClientes: 0,
@@ -18,6 +23,9 @@ const Vehiculos = () => {
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
     const [error, setError] = useState('');
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
     const [showHistorial, setShowHistorial] = useState(false);
@@ -54,6 +62,7 @@ const Vehiculos = () => {
 
     const handleBuscar = (e) => {
         setBusqueda(e.target.value);
+        setCurrentPage(1);
     };
 
     const handleVerHistorial = (vehiculo) => {
@@ -84,6 +93,12 @@ const Vehiculos = () => {
         (v.anio?.toString() || '').includes(busqueda)
     );
 
+    const totalPages = Math.ceil(vehiculosFiltrados.length / itemsPerPage);
+    const vehiculosPaginados = vehiculosFiltrados.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     const HistorialIcon = () => (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 8v4l3 3" />
@@ -108,24 +123,14 @@ const Vehiculos = () => {
         </svg>
     );
 
-    if (loading) {
-        return (
-            <div className="vehiculos-container">
-                <div className="loading">Cargando vehículos...</div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="vehiculos-container">
-                <div className="error-message">{error}</div>
-            </div>
-        );
-    }
-
     return (
         <div className="vehiculos-container">
+            {loading ? (
+                <div className="loading">Cargando vehículos...</div>
+            ) : error ? (
+                <div className="error-message">{error}</div>
+            ) : (
+            <>
             <div className="vehiculos-header">
                 <div>
                     <h1>Vehículos</h1>
@@ -143,7 +148,13 @@ const Vehiculos = () => {
 
             {/* ========== STATS ========== */}
             <div className="stats-grid">
-                <div className="stat-card">
+                <div
+                    className="stat-card stat-card-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate('/clientes')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/clientes'); }}
+                >
                     <div className="stat-icon green">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
@@ -170,7 +181,13 @@ const Vehiculos = () => {
                     <div className="stat-sub">Con propietario vinculado</div>
                 </div>
 
-                <div className="stat-card">
+                <div
+                    className="stat-card stat-card-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate('/ordenes')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/ordenes'); }}
+                >
                     <div className="stat-icon blue">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
@@ -225,7 +242,7 @@ const Vehiculos = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                vehiculosFiltrados.map((v) => (
+                                vehiculosPaginados.map((v) => (
                                     <tr key={v.idVehiculo}>
                                         <td className="placa-destacada">{v.placa}</td>
                                         <td>{v.marca} {v.modelo}</td>
@@ -263,6 +280,12 @@ const Vehiculos = () => {
                         </tbody>
                     </table>
                 </div>
+
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </div>
 
             {/* ========== MODALES ========== */}
@@ -306,6 +329,10 @@ const Vehiculos = () => {
                     }}
                 />
             )}
+            </>
+            )}
+
+            <ToastContainer position="bottom-right" autoClose={2500} theme="dark" />
         </div>
     );
 };

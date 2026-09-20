@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { crearCliente } from '../../services/clienteService';
 import './ModalRegistrarCliente.css';
 
@@ -17,8 +18,6 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
 
     const [errores, setErrores] = useState({});
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
 
     const validarNombre = (nombre) => {
@@ -34,10 +33,15 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
         return '';
     };
 
+    const formatearTelefono = (value) => {
+        const digitos = value.replace(/\D/g, '').slice(0, 8);
+        return digitos.length > 4 ? `${digitos.slice(0, 4)}-${digitos.slice(4)}` : digitos;
+    };
+
     const validarPlaca = (placa) => {
         if (!placa.trim()) return 'La placa es obligatoria';
-        if (placa.length !== 7) return 'La placa debe tener exactamente 7 caracteres';
-        if (!/^[A-Z0-9]{3}-[A-Z0-9]{3}$/.test(placa)) return 'La placa debe tener el formato XXX-XXX';
+        if (placa.length < 5 || placa.length > 8) return 'La placa debe tener entre 5 y 8 caracteres (incluyendo el guion)';
+        if (!/^[A-Z][A-Z0-9]*-[A-Z0-9]+$/.test(placa)) return 'La placa debe iniciar con una letra y contener un guion, formato P1-12 / P123-789';
         return '';
     };
 
@@ -87,8 +91,8 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
         const { name, value } = e.target;
 
         if (name === 'placa') {
-            let v = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (v.length > 6) v = v.slice(0, 6);
+            let v = value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+            if (v.length > 8) v = v.slice(0, 8);
             setFormData(prev => ({ ...prev, placa: v }));
             // Validar en tiempo real
             const error = validarPlaca(v);
@@ -98,8 +102,7 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
 
 
         if (name === 'telefonoCliente') {
-            let v = value.replace(/[^0-9-]/g, '');
-            if (v.length > 9) v = v.slice(0, 9);
+            const v = formatearTelefono(value);
             setFormData(prev => ({ ...prev, telefonoCliente: v }));
             const error = validarTelefono(v);
             setErrores(prev => ({ ...prev, telefonoCliente: error }));
@@ -114,8 +117,6 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess(false);
 
         if (!validarFormulario()) return;
 
@@ -132,14 +133,12 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                     color: formData.color
                 }
             });
-            setSuccess(true);
-            setTimeout(() => {
-                onSuccess();
-                onClose();
-            }, 1200);
+            toast.success('Cliente y vehículo registrados correctamente');
+            onSuccess();
+            onClose();
         } catch (err) {
             console.error('Error al registrar cliente:', err);
-            setError(err.response?.data?.mensaje || 'Error al registrar el cliente');
+            toast.error(err.response?.data?.mensaje || 'Error al registrar el cliente');
         } finally {
             setLoading(false);
         }
@@ -165,15 +164,7 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                     <h3>Registrar Cliente</h3>
                     <p className="modal-subtitle">Ingresa los datos del cliente y su vehículo principal.</p>
 
-                    {success ? (
-                        <div className="alert-success">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#97c459" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M20 6L9 17l-5-5" />
-                            </svg>
-                            <span>Cliente y vehículo registrados correctamente</span>
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} noValidate>
+                    <form onSubmit={handleSubmit} noValidate>
                             {/* Datos del Cliente */}
                             <div className="form-group">
                                 <label>Nombre completo <span className="obligatorio">*</span></label>
@@ -217,8 +208,8 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                                         name="placa"
                                         value={formData.placa}
                                         onChange={handleChange}
-                                        placeholder="P12-345"
-                                        maxLength={7}
+                                        placeholder="P1-12"
+                                        maxLength={8}
                                         className={errores.placa ? 'input-error' : ''}
                                     />
                                     {errores.placa && <span className="error-msg">{errores.placa}</span>}
@@ -279,18 +270,8 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                             </div>
 
                             <p className="nota-vehiculo">
-                                La placa debe ser única y tener 7 caracteres (formato XXX-XXX).
+                                La placa debe ser única en el sistema (formato P1-12 a P123-789, entre 5 y 8 caracteres).
                             </p>
-
-                            {error && (
-                                <div className="alert-error">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M12 9v4" />
-                                        <path d="M12 17h.01" />
-                                    </svg>
-                                    {error}
-                                </div>
-                            )}
 
                             {/* ===== PIE ===== */}
                             <div className="modal-footer">
@@ -311,7 +292,6 @@ const ModalRegistrarCliente = ({ onClose, onSuccess }) => {
                                 </button>
                             </div>
                         </form>
-                    )}
                 </div>
             </div>
         </div>

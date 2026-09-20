@@ -4,11 +4,21 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axiosInstance from '../../../api/axiosInstance';
 import './Login.css';
 
+const leerMensajeSesion = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('sesion') === 'expirada') {
+        window.history.replaceState({}, '', '/login');
+        return 'Tu sesión finalizó. Iniciá sesión de nuevo.';
+    }
+    return '';
+};
+
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [error, setError] = useState('');
+    const [mensajeSesion, setMensajeSesion] = useState(leerMensajeSesion);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -16,6 +26,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setMensajeSesion('');
 
         try {
             const response = await axiosInstance.post('/auth/login', { username, password });
@@ -27,7 +38,7 @@ const Login = () => {
             
             
             navigate('/');
-        } catch (err) {
+        } catch {
             setError('Usuario o contraseña incorrectos');
         } finally {
             setLoading(false);
@@ -41,6 +52,7 @@ const Login = () => {
                 <p>Sistema de Gestión</p>
                 
                 <form onSubmit={handleSubmit}>
+                    {mensajeSesion && <div className="info">{mensajeSesion}</div>}
                     <input
                         type="text"
                         placeholder="Usuario"

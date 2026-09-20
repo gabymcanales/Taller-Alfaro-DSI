@@ -57,6 +57,9 @@ public class ServicioService {
         servicio.setTipoPrecio(
                 servicioActualizado.getTipoPrecio());
 
+        servicio.setCategoriaServicio(
+                servicioActualizado.getCategoriaServicio());
+
         if ("FIJO".equals(servicioActualizado.getTipoPrecio())) {
 
             if (servicioActualizado.getPrecioSugerido() == null ||

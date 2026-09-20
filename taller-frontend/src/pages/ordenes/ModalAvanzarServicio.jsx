@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { iniciarServicio, finalizarServicio } from '../../services/ordenService';
+import { useState, useEffect } from 'react';
+import { iniciarServicio, finalizarServicio, getProductosPorCategoria } from '../../services/ordenService';
 import './ModalAvanzarServicio.css';
 
 const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioActualizado }) => {
@@ -8,6 +8,22 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
     const [precioFinal, setPrecioFinal] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const [aceites, setAceites] = useState([]);
+    const [filtros, setFiltros] = useState([]);
+    const [idProductoAceite, setIdProductoAceite] = useState('');
+    const [galonesAceite, setGalonesAceite] = useState('');
+    const [cuartosAceite, setCuartosAceite] = useState('0');
+    const [idProductoFiltro, setIdProductoFiltro] = useState('');
+
+    const esCambioAceite = servicio?.categoriaServicio === 'ACEITE';
+
+    useEffect(() => {
+        if (isOpen && esCambioAceite) {
+            getProductosPorCategoria('ACEITE').then(res => setAceites(res.data)).catch(() => setAceites([]));
+            getProductosPorCategoria('FILTRO').then(res => setFiltros(res.data)).catch(() => setFiltros([]));
+        }
+    }, [isOpen, esCambioAceite]);
 
     if (!isOpen || !servicio) return null;
 
@@ -114,6 +130,22 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
             return;
         }
 
+        if (esCambioAceite && estadoSeleccionado === 'FINALIZADO') {
+            if (!idProductoAceite) {
+                setError('Seleccione el aceite utilizado');
+                return;
+            }
+            if (!idProductoFiltro) {
+                setError('Seleccione el filtro utilizado');
+                return;
+            }
+            const totalCuartos = (parseInt(galonesAceite, 10) || 0) * 4 + (parseInt(cuartosAceite, 10) || 0);
+            if (totalCuartos <= 0) {
+                setError('Indique la cantidad de aceite utilizada');
+                return;
+            }
+        }
+
         setLoading(true);
         setError('');
 
@@ -124,6 +156,12 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                 const payload = { comentario };
                 if (esVariable && precioFinal) {
                     payload.precioFinal = parseFloat(precioFinal);
+                }
+                if (esCambioAceite) {
+                    payload.idProductoAceite = Number(idProductoAceite);
+                    payload.galonesAceite = parseInt(galonesAceite, 10) || 0;
+                    payload.cuartosAceite = parseInt(cuartosAceite, 10) || 0;
+                    payload.idProductoFiltro = Number(idProductoFiltro);
                 }
                 await finalizarServicio(ordenId, servicio.idServicio, payload);
             }
@@ -225,6 +263,71 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                             <p className="precio-note">
                                 <BulbIcon />
                                 Este servicio es de precio variable — solo tú defines el monto al finalizar.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Aceite y filtro (solo si es un servicio de cambio de aceite) */}
+                    {esCambioAceite && estadoSeleccionado === 'FINALIZADO' && (
+                        <div className="avanzar-aceite">
+                            <div className="avanzar-comentario">
+                                <label>Aceite utilizado *</label>
+                                <select
+                                    value={idProductoAceite}
+                                    onChange={(e) => setIdProductoAceite(e.target.value)}
+                                >
+                                    <option value="">— Seleccione el aceite —</option>
+                                    {aceites.map(p => (
+                                        <option key={p.idProducto} value={p.idProducto}>
+                                            {p.nombre} (stock: {p.stockActual} {p.unidadMedida})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="avanzar-cantidad-aceite">
+                                <div className="avanzar-comentario">
+                                    <label>Galones</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={galonesAceite}
+                                        onChange={(e) => setGalonesAceite(e.target.value)}
+                                        placeholder="0"
+                                    />
+                                </div>
+                                <div className="avanzar-comentario">
+                                    <label>Cuartos</label>
+                                    <select
+                                        value={cuartosAceite}
+                                        onChange={(e) => setCuartosAceite(e.target.value)}
+                                    >
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="avanzar-comentario">
+                                <label>Filtro utilizado *</label>
+                                <select
+                                    value={idProductoFiltro}
+                                    onChange={(e) => setIdProductoFiltro(e.target.value)}
+                                >
+                                    <option value="">— Seleccione el filtro —</option>
+                                    {filtros.map(p => (
+                                        <option key={p.idProducto} value={p.idProducto}>
+                                            {p.nombre} (stock: {p.stockActual} {p.unidadMedida})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <p className="precio-note">
+                                <BulbIcon />
+                                Indica exactamente cuánto aceite se usó (4 cuartos = 1 galón); el sistema descuenta esa cantidad y el filtro del inventario.
                             </p>
                         </div>
                     )}

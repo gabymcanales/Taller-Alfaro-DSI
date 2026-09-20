@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { buscarClientesPorNombre } from '../../services/clienteService';
 import { crearVehiculo } from '../../services/vehiculoService';
 import './ModalRegistrarVehiculo.css';
@@ -19,8 +20,6 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
     const [clientes, setClientes] = useState([]);
     const [busquedaCliente, setBusquedaCliente] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
     const [showClientes, setShowClientes] = useState(false);
 
     useEffect(() => {
@@ -46,8 +45,8 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
 
     const validarPlaca = (placa) => {
         if (!placa.trim()) return 'La placa es obligatoria';
-        if (placa.length !== 7) return 'La placa debe tener exactamente 7 caracteres';
-        if (!/^[A-Z0-9]{3}-[A-Z0-9]{3}$/.test(placa)) return 'La placa debe tener el formato XXX-XXX';
+        if (placa.length < 5 || placa.length > 8) return 'La placa debe tener entre 5 y 8 caracteres (incluyendo el guion)';
+        if (!/^[A-Z][A-Z0-9]*-[A-Z0-9]+$/.test(placa)) return 'La placa debe iniciar con una letra y contener un guion, formato P1-12 / P123-789';
         return '';
     };
 
@@ -98,8 +97,8 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
         const { name, value } = e.target;
 
         if (name === 'placa') {
-            let v = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (v.length > 6) v = v.slice(0, 6);
+            let v = value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+            if (v.length > 8) v = v.slice(0, 8);
             setFormData(prev => ({ ...prev, placa: v }));
             const error = validarPlaca(v);
             setErrores(prev => ({ ...prev, placa: error }));
@@ -121,8 +120,6 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
     // ========== SUBMIT ==========
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess(false);
 
         if (!validarFormulario()) return;
 
@@ -132,14 +129,12 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
                 ...formData,
                 anio: Number(formData.anio)
             });
-            setSuccess(true);
-            setTimeout(() => {
-                onSuccess();
-                onClose();
-            }, 1000);
+            toast.success('Vehículo registrado correctamente');
+            onSuccess();
+            onClose();
         } catch (err) {
             console.error('Error al registrar vehículo:', err);
-            setError(err.response?.data?.mensaje || 'Error al registrar el vehículo');
+            toast.error(err.response?.data?.mensaje || 'Error al registrar el vehículo');
         } finally {
             setLoading(false);
         }
@@ -154,12 +149,7 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
                 </div>
 
                 <div className="modal-body">
-                    {success ? (
-                        <div className="alert-success">
-                            Vehículo registrado correctamente
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} noValidate>
+                    <form onSubmit={handleSubmit} noValidate>
                             {/* Buscador de Cliente */}
                             <div className="form-group">
                                 <label>Propietario *</label>
@@ -226,8 +216,8 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
                                         name="placa"
                                         value={formData.placa}
                                         onChange={handleChange}
-                                        placeholder="P12-345"
-                                        maxLength={7}
+                                        placeholder="P1-12"
+                                        maxLength={8}
                                         className={errores.placa ? 'input-error' : ''}
                                     />
                                     {errores.placa && <span className="error-msg">{errores.placa}</span>}
@@ -290,14 +280,8 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
                                     <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0" />
                                     <path d="M12 16h.01" />
                                 </svg>
-                                <span>La placa debe ser única en el sistema (formato XXX-XXX).</span>
+                                <span>La placa debe ser única en el sistema (formato P1-12 a P123-789, entre 5 y 8 caracteres).</span>
                             </div>
-
-                            {error && (
-                                <div className="alert-error">
-                                    <span></span> {error}
-                                </div>
-                            )}
 
                             <div className="modal-footer">
                                 <button type="button" className="btn-cancelar" onClick={onClose}>
@@ -308,7 +292,6 @@ const ModalRegistrarVehiculo = ({ onClose, onSuccess, onRegistrarCliente }) => {
                                 </button>
                             </div>
                         </form>
-                    )}
                 </div>
             </div>
         </div>

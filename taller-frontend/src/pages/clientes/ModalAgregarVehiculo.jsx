@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { agregarVehiculoACliente } from '../../services/clienteService';
 import './ModalAgregarVehiculo.css';
 
@@ -15,13 +16,11 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
 
     const [errores, setErrores] = useState({});
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
 
     const validarPlaca = (placa) => {
         if (!placa.trim()) return 'La placa es obligatoria';
-        if (placa.length !== 7) return 'La placa debe tener exactamente 7 caracteres';
-        if (!/^[A-Z0-9]{3}-[A-Z0-9]{3}$/.test(placa)) return 'La placa debe tener el formato XXX-XXX';
+        if (placa.length < 5 || placa.length > 8) return 'La placa debe tener entre 5 y 8 caracteres (incluyendo el guion)';
+        if (!/^[A-Z][A-Z0-9]*-[A-Z0-9]+$/.test(placa)) return 'La placa debe iniciar con una letra y contener un guion, formato P1-12 / P123-789';
         return '';
     };
 
@@ -70,8 +69,8 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
 
 
         if (name === 'placa') {
-            let v = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (v.length > 6) v = v.slice(0, 6);
+            let v = value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+            if (v.length > 8) v = v.slice(0, 8);
             setFormData(prev => ({ ...prev, placa: v }));
             const error = validarPlaca(v);
             setErrores(prev => ({ ...prev, placa: error }));
@@ -86,8 +85,6 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess(false);
 
         if (!validarFormulario()) return;
 
@@ -100,20 +97,18 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
                 anio: Number(formData.anio),
                 color: formData.color
             });
-            setSuccess(true);
-            setTimeout(() => {
-                onSuccess();
-                onClose();
-            }, 1000);
+            toast.success('Vehículo agregado correctamente');
+            onSuccess();
+            onClose();
         } catch (err) {
             console.error('Error al agregar vehículo:', err);
 
             const mensajeServidor = err.response?.data?.mensaje || err.message || '';
 
             if (mensajeServidor.includes('placa') || mensajeServidor.includes('llave duplicada')) {
-                setError('Verifique la placa ingresada, ya se encuentra registrada.');
+                toast.error('Verifique la placa ingresada, ya se encuentra registrada.');
             } else {
-                setError(mensajeServidor || 'Error al agregar el vehículo');
+                toast.error(mensajeServidor || 'Error al agregar el vehículo');
             }
         } finally {
             setLoading(false);
@@ -144,12 +139,7 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
                         </div>
                     </div>
 
-                    {success ? (
-                        <div className="alert-success">
-                            Vehículo agregado correctamente
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} noValidate>
+                    <form onSubmit={handleSubmit} noValidate>
                             <div className="form-grid">
                                 <div className="form-group">
                                     <label>Placa <span className="obligatorio">*</span></label>
@@ -158,8 +148,8 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
                                         name="placa"
                                         value={formData.placa}
                                         onChange={handleChange}
-                                        placeholder="P12-345"
-                                        maxLength={7}
+                                        placeholder="P1-12"
+                                        maxLength={8}
                                         className={errores.placa ? 'input-error' : ''}
                                     />
                                     {errores.placa && <span className="error-msg">{errores.placa}</span>}
@@ -222,27 +212,8 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
                                     <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0" />
                                     <path d="M12 16h.01" />
                                 </svg>
-                                <span>La placa debe ser única en el sistema (formato XXX-XXX).</span>
+                                <span>La placa debe ser única en el sistema (formato P1-12 a P123-789, entre 5 y 8 caracteres).</span>
                             </div>
-
-                            {error && (
-                                <div className="alert-error">
-                                    <svg
-                                        className="alert-error-icon"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                                        <line x1="12" y1="9" x2="12" y2="13" />
-                                        <line x1="12" y1="17" x2="12.01" y2="17" />
-                                    </svg>
-                                    <span>{error}</span>
-                                </div>
-                            )}
 
                             <div className="modal-footer">
                                 <button type="button" className="btn-cancelar" onClick={onClose}>
@@ -253,7 +224,6 @@ const ModalAgregarVehiculo = ({ cliente, onClose, onSuccess }) => {
                                 </button>
                             </div>
                         </form>
-                    )}
                 </div>
             </div>
         </div>

@@ -27,6 +27,9 @@ import MisOrdenes from '../pages/ordenes/MisOrdenes';
 
 import GestionInventario from '../pages/inventario/GestionInventario/GestionInventario';
 
+import SessionTimeoutModal from '../components/common/SessionTimeoutModal/SessionTimeoutModal';
+import { useSessionTimeout } from '../hooks/useSessionTimeout';
+
 import { getUsuarioActual, esAdministrador } from '../utils/authUser';
 
 
@@ -49,6 +52,8 @@ const RutaAdmin = ({ children }) => {
 
 
 const Layout = () => {
+
+    const { showWarning, handleContinue, handleLogout } = useSessionTimeout();
 
     return (
 
@@ -134,6 +139,12 @@ const Layout = () => {
                 </div>
 
             </main>
+
+            <SessionTimeoutModal
+                isOpen={showWarning}
+                onContinue={handleContinue}
+                onLogout={handleLogout}
+            />
 
         </div>
 
