@@ -1,8 +1,10 @@
 .ordenes-container {
     width: 100%;
+    padding: 24px;
     background: #111;
     min-height: 100vh;
     color: #fff;
+    box-sizing: border-box;
 }
 
 .ordenes-header {
@@ -90,7 +92,7 @@
     margin-top: 4px;
 }
 
-.tabla-container {
+.ordenes-tabla-container {
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 10px;
@@ -170,6 +172,7 @@
 
 .ordenes-tabla {
     width: 100%;
+    min-width: 760px;
     border-collapse: collapse;
     font-size: 13px;
 }

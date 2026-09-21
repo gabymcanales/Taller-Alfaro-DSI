@@ -32,9 +32,9 @@
 
 
 .cards-row {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 16px !important;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
 }
 
 .stat-card {
@@ -157,6 +157,7 @@
 
 .data-table {
     width: 100%;
+    min-width: 600px;
     border-collapse: collapse;
     font-size: 13px;
 }
@@ -220,4 +221,15 @@
     text-align: center;
     padding: 40px;
     color: #a0a0a0;
+}
+@media (max-width: 900px) {
+    .cards-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .cards-row {
+        grid-template-columns: 1fr;
+    }
 }

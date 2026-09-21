@@ -4,7 +4,7 @@ export const getUsuarioActual = () => {
 
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        return { username: payload.sub, rol: payload.rol };
+        return { username: payload.sub, rol: payload.rol, nombre: payload.nombre };
     } catch (e) {
         console.error('Error al decodificar token:', e);
         return null;

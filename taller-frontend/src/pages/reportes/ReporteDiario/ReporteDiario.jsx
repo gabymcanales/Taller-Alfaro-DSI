@@ -5,6 +5,8 @@ import {
     getRankingServicios,
     exportarReportePeriodoPdf
 } from '../../../services/reporteService';
+import ModalListaReporte from './ModalListaReporte';
+import ModalDetalleOrden from '../../ordenes/ModalDetalleOrden';
 import './ReporteDiario.css';
 
 // Iconos SVG
@@ -55,6 +57,8 @@ const ReporteDiario = () => {
     const [ranking, setRanking] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [modalAbierto, setModalAbierto] = useState(null);
+    const [ordenSeleccionadaId, setOrdenSeleccionadaId] = useState(null);
 
     const rangoValido = fechaInicio && fechaFin && fechaInicio <= fechaFin;
     const errorRango = !rangoValido ? 'La fecha "Desde" no puede ser posterior a la fecha "Hasta".' : '';
@@ -121,6 +125,8 @@ const ReporteDiario = () => {
         return `${dia}/${mes}/${anio}`;
     };
 
+    const totalServicios = ranking.reduce((acc, s) => acc + (s.cantidadSolicitado || 0), 0);
+
     if (loading) {
         return <div className="loading">Cargando reportes...</div>;
     }
@@ -154,9 +160,15 @@ const ReporteDiario = () => {
 
             {(errorRango || error) && <div className="alert-warn">{errorRango || error}</div>}
 
-            {/* Cards resumen */}
-            <div className="cards-row">
-                <div className="card-stat">
+            {/* Cards resumen (cliqueables: cada una abre un modal con su lista y exportación) */}
+            <div className="informes-cards-row">
+                <div
+                    className="card-stat card-stat-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setModalAbierto('ingresos')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setModalAbierto('ingresos'); }}
+                >
                     <div className="card-icon naranja">
                         <MoneyIcon />
                     </div>
@@ -170,7 +182,13 @@ const ReporteDiario = () => {
                         </span>
                     </div>
                 </div>
-                <div className="card-stat">
+                <div
+                    className="card-stat card-stat-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setModalAbierto('ordenes')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setModalAbierto('ordenes'); }}
+                >
                     <div className="card-icon naranja">
                         <OrdersIcon />
                     </div>
@@ -182,14 +200,20 @@ const ReporteDiario = () => {
                         <span className="card-sub">órdenes atendidas</span>
                     </div>
                 </div>
-                <div className="card-stat">
+                <div
+                    className="card-stat card-stat-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setModalAbierto('servicios')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setModalAbierto('servicios'); }}
+                >
                     <div className="card-icon naranja">
                         <ServicesIcon />
                     </div>
                     <div className="card-info">
                         <span className="card-label">Servicios Realizados</span>
                         <span className="card-value">
-                            {ranking.reduce((acc, s) => acc + (s.cantidadSolicitado || 0), 0)}
+                            {totalServicios}
                         </span>
                         <span className="card-sub">en el período</span>
                     </div>
@@ -258,7 +282,12 @@ const ReporteDiario = () => {
                         {reportePeriodo?.transacciones?.length > 0
                             ? reportePeriodo.transacciones.map((t, i) => (
                                 <tr key={i}>
-                                    <td className="order-highlight">{t.numOrden}</td>
+                                    <td
+                                        className={t.idOrden ? "order-highlight orden-clickable" : "order-highlight"}
+                                        onClick={t.idOrden ? () => setOrdenSeleccionadaId(t.idOrden) : undefined}
+                                    >
+                                        {t.numOrden}
+                                    </td>
                                     <td>{t.nombreCliente}</td>
                                     <td className="monto">${t.montoTotal}</td>
                                     <td className="monto">${t.montoRecibido}</td>
@@ -271,6 +300,24 @@ const ReporteDiario = () => {
                     </tbody>
                 </table>
             </div>
+
+            {modalAbierto && (
+                <ModalListaReporte
+                    tipo={modalAbierto}
+                    transacciones={reportePeriodo?.transacciones}
+                    ranking={ranking}
+                    fechaInicio={fechaInicio}
+                    fechaFin={fechaFin}
+                    onClose={() => setModalAbierto(null)}
+                />
+            )}
+
+            <ModalDetalleOrden
+                isOpen={!!ordenSeleccionadaId}
+                onClose={() => setOrdenSeleccionadaId(null)}
+                ordenId={ordenSeleccionadaId}
+                esAdmin={true}
+            />
         </div>
     );
 };

@@ -154,6 +154,13 @@ const ModalDetalleOrden = ({
                             </div>
                         </div>
 
+                        {orden.descripcion && (
+                            <div className="detalle-info-item detalle-descripcion">
+                                <label>DESCRIPCIÓN</label>
+                                <span>{orden.descripcion}</span>
+                            </div>
+                        )}
+
                         {/* Tabla de Servicios */}
                         <div className="detalle-servicios">
                             <h4>Servicios y responsables</h4>
@@ -169,11 +176,7 @@ const ModalDetalleOrden = ({
                                 </thead>
                                 <tbody>
                                     {orden.ordenServicios
-                                        ?.filter(s => {
-                                            if (isAdmin) return true;
-                                            return s.empleado?.username === username;
-                                        })
-                                        .map((servicio) => {
+                                        ?.map((servicio) => {
                                             const puedeAvanzar = !isAdmin &&
                                                 servicio.empleado?.username === username &&
                                                 servicio.estadoServicioOrden !== 'FINALIZADO';
@@ -183,7 +186,7 @@ const ModalDetalleOrden = ({
                                                     <td>{servicio.nombreServicio}</td>
                                                     <td>{servicio.empleado?.nombreEmpleado || 'Sin asignar'}</td>
                                                     <td className="precio-col">
-                                                        {servicio.precioAplicado ? (
+                                                        {servicio.precioAplicado != null ? (
                                                             `$${servicio.precioAplicado.toFixed(2)}`
                                                         ) : servicio.tipoPrecio === 'VARIABLE' ? (
                                                             <span className="precio-variable-text">Pendiente</span>
@@ -208,7 +211,7 @@ const ModalDetalleOrden = ({
                                                         {servicio.estadoServicioOrden === 'FINALIZADO' && (
                                                             <span className="completo-text"> Completo</span>
                                                         )}
-                                                        {!puedeAvanzar && servicio.estadoServicioOrden !== 'FINALIZADO' && isAdmin && (
+                                                        {!puedeAvanzar && servicio.estadoServicioOrden !== 'FINALIZADO' && (
                                                             <span className="completo-text" style={{ color: '#888', fontSize: '11px' }}>
                                                                 Asignado a {servicio.empleado?.nombreEmpleado || '...'}
                                                             </span>
@@ -220,6 +223,33 @@ const ModalDetalleOrden = ({
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Tabla de Productos */}
+                        {orden.productos?.length > 0 && (
+                            <div className="detalle-servicios">
+                                <h4>Productos utilizados</h4>
+                                <table className="detalle-tabla-servicios">
+                                    <thead>
+                                        <tr>
+                                            <th>PRODUCTO</th>
+                                            <th>CANTIDAD</th>
+                                            <th>PRECIO UNIT.</th>
+                                            <th>SUBTOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orden.productos.map((p, i) => (
+                                            <tr key={i}>
+                                                <td>{p.nombre}</td>
+                                                <td>{p.cantidad}</td>
+                                                <td className="precio-col">${p.precioUnitario?.toFixed(2)}</td>
+                                                <td className="precio-col">${p.subtotal?.toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
 
                         {/* Trazabilidad */}
                         <div className="detalle-trazabilidad">

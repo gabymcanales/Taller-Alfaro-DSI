@@ -35,6 +35,18 @@
     gap: 16px;
 }
 
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.form-field label {
+    font-size: 13px;
+    color: #a0a0a0;
+}
+
 .login-card input {
     width: 100%;
     padding: 12px 14px;
@@ -101,6 +113,15 @@
     background: rgba(226, 75, 74, 0.1);
     border: 1px solid rgba(226, 75, 74, 0.3);
     color: #f09595;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.info {
+    background: rgba(255, 140, 66, 0.1);
+    border: 1px solid rgba(255, 140, 66, 0.3);
+    color: #ff8c42;
     padding: 10px;
     border-radius: 8px;
     font-size: 13px;

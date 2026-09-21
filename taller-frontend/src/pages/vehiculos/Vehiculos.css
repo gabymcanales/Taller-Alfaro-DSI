@@ -1,8 +1,10 @@
 .vehiculos-container {
     width: 100%;
+    padding: 24px;
     background: #111;
     min-height: 100vh;
     color: #fff;
+    box-sizing: border-box;
 }
 
 
@@ -73,6 +75,19 @@
     border-color: #555;
 }
 
+.stat-card-clickable {
+    cursor: pointer;
+}
+
+.stat-card-clickable:hover {
+    border-color: #ff4000;
+}
+
+.stat-card-clickable:focus-visible {
+    outline: 2px solid #ff4000;
+    outline-offset: 2px;
+}
+
 .stat-icon.green {
     width: 32px;
     height: 32px;
@@ -135,7 +150,7 @@
 }
 
 
-.tabla-container {
+.vehiculos-tabla-container {
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 10px;
@@ -196,6 +211,7 @@
 
 .vehiculos-tabla {
     width: 100%;
+    min-width: 720px;
     border-collapse: collapse;
     font-size: 13px;
 }

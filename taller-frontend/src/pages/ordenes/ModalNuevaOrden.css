@@ -88,6 +88,24 @@
     border-color: #ef4444;
 }
 
+.form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.15s;
+}
+
+.form-textarea:focus {
+    border-color: #ff4000;
+}
+
 .form-select:disabled {
     opacity: 0.5;
     cursor: not-allowed;

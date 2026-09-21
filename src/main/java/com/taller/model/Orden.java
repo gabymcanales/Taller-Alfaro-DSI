@@ -32,6 +32,9 @@ public class Orden {
     @Column(name = "precio_final", precision = 10, scale = 2)
     private BigDecimal precioFinal;
 
+    @Column(name = "descripcion", length = 500)
+    private String descripcion;
+
     @ManyToOne
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
@@ -49,4 +52,7 @@ public class Orden {
 
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL)
     private List<HistorialEstadoOrden> historialEstados = new ArrayList<>();
+
+    @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL)
+    private List<OrdenProducto> ordenProductos = new ArrayList<>();
 }

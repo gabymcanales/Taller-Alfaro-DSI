@@ -22,8 +22,9 @@ const GestionServicios = () => {
         nombreServicio: '',
         descripcionServicio: '',
         areaServicio: '',
-        precioSugerido: '',       
-        tipoPrecio: 'FIJO',       
+        precioSugerido: '',
+        tipoPrecio: 'FIJO',
+        categoriaServicio: '',
         estadoServicio: 'ACTIVO'
     });
     const [servicios, setServicios] = useState([]);
@@ -70,6 +71,7 @@ const GestionServicios = () => {
                     ? Number(nuevoServicio.precioSugerido) 
                     : null,
                 tipoPrecio: nuevoServicio.tipoPrecio,
+                categoriaServicio: nuevoServicio.categoriaServicio || null,
                 estadoServicio: nuevoServicio.estadoServicio
             };
 
@@ -92,6 +94,7 @@ const GestionServicios = () => {
                 areaServicio: '',
                 precioSugerido: '',
                 tipoPrecio: 'FIJO',
+                categoriaServicio: '',
                 estadoServicio: 'ACTIVO'
             });
         } catch (error) {
@@ -128,6 +131,7 @@ const GestionServicios = () => {
             areaServicio: servicio.areaServicio || '',
             precioSugerido: servicio.precioSugerido || '',
             tipoPrecio: servicio.tipoPrecio || 'FIJO',
+            categoriaServicio: servicio.categoriaServicio || '',
             estadoServicio: servicio.estadoServicio || 'ACTIVO'
         });
         setMostrarModal(true);
@@ -140,6 +144,8 @@ const GestionServicios = () => {
         servicio.descripcionServicio?.toLowerCase().includes(textoBusqueda) ||
         servicio.areaServicio?.toLowerCase().includes(textoBusqueda)
     );
+
+    const areasUnicas = [...new Set(servicios.map(s => s.areaServicio).filter(Boolean))];
 
     const serviciosPorArea = serviciosFiltrados.reduce((acc, servicio) => {
         if (!acc[servicio.areaServicio]) {
@@ -213,66 +219,93 @@ const GestionServicios = () => {
                 <div className="modal-overlay">
                     <div className="modal-servicio">
                         <h2>{modoEdicion ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
-                        <input
-                            placeholder="Nombre"
-                            value={nuevoServicio.nombreServicio}
-                            onChange={(e) => setNuevoServicio({ ...nuevoServicio, nombreServicio: e.target.value })}
-                        />
-                        <input
-                            placeholder="Área"
-                            value={nuevoServicio.areaServicio}
-                            onChange={(e) => setNuevoServicio({ ...nuevoServicio, areaServicio: e.target.value })}
-                        />
-                        <textarea
-                            placeholder="Descripción"
-                            value={nuevoServicio.descripcionServicio}
-                            onChange={(e) => setNuevoServicio({ ...nuevoServicio, descripcionServicio: e.target.value })}
-                        />
-
-                  
-                        <select
-                            value={nuevoServicio.tipoPrecio}
-                            onChange={(e) => {
-                                setNuevoServicio({ 
-                                    ...nuevoServicio, 
-                                    tipoPrecio: e.target.value,
-                                    precioSugerido: e.target.value === 'VARIABLE' ? '' : nuevoServicio.precioSugerido
-                                });
-                            }}
-                        >
-                            <option value="FIJO">Fijo</option>
-                            <option value="VARIABLE">Variable</option>
-                        </select>
-
-                      
-                        {nuevoServicio.tipoPrecio === 'FIJO' ? (
+                        <div className="form-field">
+                            <label>Nombre</label>
                             <input
-                                type="number"
-                                placeholder="Precio sugerido ($)"
-                                value={nuevoServicio.precioSugerido}
-                                onChange={(e) => setNuevoServicio({ ...nuevoServicio, precioSugerido: e.target.value })}
-                                step="0.01"
-                                min="0.01"
+                                value={nuevoServicio.nombreServicio}
+                                onChange={(e) => setNuevoServicio({ ...nuevoServicio, nombreServicio: e.target.value })}
                             />
-                        ) : (
+                        </div>
+                        <div className="form-field">
+                            <label>Área</label>
                             <input
-                                type="text"
-                                placeholder="Precio variable (se define al finalizar)"
-                                value="Se define al finalizar"
-                                disabled
-                                style={{ color: '#ff8c42' }}
+                                value={nuevoServicio.areaServicio}
+                                onChange={(e) => setNuevoServicio({ ...nuevoServicio, areaServicio: e.target.value })}
+                                list="areas-servicios"
+                                autoComplete="off"
                             />
-                        )}
+                            <datalist id="areas-servicios">
+                                {areasUnicas.map((area) => (
+                                    <option key={area} value={area} />
+                                ))}
+                            </datalist>
+                        </div>
+                        <div className="form-field">
+                            <label>Descripción</label>
+                            <textarea
+                                value={nuevoServicio.descripcionServicio}
+                                onChange={(e) => setNuevoServicio({ ...nuevoServicio, descripcionServicio: e.target.value })}
+                            />
+                        </div>
 
-                        
+                        <div className="form-field">
+                            <label>Tipo de precio</label>
+                            <select
+                                value={nuevoServicio.tipoPrecio}
+                                onChange={(e) => {
+                                    setNuevoServicio({
+                                        ...nuevoServicio,
+                                        tipoPrecio: e.target.value,
+                                        precioSugerido: e.target.value === 'VARIABLE' ? '' : nuevoServicio.precioSugerido
+                                    });
+                                }}
+                            >
+                                <option value="FIJO">Fijo</option>
+                                <option value="VARIABLE">Variable</option>
+                            </select>
+                        </div>
 
-                        <select
-                            value={nuevoServicio.estadoServicio}
-                            onChange={(e) => setNuevoServicio({ ...nuevoServicio, estadoServicio: e.target.value })}
-                        >
-                            <option value="ACTIVO">ACTIVO</option>
-                            <option value="INACTIVO">INACTIVO</option>
-                        </select>
+                        <div className="form-field">
+                            <label>Precio {nuevoServicio.tipoPrecio === 'FIJO' ? 'sugerido' : ''}</label>
+                            {nuevoServicio.tipoPrecio === 'FIJO' ? (
+                                <input
+                                    type="number"
+                                    value={nuevoServicio.precioSugerido}
+                                    onChange={(e) => setNuevoServicio({ ...nuevoServicio, precioSugerido: e.target.value })}
+                                    step="0.01"
+                                    min="0.01"
+                                />
+                            ) : (
+                                <input
+                                    type="text"
+                                    value="Se define al finalizar"
+                                    disabled
+                                    style={{ color: '#ff8c42' }}
+                                />
+                            )}
+                        </div>
+
+                        <div className="form-field">
+                            <label>Categoría</label>
+                            <select
+                                value={nuevoServicio.categoriaServicio}
+                                onChange={(e) => setNuevoServicio({ ...nuevoServicio, categoriaServicio: e.target.value })}
+                            >
+                                <option value="">General</option>
+                                <option value="ACEITE">Cambio de aceite</option>
+                            </select>
+                        </div>
+
+                        <div className="form-field">
+                            <label>Estado</label>
+                            <select
+                                value={nuevoServicio.estadoServicio}
+                                onChange={(e) => setNuevoServicio({ ...nuevoServicio, estadoServicio: e.target.value })}
+                            >
+                                <option value="ACTIVO">ACTIVO</option>
+                                <option value="INACTIVO">INACTIVO</option>
+                            </select>
+                        </div>
                         <div className="modal-buttons">
                             <button onClick={() => {
                                 setMostrarModal(false);
@@ -284,6 +317,7 @@ const GestionServicios = () => {
                                     areaServicio: '',
                                     precioSugerido: '',
                                     tipoPrecio: 'FIJO',
+                                    categoriaServicio: '',
                                     estadoServicio: 'ACTIVO'
                                 });
                             }}>

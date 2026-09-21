@@ -61,7 +61,7 @@ const ModalHistorialVehiculo = ({ vehiculo, onClose }) => {
                     ) : historial.length === 0 ? (
                         <div className="sin-datos">Este vehículo no tiene historial de servicios</div>
                     ) : (
-                        <div className="tabla-container">
+                        <div className="historial-tabla-container">
                             <table className="historial-tabla">
                                 <thead>
                                     <tr>

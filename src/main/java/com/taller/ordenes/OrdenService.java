@@ -4,6 +4,8 @@ import com.taller.cobros.ServicioRepository;
 import com.taller.cobros.TransaccionRepository;
 import com.taller.dto.*;
 import com.taller.exception.AccesoDenegadoOrdenException;
+import com.taller.inventario.InventarioService;
+import com.taller.inventario.ProductoRepository;
 import com.taller.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,6 +36,11 @@ public class OrdenService {
     private final EmpleadoRepository empleadoRepository;
     private final ServicioRepository servicioRepository;
     private final TransaccionRepository transaccionRepository;
+    private final ProductoRepository productoRepository;
+    private final InventarioService inventarioService;
+    private final OrdenProductoRepository ordenProductoRepository;
+
+    private static final String CATEGORIA_ACEITE = "ACEITE";
 
     @Transactional
     public OrdenResponseDTO crearOrden(OrdenRequestDTO request, String username) {
@@ -66,6 +74,7 @@ public class OrdenService {
         orden.setNumOrden(generarNumeroOrden());
         orden.setTotalCalculadoOrden(BigDecimal.ZERO);
         orden.setPrecioFinal(null);
+        orden.setDescripcion(request.getDescripcion());
         orden = ordenRepository.save(orden);
 
         registrarHistorial(orden, null, "PENDIENTE", "Orden creada", empleadoCrea);
@@ -137,6 +146,59 @@ public class OrdenService {
 
         log.info("Orden creada: {}", orden.getNumOrden());
         return convertToDTO(orden);
+    }
+
+    private BigDecimal registrarProductoEnOrden(Orden orden, ProductoUsadoDTO productoReq,
+            Empleado empleado) {
+        return registrarProductoEnOrden(orden, productoReq, empleado, BigDecimal.ONE);
+    }
+
+    /**
+     * unidadesPorCantidad: cuántas unidades de "cantidad" (la que se descuenta del inventario)
+     * equivalen a una unidad de precio del producto. Para el aceite, el precio está registrado
+     * por galón pero la cantidad se maneja en cuartos (1 galón = 4 cuartos), así que aquí vale 4.
+     * Para el resto de productos (filtro, productos generales) la cantidad ya es la unidad de
+     * precio, así que vale 1.
+     */
+    private BigDecimal registrarProductoEnOrden(Orden orden, ProductoUsadoDTO productoReq,
+            Empleado empleado, BigDecimal unidadesPorCantidad) {
+
+        if (productoReq.getIdProducto() == null) {
+            throw new RuntimeException("Debe seleccionar un producto");
+        }
+        if (productoReq.getCantidad() == null || productoReq.getCantidad() <= 0) {
+            throw new RuntimeException("La cantidad del producto debe ser mayor a 0");
+        }
+
+        Producto producto = productoRepository.findById(productoReq.getIdProducto())
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        if (!"ACTIVO".equalsIgnoreCase(producto.getEstado())) {
+            throw new RuntimeException("El producto " + producto.getNombre() + " está INACTIVO");
+        }
+
+        MovimientoInventario movimiento = new MovimientoInventario();
+        movimiento.setProducto(producto);
+        movimiento.setEmpleado(empleado);
+        movimiento.setTipoMovimiento("USO");
+        movimiento.setCantidad(productoReq.getCantidad());
+        movimiento.setMotivo("Uso en orden " + orden.getNumOrden());
+        movimiento.setOrden(orden);
+        inventarioService.registrarMovimiento(movimiento);
+
+        BigDecimal precioUnitarioEfectivo = producto.getPrecio()
+                .divide(unidadesPorCantidad, 2, RoundingMode.HALF_UP);
+        BigDecimal subtotal = precioUnitarioEfectivo.multiply(BigDecimal.valueOf(productoReq.getCantidad()));
+
+        OrdenProducto ordenProducto = new OrdenProducto();
+        ordenProducto.setOrden(orden);
+        ordenProducto.setProducto(producto);
+        ordenProducto.setCantidad(productoReq.getCantidad());
+        ordenProducto.setPrecioUnitario(precioUnitarioEfectivo);
+        ordenProducto.setSubtotal(subtotal);
+        ordenProductoRepository.save(ordenProducto);
+
+        return subtotal;
     }
 
     @Transactional
@@ -228,7 +290,11 @@ public class OrdenService {
             ordenServicioRepository.save(ordenServicio);
         }
 
-        orden.setTotalCalculadoOrden(totalCalculado);
+        BigDecimal totalProductos = ordenProductoRepository.findByOrdenId(idOrden).stream()
+                .map(OrdenProducto::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        orden.setTotalCalculadoOrden(totalCalculado.add(totalProductos));
         orden = ordenRepository.save(orden);
 
         registrarHistorial(orden, orden.getEstadoOrden(), orden.getEstadoOrden(),
@@ -365,8 +431,25 @@ public class OrdenService {
         }
 
         Servicio servicio = ordenServicio.getServicio();
+        boolean esCambioAceite = CATEGORIA_ACEITE.equalsIgnoreCase(servicio.getCategoriaServicio());
 
-        if ("VARIABLE".equals(servicio.getTipoPrecio())) {
+        if (esCambioAceite) {
+            if (request.getManoDeObraGratis() == null) {
+                throw new RuntimeException("Debe indicar si la mano de obra es gratis");
+            }
+
+            boolean manoDeObraGratis = request.getManoDeObraGratis();
+
+            if (manoDeObraGratis) {
+                ordenServicio.setPrecioAplicado(BigDecimal.ZERO);
+            } else if (ordenServicio.getPrecioAplicado() == null) {
+                throw new RuntimeException("El servicio \"" + servicio.getNombreServicio() +
+                        "\" (categoría Aceite) no tiene precio de mano de obra definido. " +
+                        "Pide a un administrador que lo configure en el Catálogo de Servicios con tipo de precio Fijo y un precio mayor a 0.");
+            }
+
+            registrarConsumoAceiteYFiltro(ordenServicio.getOrden(), request, empleado, manoDeObraGratis);
+        } else if ("VARIABLE".equals(servicio.getTipoPrecio())) {
             if (request.getPrecioFinal() == null || request.getPrecioFinal().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new RuntimeException("Debe definir un precio válido para el servicio variable");
             }
@@ -375,6 +458,16 @@ public class OrdenService {
             if (ordenServicio.getPrecioAplicado() == null) {
                 throw new RuntimeException("El servicio fijo no tiene precio definido");
             }
+        }
+
+        if (request.getProductos() != null && !request.getProductos().isEmpty()) {
+            for (ProductoUsadoDTO productoReq : request.getProductos()) {
+                registrarProductoEnOrden(ordenServicio.getOrden(), productoReq, empleado);
+            }
+            registrarHistorial(ordenServicio.getOrden(), null, ordenServicio.getOrden().getEstadoOrden(),
+                    "Productos registrados por " + empleado.getNombreEmpleado() + " al finalizar "
+                            + servicio.getNombreServicio(),
+                    empleado);
         }
 
         String estadoAnterior = ordenServicio.getEstadoServicioOrden();
@@ -398,6 +491,72 @@ public class OrdenService {
         return convertToServicioDTO(ordenServicio);
     }
 
+    private void registrarConsumoAceiteYFiltro(Orden orden, FinalizarServicioRequest request, Empleado empleado,
+            boolean incluirAceite) {
+
+        if (incluirAceite) {
+            if (request.getIdProductoAceite() == null) {
+                throw new RuntimeException("Debe seleccionar el aceite utilizado");
+            }
+
+            int galones = request.getGalonesAceite() != null ? request.getGalonesAceite() : 0;
+            int cuartos = request.getCuartosAceite() != null ? request.getCuartosAceite() : 0;
+
+            if (galones < 0 || cuartos < 0 || cuartos > 3) {
+                throw new RuntimeException("La cantidad de aceite ingresada no es válida (los cuartos van de 0 a 3)");
+            }
+
+            int totalCuartos = galones * 4 + cuartos;
+
+            if (totalCuartos <= 0) {
+                throw new RuntimeException("Debe indicar la cantidad de aceite utilizada");
+            }
+
+            ProductoUsadoDTO aceiteReq = new ProductoUsadoDTO();
+            aceiteReq.setIdProducto(request.getIdProductoAceite());
+            aceiteReq.setCantidad(totalCuartos);
+            registrarProductoEnOrden(orden, aceiteReq, empleado, BigDecimal.valueOf(4));
+        }
+
+        if (request.getIdProductoFiltro() != null) {
+            ProductoUsadoDTO filtroReq = new ProductoUsadoDTO();
+            filtroReq.setIdProducto(request.getIdProductoFiltro());
+            filtroReq.setCantidad(1);
+            registrarProductoEnOrden(orden, filtroReq, empleado);
+        }
+    }
+
+    public List<ProductoSimpleDTO> getProductosPorCategoria(String categoria) {
+        return productoRepository.findByCategoriaAndEstado(categoria, "ACTIVO").stream()
+                .map(p -> {
+                    ProductoSimpleDTO dto = new ProductoSimpleDTO();
+                    dto.setIdProducto(p.getIdProducto());
+                    dto.setNombre(p.getNombre());
+                    dto.setUnidadMedida(p.getUnidadMedida());
+                    dto.setStockActual(p.getStockActual());
+                    dto.setPrecio(p.getPrecio());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductoSimpleDTO> getProductosDisponibles() {
+        return productoRepository.findByEstado("ACTIVO").stream()
+                .filter(p -> p.getStockActual() != null && p.getStockActual() > 0)
+                .map(p -> {
+                    ProductoSimpleDTO dto = new ProductoSimpleDTO();
+                    dto.setIdProducto(p.getIdProducto());
+                    dto.setNombre(p.getNombre());
+                    dto.setUnidadMedida(p.getUnidadMedida());
+                    dto.setStockActual(p.getStockActual());
+                    dto.setPrecio(p.getPrecio());
+                    dto.setCategoria(p.getCategoria());
+                    return dto;
+                })
+                .sorted((a, b) -> a.getNombre().compareToIgnoreCase(b.getNombre()))
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public OrdenResponseDTO cobrarOrden(Long idOrden, CobroRequest request, String username) {
         Orden orden = ordenRepository.findById(idOrden)
@@ -407,10 +566,16 @@ public class OrdenService {
             throw new RuntimeException("La orden debe estar FINALIZADA para poder cobrarla");
         }
 
-        BigDecimal totalFinal = orden.getOrdenServicios().stream()
+        BigDecimal totalServicios = orden.getOrdenServicios().stream()
                 .map(OrdenServicio::getPrecioAplicado)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalProductos = ordenProductoRepository.findByOrdenId(idOrden).stream()
+                .map(OrdenProducto::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalFinal = totalServicios.add(totalProductos);
 
         if (request.getMontoRecibido() == null || request.getMontoRecibido().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("El monto recibido debe ser mayor a 0");
@@ -486,13 +651,17 @@ public class OrdenService {
         Orden orden = ordenRepository.findById(idOrden)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
-        BigDecimal total = orden.getOrdenServicios().stream()
+        BigDecimal totalServicios = orden.getOrdenServicios().stream()
                 .filter(os -> "FINALIZADO".equals(os.getEstadoServicioOrden()))
                 .map(OrdenServicio::getPrecioAplicado)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        orden.setTotalCalculadoOrden(total);
+        BigDecimal totalProductos = ordenProductoRepository.findByOrdenId(idOrden).stream()
+                .map(OrdenProducto::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        orden.setTotalCalculadoOrden(totalServicios.add(totalProductos));
         ordenRepository.save(orden);
     }
 
@@ -530,10 +699,25 @@ public class OrdenService {
     private String generarNumeroOrden() {
         LocalDateTime ahora = LocalDateTime.now();
         String fecha = ahora.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        long count = ordenRepository.countByFechaHoraOrdenBetween(
-                ahora.toLocalDate().atStartOfDay(),
-                ahora.toLocalDate().atTime(23, 59, 59));
-        return String.format("ORD-%s-%03d", fecha, count + 1);
+        String prefijo = "ORD-" + fecha + "-";
+
+        int siguiente = ordenRepository.findTopByNumOrdenStartingWithOrderByNumOrdenDesc(prefijo)
+                .map(o -> {
+                    try {
+                        return Integer.parseInt(o.getNumOrden().substring(prefijo.length())) + 1;
+                    } catch (NumberFormatException e) {
+                        return 1;
+                    }
+                })
+                .orElse(1);
+
+        String numOrden = String.format("%s%03d", prefijo, siguiente);
+        while (ordenRepository.existsByNumOrden(numOrden)) {
+            siguiente++;
+            numOrden = String.format("%s%03d", prefijo, siguiente);
+        }
+
+        return numOrden;
     }
 
     private void registrarHistorial(Orden orden, String estadoAnterior,
@@ -632,6 +816,7 @@ public class OrdenService {
         dto.setFechaHoraOrden(orden.getFechaHoraOrden());
         dto.setTotalCalculadoOrden(orden.getTotalCalculadoOrden());
         dto.setPrecioFinal(orden.getPrecioFinal());
+        dto.setDescripcion(orden.getDescripcion());
 
         OrdenResponseDTO.ClienteInfoDTO clienteDTO = new OrdenResponseDTO.ClienteInfoDTO();
         clienteDTO.setIdCliente(orden.getCliente().getIdCliente());
@@ -655,6 +840,11 @@ public class OrdenService {
                 .map(this::convertToServicioDTO)
                 .collect(Collectors.toList()));
 
+        List<OrdenProducto> productos = ordenProductoRepository.findByOrdenId(orden.getIdOrden());
+        dto.setProductos(productos.stream()
+                .map(this::convertToProductoDTO)
+                .collect(Collectors.toList()));
+
         List<HistorialEstadoOrden> historial = historialEstadoOrdenRepository
                 .findByOrdenIdOrderByFechaCambioAsc(orden.getIdOrden());
         dto.setHistorialEstados(historial.stream()
@@ -671,6 +861,7 @@ public class OrdenService {
         dto.setNombreServicio(os.getServicio().getNombreServicio());
         dto.setAreaServicio(os.getServicio().getAreaServicio());
         dto.setTipoPrecio(os.getServicio().getTipoPrecio());
+        dto.setCategoriaServicio(os.getServicio().getCategoriaServicio());
         dto.setPrecioAplicado(os.getPrecioAplicado());
         dto.setEstadoServicioOrden(os.getEstadoServicioOrden());
         dto.setEsPrecioVariable("VARIABLE".equals(os.getServicio().getTipoPrecio()));
@@ -689,6 +880,16 @@ public class OrdenService {
         }
         dto.setEmpleado(empleadoDTO);
 
+        return dto;
+    }
+
+    private OrdenProductoDTO convertToProductoDTO(OrdenProducto op) {
+        OrdenProductoDTO dto = new OrdenProductoDTO();
+        dto.setIdProducto(op.getProducto().getIdProducto());
+        dto.setNombre(op.getProducto().getNombre());
+        dto.setCantidad(op.getCantidad());
+        dto.setPrecioUnitario(op.getPrecioUnitario());
+        dto.setSubtotal(op.getSubtotal());
         return dto;
     }
 

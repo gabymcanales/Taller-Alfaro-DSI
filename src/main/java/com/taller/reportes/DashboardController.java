@@ -2,6 +2,8 @@ package com.taller.reportes;
 
 import com.taller.cobros.TransaccionRepository;
 import com.taller.model.Transaccion;
+import com.taller.model.VentaLibre;
+import com.taller.ventalibre.VentaLibreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class DashboardController {
 
     private final TransaccionRepository transaccionRepository;
+    private final VentaLibreRepository ventaLibreRepository;
 
     @GetMapping
     public ResponseEntity<?> getDashboard() {
@@ -42,7 +45,13 @@ public class DashboardController {
                 .map(t -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("idTransaccion", t.getIdTransaccion());
-                    map.put("numOrden", t.getOrden().getNumOrden());
+                    if (t.getOrden() != null) {
+                        map.put("numOrden", t.getOrden().getNumOrden());
+                    } else {
+                        VentaLibre venta = ventaLibreRepository.findByTransaccion_IdTransaccion(t.getIdTransaccion())
+                                .orElse(null);
+                        map.put("numOrden", venta != null ? venta.getNumVenta() : "Venta libre");
+                    }
                     map.put("montoTotal", t.getMontoTotal());
                     map.put("hora", t.getFechaHoraTransaccion().toLocalTime().toString().substring(0, 5));
                     return map;

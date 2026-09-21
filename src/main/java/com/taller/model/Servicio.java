@@ -38,6 +38,9 @@ public class Servicio {
     @Column(name = "tipo_precio", length = 10, nullable = false)
     private String tipoPrecio;
 
+    @Column(name = "categoria_servicio", length = 20)
+    private String categoriaServicio;
+
     @NotBlank(message = "El estado del servicio es obligatorio")
     @Pattern(regexp = "ACTIVO|INACTIVO", message = "El estado del servicio debe ser ACTIVO o INACTIVO")
     @Column(name = "estado_servicio", length = 8)

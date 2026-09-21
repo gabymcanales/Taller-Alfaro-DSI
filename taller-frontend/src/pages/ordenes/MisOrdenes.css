@@ -23,6 +23,66 @@
 }
 
 
+.mis-filtros-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.mis-filtro-input {
+    flex: 1;
+    min-width: 200px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+.mis-filtro-input:focus {
+    border-color: #ff4000;
+}
+
+.mis-filtro-fecha {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+.mis-filtro-fecha:focus {
+    border-color: #ff4000;
+}
+
+.mis-filtro-separador {
+    color: #888;
+    font-size: 12px;
+}
+
+.btn-limpiar-filtros {
+    background: transparent;
+    color: #a0a0a0;
+    border: 1px solid #444;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.btn-limpiar-filtros:hover {
+    border-color: #666;
+    color: #fff;
+}
+
 .mis-stats-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -157,6 +217,29 @@
 .orden-card-fecha {
     font-size: 12px;
     color: #888;
+}
+
+.orden-card-acciones {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-ver-detalles {
+    background: transparent;
+    color: #ff8c42;
+    border: 1px solid #ff8c42;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.btn-ver-detalles:hover {
+    background: #ff8c42;
+    color: #111;
 }
 
 .orden-card-info {
@@ -298,6 +381,17 @@
 
 
 @media (max-width: 768px) {
+    .mis-filtros-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mis-filtro-input,
+    .mis-filtro-fecha,
+    .btn-limpiar-filtros {
+        width: 100%;
+    }
+
     .mis-stats-row {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
@@ -318,5 +412,10 @@
 
     .btn-avanzar-mio {
         width: 100%;
+    }
+
+    .orden-card-acciones {
+        width: 100%;
+        justify-content: space-between;
     }
 }

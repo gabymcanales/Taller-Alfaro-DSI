@@ -77,7 +77,7 @@ public class CobroController {
         return ResponseEntity.ok(ordenService.getOrdenesByEstado("FINALIZADO"));
     }
 
-    
+
     @GetMapping("/orden/{id}")
     public ResponseEntity<OrdenResponseDTO> getOrdenDetalle(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(ordenService.getOrdenById(id, authentication.getName()));

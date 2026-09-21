@@ -1,21 +1,21 @@
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { eliminarCliente } from '../../services/clienteService';
 import './ModalEliminarCliente.css';
 
 const ModalEliminarCliente = ({ cliente, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
 
     const handleEliminar = async () => {
         setLoading(true);
-        setError('');
         try {
             await eliminarCliente(cliente.idCliente);
+            toast.success('Cliente eliminado correctamente');
             onSuccess();
             onClose();
         } catch (err) {
             console.error('Error al eliminar:', err);
-            setError(err.response?.data?.mensaje || 'Error al eliminar el cliente');
+            toast.error(err.response?.data?.mensaje || 'Error al eliminar el cliente');
         } finally {
             setLoading(false);
         }
@@ -52,11 +52,6 @@ const ModalEliminarCliente = ({ cliente, onClose, onSuccess }) => {
                         </span>
                     </div>
 
-                    {error && (
-                        <div className="alert-error">
-                            <span>⚠️</span> {error}
-                        </div>
-                    )}
                 </div>
 
                 <div className="modal-footer">

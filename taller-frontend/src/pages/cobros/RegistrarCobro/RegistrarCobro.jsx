@@ -183,6 +183,7 @@ const RegistrarCobro = () => {
                 ? `${ordenDetalle.vehiculo.marca} ${ordenDetalle.vehiculo.modelo} ${ordenDetalle.vehiculo.anio || ''} - ${ordenDetalle.vehiculo.placa}`
                 : 'Sin vehículo',
             servicios: ordenDetalle?.ordenServicios?.map(s => s.nombreServicio).join(' + ') || '',
+            productos: ordenDetalle?.productos || [],
             montoTotal: total,
             cambio: recibido - total
         });
@@ -336,6 +337,21 @@ const RegistrarCobro = () => {
                                             className="input-readonly"
                                         />
                                     </div>
+
+                                    {ordenDetalle.productos?.length > 0 && (
+                                        <div className="field">
+                                            <label>Productos utilizados</label>
+                                            <div className="servicios-lista">
+                                                {ordenDetalle.productos.map((p, index) => (
+                                                    <div key={index} className="servicio-item">
+                                                        <span className="servicio-nombre">
+                                                            {p.nombre} x{p.cantidad} — ${Number(p.subtotal).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>

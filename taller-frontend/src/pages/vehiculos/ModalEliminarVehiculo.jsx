@@ -1,21 +1,21 @@
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { eliminarVehiculo } from '../../services/vehiculoService';
 import './ModalEliminarVehiculo.css';
 
 const ModalEliminarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
 
     const handleEliminar = async () => {
         setLoading(true);
-        setError('');
         try {
             await eliminarVehiculo(vehiculo.idVehiculo);
+            toast.success('Vehículo eliminado correctamente');
             onSuccess();
             onClose();
         } catch (err) {
             console.error('Error al eliminar:', err);
-            setError(err.response?.data?.mensaje || 'Error al eliminar el vehículo');
+            toast.error(err.response?.data?.mensaje || 'Error al eliminar el vehículo');
         } finally {
             setLoading(false);
         }
@@ -52,11 +52,6 @@ const ModalEliminarVehiculo = ({ vehiculo, onClose, onSuccess }) => {
                         </span>
                     </div>
 
-                    {error && (
-                        <div className="alert-error">
-                            <span>⚠️</span> {error}
-                        </div>
-                    )}
                 </div>
 
                 <div className="modal-footer">

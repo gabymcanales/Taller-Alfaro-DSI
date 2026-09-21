@@ -208,7 +208,7 @@ const GestionInventario = () => {
             console.error(error);
 
             toast.error(
-                'Error al guardar producto'
+                error.response?.data?.mensaje || 'Error al guardar producto'
             );
 
         }
@@ -236,26 +236,6 @@ const GestionInventario = () => {
 
         if (Number(movimiento.cantidad) <= 0) {
             toast.error('La cantidad debe ser mayor a 0');
-            return;
-        }
-
-        if (!nuevoProducto.categoria) {
-            toast.error('Seleccione una categoría');
-            return;
-        }
-
-        if (!nuevoProducto.marca.trim()) {
-            toast.error('Ingrese la marca del producto');
-            return;
-        }
-
-        if (!nuevoProducto.cantidadUnidad || Number(nuevoProducto.cantidadUnidad) <= 0) {
-            toast.error('Ingrese un contenido válido');
-            return;
-        }
-
-        if (!nuevoProducto.unidadMedida) {
-            toast.error('Seleccione una unidad de medida');
             return;
         }
 
@@ -330,6 +310,10 @@ const GestionInventario = () => {
             nombre: producto.nombre,
 
             descripcion: producto.descripcion,
+
+            categoria: producto.categoria || '',
+
+            marca: producto.marca || '',
 
             cantidadUnidad: partesUnidad[0] || '',
 
@@ -443,6 +427,11 @@ const GestionInventario = () => {
             .includes(busqueda.toLowerCase())
 
     );
+
+    // Nombres y marcas ya usados en productos existentes, para sugerirlos
+    // como autocompletado al escribir en el formulario de nuevo producto.
+    const nombresUnicos = [...new Set(productos.map(p => p.nombre).filter(Boolean))];
+    const marcasUnicas = [...new Set(productos.map(p => p.marca).filter(Boolean))];
 
     const movimientosFiltrados = movimientos.filter(movimiento => {
 
@@ -767,161 +756,209 @@ const GestionInventario = () => {
 
                         </h2>
 
-                        <input
-                            placeholder="Nombre"
-                            value={nuevoProducto.nombre}
-                            onChange={(e) =>
-                                setNuevoProducto({
-                                    ...nuevoProducto,
-                                    nombre: e.target.value
-                                })
-                            }
-                        />
-
-                        <select
-                            value={nuevoProducto.categoria}
-                            onChange={(e) =>
-                                setNuevoProducto({
-                                    ...nuevoProducto,
-                                    categoria: e.target.value
-                                })
-                            }
-                        >
-                            <option value="">Seleccionar categoría</option>
-                            <option value="Aceites">Aceites</option>
-                            <option value="Filtros">Filtros</option>
-                            <option value="Químicos">Químicos</option>
-                            <option value="Carwash">Carwash</option>
-                            <option value="Repuestos">Repuestos</option>
-                            <option value="Accesorios">Accesorios</option>
-                        </select>
-
-                        <input
-                            type="text"
-                            placeholder="Marca"
-                            value={nuevoProducto.marca}
-                            onChange={(e) =>
-                                setNuevoProducto({
-                                    ...nuevoProducto,
-                                    marca: e.target.value
-                                })
-                            }
-                        />
-
-                        <div className="unidad-medida">
-
+                        <div className="form-field">
+                            <label>Nombre</label>
                             <input
-                                type="number"
-                                min="0"
-                                step="any"
-                                placeholder="Contenido"
-                                value={nuevoProducto.cantidadUnidad}
+                                value={nuevoProducto.nombre}
                                 onChange={(e) =>
                                     setNuevoProducto({
                                         ...nuevoProducto,
-                                        cantidadUnidad: e.target.value
+                                        nombre: e.target.value
                                     })
                                 }
+                                list="nombres-productos"
+                                autoComplete="off"
                             />
+                            <datalist id="nombres-productos">
+                                {nombresUnicos.map((nombre) => (
+                                    <option key={nombre} value={nombre} />
+                                ))}
+                            </datalist>
+                        </div>
 
+                        <div className="form-field">
+                            <label>Categoría</label>
                             <select
-                                value={nuevoProducto.unidadMedida}
+                                value={nuevoProducto.categoria}
                                 onChange={(e) =>
                                     setNuevoProducto({
                                         ...nuevoProducto,
-                                        unidadMedida: e.target.value
+                                        categoria: e.target.value
                                     })
                                 }
                             >
-                                <option value="">Unidad</option>
-                                <option value="mL">mL</option>
-                                <option value="L">L</option>
-                                <option value="Gal">Gal</option>
-                                <option value="g">g</option>
-                                <option value="kg">kg</option>
-                                <option value="oz">oz</option>
-                                <option value="lb">lb</option>
-                                <option value="Unidad">Unidad</option>
+                                <option value="">Seleccionar categoría</option>
+                                <option value="Aceites">Aceites</option>
+                                <option value="Filtros">Filtros</option>
+                                <option value="Químicos">Químicos</option>
+                                <option value="Carwash">Carwash</option>
+                                <option value="Repuestos">Repuestos</option>
+                                <option value="Accesorios">Accesorios</option>
                             </select>
-
                         </div>
 
-                        <textarea
-                            placeholder="Descripción"
-                            value={nuevoProducto.descripcion}
-                            onChange={(e) =>
-                                setNuevoProducto({
-                                    ...nuevoProducto,
-                                    descripcion: e.target.value
-                                })
-                            }
-                        />
+                        <div className="form-field">
+                            <label>Marca</label>
+                            <input
+                                type="text"
+                                value={nuevoProducto.marca}
+                                onChange={(e) =>
+                                    setNuevoProducto({
+                                        ...nuevoProducto,
+                                        marca: e.target.value
+                                    })
+                                }
+                                list="marcas-productos"
+                                autoComplete="off"
+                            />
+                            <datalist id="marcas-productos">
+                                {marcasUnicas.map((marca) => (
+                                    <option key={marca} value={marca} />
+                                ))}
+                            </datalist>
+                        </div>
 
-                        <div className="campos-stock">
+                        <div className="unidad-medida">
 
-                            <div className="campo-precio">
-                                <span>$</span>
+                            <div className="form-field">
+                                <label>Contenido</label>
                                 <input
                                     type="number"
-                                    step="0.01"
-                                    placeholder="Precio"
-                                    value={nuevoProducto.precio}
+                                    min="0"
+                                    step="any"
+                                    value={nuevoProducto.cantidadUnidad}
                                     onChange={(e) =>
                                         setNuevoProducto({
                                             ...nuevoProducto,
-                                            precio: e.target.value
+                                            cantidadUnidad: e.target.value
                                         })
                                     }
                                 />
                             </div>
 
-                            {!modoEdicion && (
-                                <input
-                                    type="number"
-                                    placeholder="Stock actual"
-                                    value={nuevoProducto.stockActual}
+                            <div className="form-field">
+                                <label>Unidad</label>
+                                <select
+                                    value={nuevoProducto.unidadMedida}
                                     onChange={(e) =>
                                         setNuevoProducto({
                                             ...nuevoProducto,
-                                            stockActual: e.target.value
+                                            unidadMedida: e.target.value
                                         })
                                     }
-                                />
-                            )}
-
-                            <input
-                                type="number"
-                                placeholder="Stock mínimo"
-                                value={nuevoProducto.stockMinimo}
-                                onChange={(e) =>
-                                    setNuevoProducto({
-                                        ...nuevoProducto,
-                                        stockMinimo: e.target.value
-                                    })
-                                }
-                            />
+                                >
+                                    <option value="">Unidad</option>
+                                    <option value="mL">mL</option>
+                                    <option value="L">L</option>
+                                    <option value="Gal">Gal</option>
+                                    <option value="g">g</option>
+                                    <option value="kg">kg</option>
+                                    <option value="oz">oz</option>
+                                    <option value="lb">lb</option>
+                                    <option value="Unidad">Unidad</option>
+                                </select>
+                            </div>
 
                         </div>
 
-                        <select
-                            value={nuevoProducto.estado}
-                            onChange={(e) =>
-                                setNuevoProducto({
-                                    ...nuevoProducto,
-                                    estado: e.target.value
-                                })
-                            }
-                        >
+                        <div className="form-field">
+                            <label>Descripción</label>
+                            <textarea
+                                value={nuevoProducto.descripcion}
+                                onChange={(e) =>
+                                    setNuevoProducto({
+                                        ...nuevoProducto,
+                                        descripcion: e.target.value
+                                    })
+                                }
+                            />
+                        </div>
 
-                            <option value="ACTIVO">
-                                ACTIVO
-                            </option>
+                        <div className="campos-stock">
 
-                            <option value="INACTIVO">
-                                INACTIVO
-                            </option>
+                            <div className="form-field">
+                                <label>Precio</label>
+                                <div className="campo-precio">
+                                    <span>$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={nuevoProducto.precio}
+                                        onChange={(e) =>
+                                            setNuevoProducto({
+                                                ...nuevoProducto,
+                                                precio: e.target.value
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
 
-                        </select>
+                            {!modoEdicion ? (
+                                <div className="form-field">
+                                    <label>Stock actual</label>
+                                    <input
+                                        type="number"
+                                        value={nuevoProducto.stockActual}
+                                        onChange={(e) =>
+                                            setNuevoProducto({
+                                                ...nuevoProducto,
+                                                stockActual: e.target.value
+                                            })
+                                        }
+                                    />
+                                </div>
+                            ) : (
+                                <div className="form-field">
+                                    <label>Stock actual</label>
+                                    <input
+                                        type="number"
+                                        value={nuevoProducto.stockActual}
+                                        readOnly
+                                        disabled
+                                        title="El stock solo cambia registrando un Movimiento"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="form-field">
+                                <label>Stock mínimo</label>
+                                <input
+                                    type="number"
+                                    value={nuevoProducto.stockMinimo}
+                                    onChange={(e) =>
+                                        setNuevoProducto({
+                                            ...nuevoProducto,
+                                            stockMinimo: e.target.value
+                                        })
+                                    }
+                                />
+                            </div>
+
+                        </div>
+
+                        <div className="form-field">
+                            <label>Estado</label>
+                            <select
+                                value={nuevoProducto.estado}
+                                onChange={(e) =>
+                                    setNuevoProducto({
+                                        ...nuevoProducto,
+                                        estado: e.target.value
+                                    })
+                                }
+                            >
+
+                                <option value="ACTIVO">
+                                    ACTIVO
+                                </option>
+
+                                <option value="INACTIVO">
+                                    INACTIVO
+                                </option>
+
+                            </select>
+                        </div>
 
                         <div className="modal-buttons">
 
@@ -1025,55 +1062,62 @@ const GestionInventario = () => {
                             </p>
                         </div>
 
-                        <select
-                            value={movimiento.tipoMovimiento}
-                            onChange={(e) =>
-                                setMovimiento({
-                                    ...movimiento,
-                                    tipoMovimiento: e.target.value
-                                })
-                            }
-                        >
+                        <div className="form-field">
+                            <label>Tipo de movimiento</label>
+                            <select
+                                value={movimiento.tipoMovimiento}
+                                onChange={(e) =>
+                                    setMovimiento({
+                                        ...movimiento,
+                                        tipoMovimiento: e.target.value
+                                    })
+                                }
+                            >
 
-                            <option value="COMPRA">
-                                COMPRA — Entrada
-                            </option>
+                                <option value="COMPRA">
+                                    COMPRA — Entrada
+                                </option>
 
-                            <option value="USO">
-                                USO — Salida
-                            </option>
+                                <option value="USO">
+                                    USO — Salida
+                                </option>
 
-                            <option value="VENTA">
-                                VENTA — Salida
-                            </option>
+                                <option value="VENTA">
+                                    VENTA — Salida
+                                </option>
 
-                        </select>
+                            </select>
+                        </div>
 
-                        <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            placeholder="Cantidad"
-                            value={movimiento.cantidad}
-                            onChange={(e) =>
-                                setMovimiento({
-                                    ...movimiento,
-                                    cantidad: e.target.value
-                                })
-                            }
-                        />
+                        <div className="form-field">
+                            <label>Cantidad</label>
+                            <input
+                                type="number"
+                                min="1"
+                                step="1"
+                                value={movimiento.cantidad}
+                                onChange={(e) =>
+                                    setMovimiento({
+                                        ...movimiento,
+                                        cantidad: e.target.value
+                                    })
+                                }
+                            />
+                        </div>
 
-                        <input
-                            type="text"
-                            placeholder="Motivo"
-                            value={movimiento.motivo}
-                            onChange={(e) =>
-                                setMovimiento({
-                                    ...movimiento,
-                                    motivo: e.target.value
-                                })
-                            }
-                        />
+                        <div className="form-field">
+                            <label>Motivo</label>
+                            <input
+                                type="text"
+                                value={movimiento.motivo}
+                                onChange={(e) =>
+                                    setMovimiento({
+                                        ...movimiento,
+                                        motivo: e.target.value
+                                    })
+                                }
+                            />
+                        </div>
 
                         <div className="modal-buttons">
 

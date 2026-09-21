@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
+import { getUsuarioActual } from '../../utils/authUser';
 import './Dashboard.css';
 
 const Dashboard = () => {
     const [datos, setDatos] = useState(null);
     const [loading, setLoading] = useState(true);
+    const usuario = getUsuarioActual();
 
     useEffect(() => {
         cargarDashboard();
@@ -29,7 +31,7 @@ const Dashboard = () => {
             {/* Header */}
             <div className="dashboard-header">
                 <div>
-                    <h1>Usuario</h1>
+                    <h1>{usuario?.nombre || usuario?.username || 'Usuario'}</h1>
                     <p>Bienvenido al sistema de gestión</p>
                 </div>
                 <div className="ingresos-badge">

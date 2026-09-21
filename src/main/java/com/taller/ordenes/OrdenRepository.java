@@ -21,6 +21,8 @@ public interface OrdenRepository extends JpaRepository<Orden, Long> {
 
     long countByFechaHoraOrdenBetween(LocalDateTime inicio, LocalDateTime fin);
 
+    Optional<Orden> findTopByNumOrdenStartingWithOrderByNumOrdenDesc(String prefijo);
+
     @Query("SELECT o FROM Orden o WHERE o.cliente.idCliente = :clienteId AND o.estadoOrden = :estado")
     List<Orden> findByClienteIdAndEstadoOrden(@Param("clienteId") Long clienteId, @Param("estado") String estadoOrden);
 

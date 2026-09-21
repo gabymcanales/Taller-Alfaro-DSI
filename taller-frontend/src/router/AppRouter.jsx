@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/auth/Login/Login';
 
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
+import VentaLibre from '../pages/cobros/VentaLibre/VentaLibre';
 import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
 import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
 import Historial from '../pages/cobros/Historial/Historial';
@@ -27,6 +28,9 @@ import MisOrdenes from '../pages/ordenes/MisOrdenes';
 
 import GestionInventario from '../pages/inventario/GestionInventario/GestionInventario';
 
+import SessionTimeoutModal from '../components/common/SessionTimeoutModal/SessionTimeoutModal';
+import { useSessionTimeout } from '../hooks/useSessionTimeout';
+
 import { getUsuarioActual, esAdministrador } from '../utils/authUser';
 
 
@@ -50,6 +54,8 @@ const RutaAdmin = ({ children }) => {
 
 const Layout = () => {
 
+    const { showWarning, handleContinue, handleLogout } = useSessionTimeout();
+
     return (
 
         <div className="layout">
@@ -72,6 +78,11 @@ const Layout = () => {
                         <Route
                             path="/cobros/registrar"
                             element={<RutaAdmin><RegistrarCobro /></RutaAdmin>}
+                        />
+
+                        <Route
+                            path="/cobros/venta-libre"
+                            element={<RutaAdmin><VentaLibre /></RutaAdmin>}
                         />
 
                         <Route
@@ -134,6 +145,12 @@ const Layout = () => {
                 </div>
 
             </main>
+
+            <SessionTimeoutModal
+                isOpen={showWarning}
+                onContinue={handleContinue}
+                onLogout={handleLogout}
+            />
 
         </div>
 

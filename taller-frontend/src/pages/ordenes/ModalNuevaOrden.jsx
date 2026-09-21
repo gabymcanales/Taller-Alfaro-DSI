@@ -12,6 +12,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
     const [formData, setFormData] = useState({
         idCliente: '',
         idVehiculo: '',
+        descripcion: '',
         servicios: []
     });
     const [vehiculos, setVehiculos] = useState([]);
@@ -35,7 +36,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
             cargarDatosIniciales();
         }
 
-        setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
+        setFormData({ idCliente: '', idVehiculo: '', descripcion: '', servicios: [] });
         setBusquedaCliente('');
         setClienteSeleccionado(null);
         setClientesSugeridos([]);
@@ -99,7 +100,8 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
     const cargarDatosIniciales = async () => {
         try {
             const serviciosRes = await getServiciosCatalogo();
-            setServiciosCatalogo(serviciosRes.data || []);
+            const activos = (serviciosRes.data || []).filter(s => s.estadoServicio === 'ACTIVO');
+            setServiciosCatalogo(activos);
         } catch (err) {
             console.error('Error cargando datos iniciales:', err);
         }
@@ -160,7 +162,6 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                 idEmpleado: empleado.idEmpleado,
                 nombreServicio: servicio.nombreServicio,
                 empleadoNombre: empleado.nombreEmpleado,
-                precio: servicio.precioSugerido || 0,
                 tipoPrecio: servicio.tipoPrecio || 'FIJO',
                 area: servicio.areaServicio || ''
             }]
@@ -206,6 +207,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
             const payload = {
                 idCliente: parseInt(formData.idCliente),
                 idVehiculo: parseInt(formData.idVehiculo),
+                descripcion: formData.descripcion.trim() || null,
                 servicios: formData.servicios.map(s => ({
                     idServicio: s.idServicio,
                     idEmpleado: s.idEmpleado
@@ -214,7 +216,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
             await crearOrden(payload);
             onOrdenCreada();
             onClose();
-            setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
+            setFormData({ idCliente: '', idVehiculo: '', descripcion: '', servicios: [] });
             setBusquedaCliente('');
             setClienteSeleccionado(null);
             setError('');
@@ -227,7 +229,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
     };
 
     const handleClose = () => {
-        setFormData({ idCliente: '', idVehiculo: '', servicios: [] });
+        setFormData({ idCliente: '', idVehiculo: '', descripcion: '', servicios: [] });
         setBusquedaCliente('');
         setClienteSeleccionado(null);
         setClientesSugeridos([]);
@@ -241,14 +243,6 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
     };
 
     if (!isOpen) return null;
-
-    const totalFijos = formData.servicios
-        .filter(s => s.tipoPrecio === 'FIJO')
-        .reduce((sum, s) => sum + (s.precio || 0), 0);
-
-    const totalVariables = formData.servicios
-        .filter(s => s.tipoPrecio === 'VARIABLE')
-        .length;
 
     const empleadosParaServicio = servicioSeleccionado
         ? empleadosDisponibles[servicioSeleccionado] || []
@@ -343,6 +337,18 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                             {errores.idVehiculo && <span className="error-msg">{errores.idVehiculo}</span>}
                         </div>
 
+                        {/* Descripción */}
+                        <div className="form-group">
+                            <label>Descripción (opcional)</label>
+                            <textarea
+                                className="form-textarea"
+                                placeholder="Detalles adicionales sobre la orden..."
+                                value={formData.descripcion}
+                                onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
+                                rows={3}
+                            />
+                        </div>
+
                         {/* Servicios */}
                         <div className="servicios-section">
                             <label>Servicios de la orden y su responsable *</label>
@@ -403,13 +409,6 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                                 <span className="servicio-variable-tag">Precio variable</span>
                                             )}
                                         </div>
-                                        <div className="servicio-precio">
-                                            {s.tipoPrecio === 'VARIABLE' ? (
-                                                <span className="precio-variable">Se define al finalizar</span>
-                                            ) : (
-                                                <span>${(s.precio || 0).toFixed(2)}</span>
-                                            )}
-                                        </div>
                                         <button
                                             type="button"
                                             className="btn-eliminar-servicio"
@@ -420,18 +419,6 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                     </div>
                                 ))}
                             </div>
-                        </div>
-
-                        <div className="total-calculado">
-                            <div>
-                                <span>Total calculado</span>
-                                {totalVariables > 0 && (
-                                    <span className="total-note">
-                                        ({totalVariables} servicio{totalVariables > 1 ? 's' : ''} con precio variable)
-                                    </span>
-                                )}
-                            </div>
-                            <span className="total-monto">${totalFijos.toFixed(2)}</span>
                         </div>
 
                         {error && <div className="error-message">{error}</div>}

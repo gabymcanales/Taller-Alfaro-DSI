@@ -4,11 +4,21 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axiosInstance from '../../../api/axiosInstance';
 import './Login.css';
 
+const leerMensajeSesion = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('sesion') === 'expirada') {
+        window.history.replaceState({}, '', '/login');
+        return 'Tu sesión finalizó. Iniciá sesión de nuevo.';
+    }
+    return '';
+};
+
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [error, setError] = useState('');
+    const [mensajeSesion, setMensajeSesion] = useState(leerMensajeSesion);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -16,6 +26,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setMensajeSesion('');
 
         try {
             const response = await axiosInstance.post('/auth/login', { username, password });
@@ -27,7 +38,7 @@ const Login = () => {
             
             
             navigate('/');
-        } catch (err) {
+        } catch {
             setError('Usuario o contraseña incorrectos');
         } finally {
             setLoading(false);
@@ -41,27 +52,32 @@ const Login = () => {
                 <p>Sistema de Gestión</p>
                 
                 <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Usuario"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                    <div className="password-field">
+                    {mensajeSesion && <div className="info">{mensajeSesion}</div>}
+                    <div className="form-field">
+                        <label>Usuario</label>
                         <input
-                            type={mostrarPassword ? 'text' : 'password'}
-                            placeholder="Contraseña"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
-                        <span
-                            className="toggle-password"
-                            onClick={() => setMostrarPassword(!mostrarPassword)}
-                        >
-                            {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
-                        </span>
+                    </div>
+                    <div className="form-field">
+                        <label>Contraseña</label>
+                        <div className="password-field">
+                            <input
+                                type={mostrarPassword ? 'text' : 'password'}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <span
+                                className="toggle-password"
+                                onClick={() => setMostrarPassword(!mostrarPassword)}
+                            >
+                                {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
+                            </span>
+                        </div>
                     </div>
                     {error && <div className="error">{error}</div>}
                     <button type="submit" disabled={loading}>

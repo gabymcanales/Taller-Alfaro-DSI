@@ -119,4 +119,14 @@ public class OrdenController {
         String username = authentication.getName();
         return ResponseEntity.ok(ordenService.getEstadisticasPorEmpleado(username));
     }
+
+    @GetMapping("/productos-inventario")
+    public ResponseEntity<List<ProductoSimpleDTO>> getProductosPorCategoria(@RequestParam String categoria) {
+        return ResponseEntity.ok(ordenService.getProductosPorCategoria(categoria));
+    }
+
+    @GetMapping("/productos-disponibles")
+    public ResponseEntity<List<ProductoSimpleDTO>> getProductosDisponibles() {
+        return ResponseEntity.ok(ordenService.getProductosDisponibles());
+    }
 }

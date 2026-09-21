@@ -34,7 +34,7 @@ const ModalEditarOrden = ({ isOpen, onClose, ordenId, onOrdenEditada }) => {
             ]);
 
             setOrden(ordenRes.data);
-            setServiciosCatalogo(catalogoRes.data || []);
+            setServiciosCatalogo((catalogoRes.data || []).filter(s => s.estadoServicio === 'ACTIVO'));
 
             const serviciosActuales = (ordenRes.data.ordenServicios || []).map(s => ({
                 idServicio: s.idServicio,

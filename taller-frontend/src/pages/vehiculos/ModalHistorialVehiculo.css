@@ -70,8 +70,13 @@
     color: #ff4000;
 }
 
+.historial-tabla-container {
+    overflow-x: auto;
+}
+
 .historial-tabla {
     width: 100%;
+    min-width: 640px;
     border-collapse: collapse;
     font-size: 13px;
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { iniciarServicio, finalizarServicio } from '../../services/ordenService';
+import { useState, useEffect } from 'react';
+import { iniciarServicio, finalizarServicio, getProductosPorCategoria, getProductosDisponibles } from '../../services/ordenService';
 import './ModalAvanzarServicio.css';
 
 const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioActualizado }) => {
@@ -8,6 +8,94 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
     const [precioFinal, setPrecioFinal] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const [aceites, setAceites] = useState([]);
+    const [filtros, setFiltros] = useState([]);
+    const [manoDeObraGratis, setManoDeObraGratis] = useState('');
+    const [idProductoAceite, setIdProductoAceite] = useState('');
+    const [galonesAceite, setGalonesAceite] = useState('');
+    const [cuartosAceite, setCuartosAceite] = useState('0');
+    const [idProductoFiltro, setIdProductoFiltro] = useState('');
+
+    const [productosDisponibles, setProductosDisponibles] = useState([]);
+    const [productoSeleccionado, setProductoSeleccionado] = useState('');
+    const [cantidadProducto, setCantidadProducto] = useState('1');
+    const [productosAUsar, setProductosAUsar] = useState([]);
+
+    const esCambioAceite = servicio?.categoriaServicio === 'ACEITE';
+
+    useEffect(() => {
+        if (isOpen && esCambioAceite) {
+            getProductosPorCategoria('Aceites').then(res => setAceites(res.data)).catch(() => setAceites([]));
+            getProductosPorCategoria('Filtros').then(res => setFiltros(res.data)).catch(() => setFiltros([]));
+        }
+        const esVariableGeneral = servicio?.tipoPrecio === 'VARIABLE' && !esCambioAceite;
+        if (isOpen && servicio?.estadoServicioOrden === 'EN_PROCESO' && !esVariableGeneral) {
+            getProductosDisponibles().then(res => setProductosDisponibles(res.data || [])).catch(() => setProductosDisponibles([]));
+        }
+        if (isOpen) {
+            setProductosAUsar([]);
+            setProductoSeleccionado('');
+            setCantidadProducto('1');
+            setManoDeObraGratis('');
+            setIdProductoAceite('');
+            setGalonesAceite('');
+            setCuartosAceite('0');
+            setIdProductoFiltro('');
+        }
+    }, [isOpen, esCambioAceite, servicio?.estadoServicioOrden, servicio?.tipoPrecio]);
+
+    const agregarProducto = () => {
+        if (!productoSeleccionado) {
+            setError('Seleccione un producto');
+            return;
+        }
+
+        const cantidad = parseInt(cantidadProducto);
+        if (!cantidad || cantidad <= 0) {
+            setError('Ingrese una cantidad válida');
+            return;
+        }
+
+        const producto = productosDisponibles.find(p => p.idProducto === parseInt(productoSeleccionado));
+        if (!producto) {
+            setError('Producto no encontrado');
+            return;
+        }
+
+        const yaAgregado = productosAUsar.find(p => p.idProducto === producto.idProducto);
+        const cantidadPrevia = yaAgregado ? yaAgregado.cantidad : 0;
+
+        if (cantidad + cantidadPrevia > producto.stockActual) {
+            setError(`Stock insuficiente. Disponible: ${producto.stockActual}`);
+            return;
+        }
+
+        if (yaAgregado) {
+            setProductosAUsar(prev => prev.map(p =>
+                p.idProducto === producto.idProducto
+                    ? { ...p, cantidad: p.cantidad + cantidad, subtotal: (p.cantidad + cantidad) * producto.precio }
+                    : p
+            ));
+        } else {
+            setProductosAUsar(prev => [...prev, {
+                idProducto: producto.idProducto,
+                nombre: producto.nombre,
+                unidadMedida: producto.unidadMedida,
+                precio: producto.precio,
+                cantidad,
+                subtotal: cantidad * producto.precio
+            }]);
+        }
+
+        setProductoSeleccionado('');
+        setCantidadProducto('1');
+        setError('');
+    };
+
+    const eliminarProducto = (index) => {
+        setProductosAUsar(prev => prev.filter((_, i) => i !== index));
+    };
 
     if (!isOpen || !servicio) return null;
 
@@ -103,15 +191,46 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
     const siguienteEstado = esInicio ? 'EN_PROCESO' : 'FINALIZADO';
     const siguienteInfo = getEstadoInfo(siguienteEstado);
 
+    const gratisSeleccionado = manoDeObraGratis === 'SI';
+    const aceiteSeleccionado = aceites.find(p => p.idProducto === parseInt(idProductoAceite));
+    const filtroSeleccionado = filtros.find(p => p.idProducto === parseInt(idProductoFiltro));
+    const totalCuartosAceite = (parseInt(galonesAceite, 10) || 0) * 4 + (parseInt(cuartosAceite, 10) || 0);
+    const costoAceite = gratisSeleccionado && aceiteSeleccionado ? (totalCuartosAceite / 4) * Number(aceiteSeleccionado.precio || 0) : 0;
+    const costoFiltro = filtroSeleccionado ? Number(filtroSeleccionado.precio || 0) : 0;
+    const totalProductosGenerales = productosAUsar.reduce((sum, p) => sum + (p.subtotal || 0), 0);
+    const precioManoDeObra = gratisSeleccionado ? 0 : Number(servicio.precioAplicado || 0);
+    const precioFinalCalculado = precioManoDeObra + costoAceite + costoFiltro + totalProductosGenerales;
+
     const handleSubmit = async () => {
         if (!estadoSeleccionado) {
             setError('Seleccione un estado');
             return;
         }
 
-        if (esVariable && estadoSeleccionado === 'FINALIZADO' && (!precioFinal || parseFloat(precioFinal) <= 0)) {
+        if (esVariable && !esCambioAceite && estadoSeleccionado === 'FINALIZADO' && (!precioFinal || parseFloat(precioFinal) <= 0)) {
             setError('Ingrese el precio final del servicio variable');
             return;
+        }
+
+        if (esCambioAceite && estadoSeleccionado === 'FINALIZADO') {
+            if (!manoDeObraGratis) {
+                setError('Indique si la mano de obra es gratis');
+                return;
+            }
+            if (gratisSeleccionado) {
+                if (!idProductoAceite) {
+                    setError('Seleccione el aceite utilizado');
+                    return;
+                }
+                if (totalCuartosAceite <= 0) {
+                    setError('Indique la cantidad de aceite utilizada');
+                    return;
+                }
+            }
+            if (precioFinalCalculado <= 0) {
+                setError('El total del servicio debe ser mayor a 0');
+                return;
+            }
         }
 
         setLoading(true);
@@ -122,8 +241,25 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                 await iniciarServicio(ordenId, servicio.idServicio, { comentario });
             } else if (estadoSeleccionado === 'FINALIZADO') {
                 const payload = { comentario };
-                if (esVariable && precioFinal) {
+                if (esVariable && !esCambioAceite && precioFinal) {
                     payload.precioFinal = parseFloat(precioFinal);
+                }
+                if (esCambioAceite) {
+                    payload.manoDeObraGratis = gratisSeleccionado;
+                    if (gratisSeleccionado) {
+                        payload.idProductoAceite = Number(idProductoAceite);
+                        payload.galonesAceite = parseInt(galonesAceite, 10) || 0;
+                        payload.cuartosAceite = parseInt(cuartosAceite, 10) || 0;
+                    }
+                    if (idProductoFiltro) {
+                        payload.idProductoFiltro = Number(idProductoFiltro);
+                    }
+                }
+                if (productosAUsar.length > 0) {
+                    payload.productos = productosAUsar.map(p => ({
+                        idProducto: p.idProducto,
+                        cantidad: p.cantidad
+                    }));
                 }
                 await finalizarServicio(ordenId, servicio.idServicio, payload);
             }
@@ -206,8 +342,160 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                         />
                     </div>
 
-                    {/* Precio variable (solo si corresponde) */}
-                    {esVariable && estadoSeleccionado === 'FINALIZADO' && (
+                    {/* Mano de obra gratis (solo cambio de aceite, antes del precio final) */}
+                    {esCambioAceite && estadoSeleccionado === 'FINALIZADO' && (
+                        <div className="avanzar-mano-obra">
+                            <label>¿Mano de obra gratis? *</label>
+                            <div className="mano-obra-opciones">
+                                <label className="mano-obra-opcion">
+                                    <input
+                                        type="radio"
+                                        name="manoDeObraGratis"
+                                        checked={manoDeObraGratis === 'SI'}
+                                        onChange={() => setManoDeObraGratis('SI')}
+                                    />
+                                    Sí — el cliente compró el aceite en el taller
+                                </label>
+                                <label className="mano-obra-opcion">
+                                    <input
+                                        type="radio"
+                                        name="manoDeObraGratis"
+                                        checked={manoDeObraGratis === 'NO'}
+                                        onChange={() => setManoDeObraGratis('NO')}
+                                    />
+                                    No — el cliente trajo su propio aceite
+                                </label>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Aceite y filtro (solo si es un servicio de cambio de aceite) */}
+                    {esCambioAceite && estadoSeleccionado === 'FINALIZADO' && (
+                        <div className="avanzar-aceite">
+                            {gratisSeleccionado && (
+                                <>
+                                    <div className="avanzar-comentario">
+                                        <label>Aceite utilizado *</label>
+                                        <select
+                                            value={idProductoAceite}
+                                            onChange={(e) => setIdProductoAceite(e.target.value)}
+                                        >
+                                            <option value="">— Seleccione el aceite —</option>
+                                            {aceites.map(p => (
+                                                <option key={p.idProducto} value={p.idProducto}>
+                                                    {p.nombre} - ${Number(p.precio || 0).toFixed(2)}/galón (stock: {p.stockActual} {p.unidadMedida})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="avanzar-cantidad-aceite">
+                                        <div className="avanzar-comentario">
+                                            <label>Galones</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={galonesAceite}
+                                                onChange={(e) => setGalonesAceite(e.target.value)}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="avanzar-comentario">
+                                            <label>Cuartos</label>
+                                            <select
+                                                value={cuartosAceite}
+                                                onChange={(e) => setCuartosAceite(e.target.value)}
+                                            >
+                                                <option value="0">0</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="avanzar-comentario">
+                                <label>Filtro utilizado (opcional)</label>
+                                <select
+                                    value={idProductoFiltro}
+                                    onChange={(e) => setIdProductoFiltro(e.target.value)}
+                                >
+                                    <option value="">— Ninguno —</option>
+                                    {filtros.map(p => (
+                                        <option key={p.idProducto} value={p.idProducto}>
+                                            {p.nombre} - ${Number(p.precio || 0).toFixed(2)} (stock: {p.stockActual} {p.unidadMedida})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <p className="precio-note">
+                                <BulbIcon />
+                                {gratisSeleccionado
+                                    ? 'Indica exactamente cuánto aceite se usó (4 cuartos = 1 galón). El filtro es opcional; si lo seleccionas, también se descuenta y se cobra.'
+                                    : 'El cliente trajo su propio aceite, no se descuenta del inventario del taller. El filtro es opcional; si lo seleccionas, se descuenta y se cobra.'}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Productos utilizados (solo al finalizar; no aplica a servicios Variable + General) */}
+                    {estadoSeleccionado === 'FINALIZADO' && !(esVariable && !esCambioAceite) && (
+                        <div className="avanzar-productos">
+                            <label>Productos utilizados (opcional)</label>
+                            <p className="precio-note" style={{ marginBottom: '8px' }}>
+                                Selecciona los productos que ocupaste para completar este trabajo.
+                            </p>
+
+                            <div className="avanzar-productos-agregar">
+                                <select
+                                    value={productoSeleccionado}
+                                    onChange={(e) => setProductoSeleccionado(e.target.value)}
+                                >
+                                    <option value="">— Seleccione un producto —</option>
+                                    {productosDisponibles.map(p => (
+                                        <option key={p.idProducto} value={p.idProducto}>
+                                            {p.nombre} - ${Number(p.precio || 0).toFixed(2)} (Stock: {p.stockActual})
+                                        </option>
+                                    ))}
+                                </select>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    className="avanzar-cantidad-input"
+                                    value={cantidadProducto}
+                                    onChange={(e) => setCantidadProducto(e.target.value)}
+                                />
+                                <button type="button" className="btn-agregar-producto" onClick={agregarProducto}>
+                                    + Agregar
+                                </button>
+                            </div>
+
+                            {productosAUsar.length > 0 && (
+                                <div className="avanzar-productos-lista">
+                                    {productosAUsar.map((p, index) => (
+                                        <div key={index} className="avanzar-producto-item">
+                                            <span className="avanzar-producto-nombre">
+                                                {p.nombre} — {p.cantidad} {p.unidadMedida || 'unidad(es)'}
+                                            </span>
+                                            <span className="avanzar-producto-subtotal">${Number(p.subtotal).toFixed(2)}</span>
+                                            <button
+                                                type="button"
+                                                className="btn-eliminar-producto"
+                                                onClick={() => eliminarProducto(index)}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Precio variable manual (servicios variables que no son cambio de aceite) */}
+                    {esVariable && !esCambioAceite && estadoSeleccionado === 'FINALIZADO' && (
                         <div className="avanzar-precio">
                             <label>Precio final del servicio *</label>
                             <div className="precio-input-wrapper">
@@ -225,6 +513,23 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                             <p className="precio-note">
                                 <BulbIcon />
                                 Este servicio es de precio variable — solo tú defines el monto al finalizar.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Precio final calculado (cambio de aceite, al final) */}
+                    {esCambioAceite && estadoSeleccionado === 'FINALIZADO' && manoDeObraGratis && (
+                        <div className="avanzar-precio">
+                            <label>Precio final del servicio</label>
+                            <div className="precio-input-wrapper precio-calculado">
+                                <span className="precio-simbolo">$</span>
+                                <span className="precio-calculado-valor">{precioFinalCalculado.toFixed(2)}</span>
+                            </div>
+                            <p className="precio-note">
+                                <BulbIcon />
+                                {gratisSeleccionado
+                                    ? 'Mano de obra gratis — se cobra el aceite, el filtro y los productos utilizados.'
+                                    : 'Se cobra la mano de obra más el filtro y los productos utilizados (el aceite lo trajo el cliente).'}
                             </p>
                         </div>
                     )}
