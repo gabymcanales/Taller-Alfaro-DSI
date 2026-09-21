@@ -72,7 +72,7 @@ const ModalListaReporte = ({ tipo, transacciones, ranking, fechaInicio, fechaFin
                     {filas.length === 0 ? (
                         <div className="sin-datos">Sin datos en este período</div>
                     ) : (
-                        <div className="tabla-container">
+                        <div className="reporte-lista-tabla-container">
                             <table className="tabla-reportes">
                                 <thead>
                                     <tr>

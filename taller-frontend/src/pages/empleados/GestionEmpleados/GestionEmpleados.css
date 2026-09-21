@@ -20,7 +20,7 @@
 }
 
 .btn-nuevo {
-    background: #f05907;
+    background: #ff4000;
     color: white;
     border: none;
     padding: 12px 20px;
@@ -31,7 +31,7 @@
 }
 
 .btn-nuevo:hover {
-    background: #f05907;
+    background: #e03800;
     transform: scale(1.03);
 }
 
@@ -39,16 +39,16 @@
     width: 100%;
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid #444;
-    background-color: #1e1e1e;
+    border: 1px solid #333;
+    background-color: #111;
     color: white;
     margin-bottom: 24px;
 }
 
 .buscador:focus {
     outline: none;
-    border-color: #f05907;
-    box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.2);
+    border-color: #ff4000;
+    box-shadow: 0 0 0 3px rgba(255, 64, 0, 0.15);
 }
 
 .cards-container {
@@ -58,8 +58,8 @@
 }
 
 .empleado-card {
-    background: #222530;
-    border: 1px solid #243044;
+    background: #1a1a1a;
+    border: 1px solid #333;
     border-radius: 16px;
     padding: 18px;
     transition: all 0.2s ease;
@@ -70,7 +70,7 @@
 
 .empleado-card:hover {
     transform: translateY(-3px);
-    border-color: #f05907;
+    border-color: #555;
 }
 
 .empleado-card-header {
@@ -122,19 +122,19 @@
 }
 
 .rol-badge {
-    background-color: #1e3a5f;
-    color: #7dd3fc;
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
     margin-right: 8px;
 }
 
 .estado.activo {
-    background-color: #14532d;
-    color: #86efac;
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
 }
 
 .estado.inactivo {
-    background-color: #7f1d1d;
-    color: #fca5a5;
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
 }
 
 .empleado-servicios {
@@ -145,9 +145,9 @@
 }
 
 .servicio-tag {
-    background: #111827;
-    border: 1px solid #334155;
-    color: #cbd5e1;
+    background: #111;
+    border: 1px solid #333;
+    color: #ccc;
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 11px;
@@ -168,7 +168,7 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -176,13 +176,14 @@
 }
 
 .modal-empleado {
-    background: #1e293b;
+    background: #1a1a1a;
     padding: 28px;
-    border-radius: 18px;
+    border-radius: 12px;
     width: 550px;
-    max-height: 85vh;
+    max-height: 90vh;
     overflow-y: auto;
-    border: 1px solid #334155;
+    box-sizing: border-box;
+    border: 1px solid #333;
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -192,8 +193,8 @@
 .modal-empleado select {
     padding: 10px;
     border-radius: 8px;
-    border: 1px solid #444;
-    background: #111827;
+    border: 1px solid #333;
+    background: #111;
     color: white;
     font-family: inherit;
     font-size: 14px;
@@ -233,7 +234,7 @@
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
+    color: #a0a0a0;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -256,8 +257,8 @@
     margin-top: 8px;
     padding: 12px;
     border-radius: 8px;
-    background: #111827;
-    border: 1px solid #444;
+    background: #111;
+    border: 1px solid #333;
     max-height: 160px;
     overflow-y: auto;
 }
@@ -267,7 +268,7 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #e2e8f0;
+    color: #e0e0e0;
     cursor: pointer;
 }
 
@@ -286,13 +287,22 @@
 }
 
 .modal-buttons button:first-child {
-    background: #374151;
-    color: white;
+    background: transparent;
+    color: #ccc;
+    border: 1px solid #444;
+}
+
+.modal-buttons button:first-child:hover {
+    background: #2a2a2a;
 }
 
 .modal-buttons button:last-child {
-    background: #f05907;
+    background: #ff4000;
     color: white;
+}
+
+.modal-buttons button:last-child:hover {
+    background: #e03800;
 }
 
 .acciones-empleado {
@@ -305,29 +315,21 @@
 .icono-habilitar {
     cursor: pointer;
     font-size: 16px;
+    color: #888;
     transition: all 0.2s ease;
 }
 
-.icono-editar {
-    color: #60a5fa;
-}
-
 .icono-editar:hover {
+    color: #fff;
     transform: scale(1.15);
-}
-
-.icono-inhabilitar {
-    color: #f87171;
 }
 
 .icono-inhabilitar:hover {
+    color: #ef4444;
     transform: scale(1.15);
 }
 
-.icono-habilitar {
-    color: #86efac;
-}
-
 .icono-habilitar:hover {
+    color: #10b981;
     transform: scale(1.15);
 }

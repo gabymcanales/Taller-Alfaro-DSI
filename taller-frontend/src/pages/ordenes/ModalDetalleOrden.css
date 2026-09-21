@@ -68,6 +68,18 @@
     font-weight: 700;
 }
 
+.detalle-descripcion {
+    margin-bottom: 24px;
+    padding: 12px 14px;
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+}
+
+.detalle-descripcion span {
+    white-space: pre-wrap;
+}
+
 .detalle-servicios h4,
 .detalle-trazabilidad h4 {
     font-size: 14px;

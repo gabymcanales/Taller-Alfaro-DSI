@@ -2,7 +2,11 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { getOrdenesPorEmpleado } from '../../services/ordenService';
 import { getUsuarioActual } from '../../utils/authUser';
 import ModalAvanzarServicio from './ModalAvanzarServicio';
+import ModalDetalleOrden from './ModalDetalleOrden';
+import Pagination from '../../components/common/Pagination/Pagination';
 import './MisOrdenes.css';
+
+const ITEMS_POR_PAGINA = 5;
 
 const ESTADO_INFO = {
     PENDIENTE: { label: 'Pendiente', clase: 'badge-pendiente' },
@@ -26,6 +30,12 @@ const MisOrdenes = () => {
     const [filtroEstado, setFiltroEstado] = useState(null);
     const [showAvanzarModal, setShowAvanzarModal] = useState(false);
     const [tareaSeleccionada, setTareaSeleccionada] = useState(null);
+    const [showDetalleModal, setShowDetalleModal] = useState(false);
+    const [ordenDetalleId, setOrdenDetalleId] = useState(null);
+    const [busquedaCliente, setBusquedaCliente] = useState('');
+    const [fechaDesde, setFechaDesde] = useState('');
+    const [fechaHasta, setFechaHasta] = useState('');
+    const [paginaPorSeccion, setPaginaPorSeccion] = useState({ PENDIENTE: 1, EN_PROCESO: 1, FINALIZADO: 1 });
     const esPrimeraCarga = useRef(true);
 
     const cargarDatos = async () => {
@@ -69,14 +79,43 @@ const MisOrdenes = () => {
                         servicio,
                     }))
             )
-            .sort((a, b) => new Date(a.fechaHoraOrden) - new Date(b.fechaHoraOrden));
+            .sort((a, b) => new Date(b.fechaHoraOrden) - new Date(a.fechaHoraOrden));
     }, [ordenes, usuario]);
 
+    const tareasFiltradas = useMemo(() => {
+        return tareas.filter((t) => {
+            if (busquedaCliente.trim()) {
+                const nombre = t.cliente?.nombreCliente?.toLowerCase() || '';
+                if (!nombre.includes(busquedaCliente.trim().toLowerCase())) return false;
+            }
+
+            if (fechaDesde || fechaHasta) {
+                if (!t.fechaHoraOrden) return false;
+                const fechaOrden = new Date(t.fechaHoraOrden);
+
+                if (fechaDesde && fechaOrden < new Date(`${fechaDesde}T00:00:00`)) return false;
+                if (fechaHasta && fechaOrden > new Date(`${fechaHasta}T23:59:59`)) return false;
+            }
+
+            return true;
+        });
+    }, [tareas, busquedaCliente, fechaDesde, fechaHasta]);
+
     const grupos = useMemo(() => ({
-        PENDIENTE: tareas.filter((t) => t.servicio.estadoServicioOrden === 'PENDIENTE'),
-        EN_PROCESO: tareas.filter((t) => t.servicio.estadoServicioOrden === 'EN_PROCESO'),
-        FINALIZADO: tareas.filter((t) => t.servicio.estadoServicioOrden === 'FINALIZADO'),
-    }), [tareas]);
+        PENDIENTE: tareasFiltradas.filter((t) => t.servicio.estadoServicioOrden === 'PENDIENTE'),
+        EN_PROCESO: tareasFiltradas.filter((t) => t.servicio.estadoServicioOrden === 'EN_PROCESO'),
+        FINALIZADO: tareasFiltradas.filter((t) => t.servicio.estadoServicioOrden === 'FINALIZADO'),
+    }), [tareasFiltradas]);
+
+    useEffect(() => {
+        setPaginaPorSeccion({ PENDIENTE: 1, EN_PROCESO: 1, FINALIZADO: 1 });
+    }, [busquedaCliente, fechaDesde, fechaHasta]);
+
+    const limpiarFiltros = () => {
+        setBusquedaCliente('');
+        setFechaDesde('');
+        setFechaHasta('');
+    };
 
     const handleAvanzar = (tarea) => {
         setTareaSeleccionada(tarea);
@@ -85,6 +124,15 @@ const MisOrdenes = () => {
 
     const handleServicioActualizado = () => {
         setShowAvanzarModal(false);
+        cargarDatos();
+    };
+
+    const handleVerDetalles = (idOrden) => {
+        setOrdenDetalleId(idOrden);
+        setShowDetalleModal(true);
+    };
+
+    const handleOrdenActualizadaDesdeDetalle = () => {
         cargarDatos();
     };
 
@@ -117,6 +165,34 @@ const MisOrdenes = () => {
                 </div>
             </div>
 
+            <div className="mis-filtros-bar">
+                <input
+                    type="text"
+                    className="mis-filtro-input"
+                    placeholder="Buscar por nombre de cliente..."
+                    value={busquedaCliente}
+                    onChange={(e) => setBusquedaCliente(e.target.value)}
+                />
+                <input
+                    type="date"
+                    className="mis-filtro-fecha"
+                    value={fechaDesde}
+                    onChange={(e) => setFechaDesde(e.target.value)}
+                />
+                <span className="mis-filtro-separador">a</span>
+                <input
+                    type="date"
+                    className="mis-filtro-fecha"
+                    value={fechaHasta}
+                    onChange={(e) => setFechaHasta(e.target.value)}
+                />
+                {(busquedaCliente || fechaDesde || fechaHasta) && (
+                    <button type="button" className="btn-limpiar-filtros" onClick={limpiarFiltros}>
+                        Limpiar
+                    </button>
+                )}
+            </div>
+
             <div className="mis-stats-row">
                 {SECCIONES.map((sec) => (
                     <button
@@ -142,7 +218,15 @@ const MisOrdenes = () => {
                 </div>
             )}
 
-            {seccionesAMostrar.map((sec) => (
+            {seccionesAMostrar.map((sec) => {
+                const paginaActual = paginaPorSeccion[sec.key] || 1;
+                const totalPaginasSeccion = Math.ceil(grupos[sec.key].length / ITEMS_POR_PAGINA);
+                const tareasPagina = grupos[sec.key].slice(
+                    (paginaActual - 1) * ITEMS_POR_PAGINA,
+                    paginaActual * ITEMS_POR_PAGINA
+                );
+
+                return (
                 <div className="seccion-tareas" key={sec.key}>
                     <h2 className="seccion-titulo">
                         {sec.label}
@@ -153,7 +237,7 @@ const MisOrdenes = () => {
                         <div className="mis-sin-datos">No tienes servicios en este estado</div>
                     ) : (
                         <div className="mis-ordenes-lista">
-                            {grupos[sec.key].map((t) => (
+                            {tareasPagina.map((t) => (
                                 <div key={`${t.idOrden}-${t.servicio.idServicio}`} className="orden-card">
                                     <div className="orden-card-header">
                                         <div className="orden-card-titulo">
@@ -162,11 +246,20 @@ const MisOrdenes = () => {
                                                 <span className="badge-estado badge-entregado">● Entregado</span>
                                             )}
                                         </div>
-                                        <span className="orden-card-fecha">
-                                            {t.fechaHoraOrden
-                                                ? new Date(t.fechaHoraOrden).toLocaleString('es-ES')
-                                                : '—'}
-                                        </span>
+                                        <div className="orden-card-acciones">
+                                            <span className="orden-card-fecha">
+                                                {t.fechaHoraOrden
+                                                    ? new Date(t.fechaHoraOrden).toLocaleString('es-ES')
+                                                    : '—'}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className="btn-ver-detalles"
+                                                onClick={() => handleVerDetalles(t.idOrden)}
+                                            >
+                                                Ver detalles
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="orden-card-info">
@@ -185,13 +278,6 @@ const MisOrdenes = () => {
                                                 ● {ESTADO_INFO[t.servicio.estadoServicioOrden]?.label || t.servicio.estadoServicioOrden}
                                             </span>
                                         </div>
-                                        <div className="mi-servicio-precio">
-                                            {t.servicio.precioAplicado
-                                                ? `$${Number(t.servicio.precioAplicado).toFixed(2)}`
-                                                : t.servicio.esPrecioVariable
-                                                    ? 'Precio pendiente'
-                                                    : '—'}
-                                        </div>
                                         {t.servicio.estadoServicioOrden !== 'FINALIZADO' && t.estadoOrden !== 'ENTREGADO' ? (
                                             <button className="btn-avanzar-mio" onClick={() => handleAvanzar(t)}>
                                                 {t.servicio.estadoServicioOrden === 'PENDIENTE' ? 'Iniciar' : 'Finalizar'}
@@ -204,8 +290,19 @@ const MisOrdenes = () => {
                             ))}
                         </div>
                     )}
+
+                    {totalPaginasSeccion > 1 && (
+                        <Pagination
+                            currentPage={paginaActual}
+                            totalPages={totalPaginasSeccion}
+                            onPageChange={(pagina) =>
+                                setPaginaPorSeccion((prev) => ({ ...prev, [sec.key]: pagina }))
+                            }
+                        />
+                    )}
                 </div>
-            ))}
+                );
+            })}
 
             <ModalAvanzarServicio
                 isOpen={showAvanzarModal}
@@ -213,6 +310,15 @@ const MisOrdenes = () => {
                 ordenId={tareaSeleccionada?.idOrden}
                 servicio={tareaSeleccionada?.servicio}
                 onServicioActualizado={handleServicioActualizado}
+            />
+
+            <ModalDetalleOrden
+                isOpen={showDetalleModal}
+                onClose={() => setShowDetalleModal(false)}
+                ordenId={ordenDetalleId}
+                onOrdenActualizada={handleOrdenActualizadaDesdeDetalle}
+                esAdmin={false}
+                username={usuario?.username}
             />
         </div>
     );

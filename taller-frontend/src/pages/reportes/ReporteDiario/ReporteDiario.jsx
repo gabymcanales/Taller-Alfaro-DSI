@@ -283,8 +283,8 @@ const ReporteDiario = () => {
                             ? reportePeriodo.transacciones.map((t, i) => (
                                 <tr key={i}>
                                     <td
-                                        className="order-highlight orden-clickable"
-                                        onClick={() => setOrdenSeleccionadaId(t.idOrden)}
+                                        className={t.idOrden ? "order-highlight orden-clickable" : "order-highlight"}
+                                        onClick={t.idOrden ? () => setOrdenSeleccionadaId(t.idOrden) : undefined}
                                     >
                                         {t.numOrden}
                                     </td>

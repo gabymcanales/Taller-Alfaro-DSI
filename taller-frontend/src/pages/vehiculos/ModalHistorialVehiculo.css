@@ -70,6 +70,10 @@
     color: #ff4000;
 }
 
+.historial-tabla-container {
+    overflow-x: auto;
+}
+
 .historial-tabla {
     width: 100%;
     min-width: 640px;

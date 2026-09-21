@@ -14,8 +14,20 @@ const CobrosTabs = () => {
                 </svg>
             )
         },
-        { 
-            id: 'arqueo', 
+        {
+            id: 'venta-libre',
+            label: 'Venta libre',
+            path: '/cobros/venta-libre',
+            icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M6 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                    <path d="M16 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                    <path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h9.2a2 2 0 0 0 2 -1.6l1.4 -7.4h-15.2" />
+                </svg>
+            )
+        },
+        {
+            id: 'arqueo',
             label: 'Arqueo diario', 
             path: '/cobros/arqueo',
             icon: (

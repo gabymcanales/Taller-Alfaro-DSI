@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/auth/Login/Login';
 
 import RegistrarCobro from '../pages/cobros/RegistrarCobro/RegistrarCobro';
+import VentaLibre from '../pages/cobros/VentaLibre/VentaLibre';
 import ArqueoDiario from '../pages/cobros/ArqueoDiario/ArqueoDiario';
 import CierreCaja from '../pages/cierres/CierreCaja/CierreCaja';
 import Historial from '../pages/cobros/Historial/Historial';
@@ -77,6 +78,11 @@ const Layout = () => {
                         <Route
                             path="/cobros/registrar"
                             element={<RutaAdmin><RegistrarCobro /></RutaAdmin>}
+                        />
+
+                        <Route
+                            path="/cobros/venta-libre"
+                            element={<RutaAdmin><VentaLibre /></RutaAdmin>}
                         />
 
                         <Route

@@ -16,7 +16,7 @@ public class Transaccion {
     private Long idTransaccion;
 
     @OneToOne
-    @JoinColumn(name = "id_orden", nullable = false, unique = true)
+    @JoinColumn(name = "id_orden", unique = true)
     private Orden orden;
 
     @ManyToOne

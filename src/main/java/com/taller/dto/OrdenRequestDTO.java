@@ -7,12 +7,13 @@ import java.util.List;
 public class OrdenRequestDTO {
     private Long idCliente;
     private Long idVehiculo;
+    private String descripcion;
     private List<ServicioAsignadoDTO> servicios;
 
     @Data
     public static class ServicioAsignadoDTO {
         private Long idServicio;
         private Long idEmpleado;
-       
+
     }
 }

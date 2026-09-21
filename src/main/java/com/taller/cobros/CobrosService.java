@@ -9,6 +9,7 @@ import com.taller.ordenes.EmpleadoRepository;
 import com.taller.ordenes.OrdenRepository;
 import com.taller.ordenes.OrdenService;
 import com.taller.ordenes.OrdenServicioRepository;
+import com.taller.ventalibre.VentaLibreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class CobrosService {
     private final OrdenServicioRepository ordenServicioRepository;
     private final CierreDiarioRepository cierreDiarioRepository;
     private final OrdenService ordenService;
+    private final VentaLibreRepository ventaLibreRepository;
 
     @Transactional
     public RegistroCobroResponse registrarCobro(RegistroCobroRequest request, String usernameEmpleado) {
@@ -152,13 +154,21 @@ public class CobrosService {
             ArqueoDiarioDTO.TransaccionArqueoDTO dto = new ArqueoDiarioDTO.TransaccionArqueoDTO();
             dto.setNumero(contador++);
             dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
-            dto.setNumOrden(t.getOrden().getNumOrden());
 
-            String nombreServicio = "Sin servicio";
-            if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
-                nombreServicio = t.getOrden().getOrdenServicios().get(0).getServicio().getNombreServicio();
+            if (t.getOrden() != null) {
+                dto.setNumOrden(t.getOrden().getNumOrden());
+
+                String nombreServicio = "Sin servicio";
+                if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
+                    nombreServicio = t.getOrden().getOrdenServicios().get(0).getServicio().getNombreServicio();
+                }
+                dto.setServicioNombre(nombreServicio);
+            } else {
+                VentaLibre venta = ventaLibreRepository.findByTransaccion_IdTransaccion(t.getIdTransaccion())
+                        .orElse(null);
+                dto.setNumOrden(venta != null ? venta.getNumVenta() : "Venta libre");
+                dto.setServicioNombre(descripcionProductosVenta(venta));
             }
-            dto.setServicioNombre(nombreServicio);
 
             dto.setMonto(t.getMontoTotal());
             dto.setEmpleadoUsername(t.getEmpleado().getUsername());
@@ -236,26 +246,44 @@ public class CobrosService {
 
         dto.setFecha(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
-        dto.setNumOrden(t.getOrden().getNumOrden());
 
-        String nombresServicios = "";
-        if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
-            nombresServicios = t.getOrden().getOrdenServicios().stream()
-                    .map(os -> os.getServicio().getNombreServicio())
-                    .collect(Collectors.joining(" + "));
-        }
-        dto.setServicios(nombresServicios);
+        if (t.getOrden() != null) {
+            dto.setNumOrden(t.getOrden().getNumOrden());
 
-        if (t.getOrden().getCliente() != null) {
-            dto.setClienteNombre(t.getOrden().getCliente().getNombreCliente());
+            String nombresServicios = "";
+            if (t.getOrden().getOrdenServicios() != null && !t.getOrden().getOrdenServicios().isEmpty()) {
+                nombresServicios = t.getOrden().getOrdenServicios().stream()
+                        .map(os -> os.getServicio().getNombreServicio())
+                        .collect(Collectors.joining(" + "));
+            }
+            dto.setServicios(nombresServicios);
+
+            dto.setClienteNombre(t.getOrden().getCliente() != null
+                    ? t.getOrden().getCliente().getNombreCliente()
+                    : "—");
         } else {
-            dto.setClienteNombre("—");
+            VentaLibre venta = ventaLibreRepository.findByTransaccion_IdTransaccion(t.getIdTransaccion())
+                    .orElse(null);
+            dto.setNumOrden(venta != null ? venta.getNumVenta() : "Venta libre");
+            dto.setServicios(descripcionProductosVenta(venta));
+            dto.setClienteNombre(venta != null && venta.getCliente() != null
+                    ? venta.getCliente().getNombreCliente()
+                    : "Venta libre (mostrador)");
         }
 
         dto.setMonto(t.getMontoTotal());
         dto.setEmpleadoUsername(t.getEmpleado().getUsername());
 
         return dto;
+    }
+
+    private String descripcionProductosVenta(VentaLibre venta) {
+        if (venta == null || venta.getDetalles() == null || venta.getDetalles().isEmpty()) {
+            return "Venta libre";
+        }
+        return venta.getDetalles().stream()
+                .map(d -> d.getProducto().getNombre() + " x" + d.getCantidad())
+                .collect(Collectors.joining(", "));
     }
 
     public List<Cliente> buscarClientesPorNombre(String nombre) {

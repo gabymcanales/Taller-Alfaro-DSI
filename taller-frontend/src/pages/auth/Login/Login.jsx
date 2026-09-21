@@ -53,27 +53,31 @@ const Login = () => {
                 
                 <form onSubmit={handleSubmit}>
                     {mensajeSesion && <div className="info">{mensajeSesion}</div>}
-                    <input
-                        type="text"
-                        placeholder="Usuario"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                    <div className="password-field">
+                    <div className="form-field">
+                        <label>Usuario</label>
                         <input
-                            type={mostrarPassword ? 'text' : 'password'}
-                            placeholder="Contraseña"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
-                        <span
-                            className="toggle-password"
-                            onClick={() => setMostrarPassword(!mostrarPassword)}
-                        >
-                            {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
-                        </span>
+                    </div>
+                    <div className="form-field">
+                        <label>Contraseña</label>
+                        <div className="password-field">
+                            <input
+                                type={mostrarPassword ? 'text' : 'password'}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <span
+                                className="toggle-password"
+                                onClick={() => setMostrarPassword(!mostrarPassword)}
+                            >
+                                {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
+                            </span>
+                        </div>
                     </div>
                     {error && <div className="error">{error}</div>}
                     <button type="submit" disabled={loading}>

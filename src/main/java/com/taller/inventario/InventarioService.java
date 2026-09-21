@@ -28,6 +28,9 @@ public class InventarioService {
     }
 
     public Producto guardarProducto(Producto producto) {
+        if (existeProductoDuplicado(producto.getNombre(), producto.getMarca(), null)) {
+            throw new RuntimeException(mensajeDuplicado(producto.getNombre(), producto.getMarca()));
+        }
         return productoRepository.save(producto);
     }
 
@@ -35,6 +38,10 @@ public class InventarioService {
 
     Producto producto = productoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        if (existeProductoDuplicado(productoActualizado.getNombre(), productoActualizado.getMarca(), id)) {
+            throw new RuntimeException(mensajeDuplicado(productoActualizado.getNombre(), productoActualizado.getMarca()));
+        }
 
         producto.setNombre(productoActualizado.getNombre());
         producto.setDescripcion(productoActualizado.getDescripcion());
@@ -141,5 +148,25 @@ public class InventarioService {
         productoRepository.save(producto);
 
         return movimientoInventarioRepository.save(movimiento);
+    }
+
+    private boolean existeProductoDuplicado(String nombre, String marca, Long idExcluir) {
+        String nombreNorm = normalizar(nombre);
+        String marcaNorm = normalizar(marca);
+
+        return productoRepository.findAll().stream()
+                .filter(p -> idExcluir == null || !p.getIdProducto().equals(idExcluir))
+                .anyMatch(p -> normalizar(p.getNombre()).equals(nombreNorm)
+                        && normalizar(p.getMarca()).equals(marcaNorm));
+    }
+
+    private String normalizar(String valor) {
+        return valor == null ? "" : valor.trim().toLowerCase();
+    }
+
+    private String mensajeDuplicado(String nombre, String marca) {
+        boolean tieneMarca = marca != null && !marca.isBlank();
+        return "Ya existe un producto registrado con el nombre \"" + nombre + "\""
+                + (tieneMarca ? " y la marca \"" + marca + "\"" : " sin marca") + ".";
     }
 }

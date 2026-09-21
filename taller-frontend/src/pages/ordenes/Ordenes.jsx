@@ -213,7 +213,7 @@ const Ordenes = () => {
             </div>
 
             {/* Filtros y tabla */}
-            <div className="tabla-container">
+            <div className="ordenes-tabla-container">
                 <div className="tabla-header">
                     <div className="search-box">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">

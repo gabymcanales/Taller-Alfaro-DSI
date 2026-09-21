@@ -39,3 +39,6 @@ export const getOrdenesPorEmpleado = () => axiosInstance.get('/ordenes/empleado'
 
 export const getProductosPorCategoria = (categoria) =>
     axiosInstance.get(`/ordenes/productos-inventario?categoria=${categoria}`);
+
+export const getProductosDisponibles = () =>
+    axiosInstance.get('/ordenes/productos-disponibles');

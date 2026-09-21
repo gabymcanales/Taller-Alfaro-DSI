@@ -8,6 +8,8 @@ import com.taller.dto.ReportePeriodoDTO;
 import com.taller.dto.TransaccionDTO;
 import com.taller.model.OrdenServicio;
 import com.taller.model.Transaccion;
+import com.taller.model.VentaLibre;
+import com.taller.ventalibre.VentaLibreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class ReportesService {
 
     private final TransaccionRepository transaccionRepository;
+    private final VentaLibreRepository ventaLibreRepository;
 
     // HU-23 — Reporte diario completo
     public ReporteDiarioDTO getReporteDiarioCompleto(LocalDate fecha) {
@@ -39,6 +42,7 @@ public class ReportesService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Map<String, BigDecimal> desglosePorArea = transacciones.stream()
+                .filter(t -> t.getOrden() != null)
                 .flatMap(t -> t.getOrden().getOrdenServicios().stream())
                 .collect(Collectors.groupingBy(
                         os -> os.getServicio().getAreaServicio(),
@@ -103,6 +107,7 @@ public class ReportesService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Map<String, BigDecimal> desglosePorArea = transacciones.stream()
+                .filter(t -> t.getOrden() != null)
                 .flatMap(t -> t.getOrden().getOrdenServicios().stream())
                 .collect(Collectors.groupingBy(
                         os -> os.getServicio().getAreaServicio(),
@@ -144,6 +149,7 @@ public class ReportesService {
         return transaccionRepository
                 .findByFechaHoraTransaccionBetween(inicio, fin)
                 .stream()
+                .filter(t -> t.getOrden() != null)
                 .flatMap(t -> t.getOrden().getOrdenServicios().stream())
                 .filter(os -> area == null || area.isEmpty() ||
                         os.getServicio().getAreaServicio().equalsIgnoreCase(area))
@@ -170,9 +176,21 @@ public class ReportesService {
     private TransaccionDTO toTransaccionDTO(Transaccion t) {
         TransaccionDTO dto = new TransaccionDTO();
         dto.setIdTransaccion(t.getIdTransaccion());
-        dto.setIdOrden(t.getOrden().getIdOrden());
-        dto.setNumOrden(t.getOrden().getNumOrden());
-        dto.setNombreCliente(t.getOrden().getCliente().getNombreCliente());
+
+        if (t.getOrden() != null) {
+            dto.setIdOrden(t.getOrden().getIdOrden());
+            dto.setNumOrden(t.getOrden().getNumOrden());
+            dto.setNombreCliente(t.getOrden().getCliente() != null
+                    ? t.getOrden().getCliente().getNombreCliente() : "—");
+        } else {
+            VentaLibre venta = ventaLibreRepository.findByTransaccion_IdTransaccion(t.getIdTransaccion())
+                    .orElse(null);
+            dto.setIdOrden(null);
+            dto.setNumOrden(venta != null ? venta.getNumVenta() : "Venta libre");
+            dto.setNombreCliente(venta != null && venta.getCliente() != null
+                    ? venta.getCliente().getNombreCliente() : "Venta libre (mostrador)");
+        }
+
         dto.setNombreEmpleado(t.getEmpleado() != null ?
                 t.getEmpleado().getNombreEmpleado() : "");
         dto.setMontoTotal(t.getMontoTotal());

@@ -376,6 +376,8 @@
 .modal-producto {
     width: 420px;
     max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     background: #1e1e1e;
     border: 1px solid #2a2a2a;
     border-radius: 12px;
@@ -402,6 +404,30 @@
     color: #fff;
     font-size: 12px;
     outline: none;
+}
+
+.modal-producto .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.modal-producto .form-field label {
+    font-size: 12px;
+    color: #999;
+}
+
+.modal-producto .form-field input,
+.modal-producto .form-field select,
+.modal-producto .form-field textarea {
+    margin-bottom: 0;
+}
+
+.modal-producto input:disabled {
+    background: #1a1a1a;
+    color: #999;
+    cursor: not-allowed;
 }
 
 .modal-producto input::placeholder,
@@ -464,12 +490,16 @@
     gap: 10px;
 }
 
-.campos-stock:has(input:nth-child(2):last-child) {
+.campos-stock:has(:nth-child(2):last-child) {
     grid-template-columns: repeat(2, 1fr);
 }
 
 .campos-stock input {
     width: 100%;
+}
+
+.campos-stock .form-field {
+    margin-bottom: 0;
 }
 
 /* =========================
@@ -618,6 +648,19 @@
     display: flex;
     gap: 8px;
     width: 100%;
+    margin-bottom: 12px;
+}
+
+.unidad-medida .form-field {
+    margin-bottom: 0;
+}
+
+.unidad-medida .form-field:first-child {
+    flex: 1;
+}
+
+.unidad-medida .form-field:last-child {
+    width: 100px;
 }
 
 .unidad-medida input {

@@ -101,6 +101,19 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                         </div>
                     </div>
 
+                    {data?.productos?.length > 0 && (
+                        <div className="data-row servicios-row">
+                            <span className="label">Productos utilizados</span>
+                            <div className="servicios-value">
+                                {data.productos.map((p, index) => (
+                                    <span key={index} className="servicio-tag">
+                                        {p.nombre} x{p.cantidad} — ${Number(p.subtotal).toFixed(2)}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="data-row">
                         <span className="label">Total a pagar</span>
                         <span className="value orange">${total.toFixed(2)}</span>

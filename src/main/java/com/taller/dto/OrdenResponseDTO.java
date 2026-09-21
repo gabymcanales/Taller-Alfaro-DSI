@@ -13,9 +13,12 @@ public class OrdenResponseDTO {
     private LocalDateTime fechaHoraOrden;
     private BigDecimal totalCalculadoOrden;
     private BigDecimal precioFinal;
+    private String descripcion;
     private ClienteInfoDTO cliente;
     private VehiculoInfoDTO vehiculo;
     private List<OrdenServicioDTO> ordenServicios;
+
+    private List<OrdenProductoDTO> productos;
 
     private List<HistorialEstadoDTO> historialEstados;
 

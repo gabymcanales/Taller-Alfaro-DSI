@@ -35,6 +35,18 @@
     gap: 16px;
 }
 
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.form-field label {
+    font-size: 13px;
+    color: #a0a0a0;
+}
+
 .login-card input {
     width: 100%;
     padding: 12px 14px;

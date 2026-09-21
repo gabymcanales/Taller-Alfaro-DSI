@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
     List<Producto> findByCategoriaAndEstado(String categoria, String estado);
+    List<Producto> findByEstado(String estado);
 }

@@ -53,7 +53,7 @@
     color: #ff4000;
 }
 
-.tabla-container {
+.reporte-lista-tabla-container {
     max-height: 55vh;
     overflow-y: auto;
     overflow-x: auto;
