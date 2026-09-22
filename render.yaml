@@ -23,4 +23,4 @@ services:
     routes:
       - type: rewrite
         source: "/*"
-        destination: "/index.index.html" 
+        destination: "/index.html" 
