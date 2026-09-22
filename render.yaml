@@ -1,0 +1,26 @@
+services:
+  # ------------------------------------
+  # 1. BACKEND (Spring Boot + Java 17)
+  # ------------------------------------
+  - type: web
+    name: taller-backend
+    env: java
+    buildCommand: "./mvnw clean package -DskipTests"
+    startCommand: "java -jar target/*.jar"
+    envVars:
+      - key: JAVA_VERSION
+        value: "17"
+
+  # ------------------------------------
+  # 2. FRONTEND (React + Vite)
+  # ------------------------------------
+  - type: web
+    name: taller-frontend
+    env: static
+    rootDir: taller-frontend
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: "/*"
+        destination: "/index.index.html" 
