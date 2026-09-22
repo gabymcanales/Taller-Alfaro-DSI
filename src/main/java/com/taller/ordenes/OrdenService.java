@@ -532,6 +532,7 @@ public class OrdenService {
                     ProductoSimpleDTO dto = new ProductoSimpleDTO();
                     dto.setIdProducto(p.getIdProducto());
                     dto.setNombre(p.getNombre());
+                    dto.setMarca(p.getMarca());
                     dto.setUnidadMedida(p.getUnidadMedida());
                     dto.setStockActual(p.getStockActual());
                     dto.setPrecio(p.getPrecio());
@@ -547,6 +548,7 @@ public class OrdenService {
                     ProductoSimpleDTO dto = new ProductoSimpleDTO();
                     dto.setIdProducto(p.getIdProducto());
                     dto.setNombre(p.getNombre());
+                    dto.setMarca(p.getMarca());
                     dto.setUnidadMedida(p.getUnidadMedida());
                     dto.setStockActual(p.getStockActual());
                     dto.setPrecio(p.getPrecio());
@@ -887,6 +889,7 @@ public class OrdenService {
         OrdenProductoDTO dto = new OrdenProductoDTO();
         dto.setIdProducto(op.getProducto().getIdProducto());
         dto.setNombre(op.getProducto().getNombre());
+        dto.setUnidadMedida(op.getProducto().getUnidadMedida());
         dto.setCantidad(op.getCantidad());
         dto.setPrecioUnitario(op.getPrecioUnitario());
         dto.setSubtotal(op.getSubtotal());

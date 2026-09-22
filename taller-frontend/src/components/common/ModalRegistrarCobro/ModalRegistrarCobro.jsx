@@ -29,6 +29,15 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
 
     const serviciosLista = obtenerServicios();
 
+    const obtenerUnidadSinCantidad = (unidadMedida) => {
+        if (!unidadMedida) return 'unidad(es)';
+        const partes = unidadMedida.trim().split(' ');
+        if (partes.length > 1 && !isNaN(partes[0])) {
+            return partes.slice(1).join(' ') || 'unidad(es)';
+        }
+        return unidadMedida;
+    };
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -107,7 +116,7 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                             <div className="servicios-value">
                                 {data.productos.map((p, index) => (
                                     <span key={index} className="servicio-tag">
-                                        {p.nombre} x{p.cantidad} — ${Number(p.subtotal).toFixed(2)}
+                                        {p.nombre} - {p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)} — ${Number(p.subtotal).toFixed(2)}
                                     </span>
                                 ))}
                             </div>

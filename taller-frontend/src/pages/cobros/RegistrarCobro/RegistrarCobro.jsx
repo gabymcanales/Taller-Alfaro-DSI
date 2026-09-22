@@ -44,6 +44,15 @@ const RegistrarCobro = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const obtenerUnidadSinCantidad = (unidadMedida) => {
+        if (!unidadMedida) return 'unidad(es)';
+        const partes = unidadMedida.trim().split(' ');
+        if (partes.length > 1 && !isNaN(partes[0])) {
+            return partes.slice(1).join(' ') || 'unidad(es)';
+        }
+        return unidadMedida;
+    };
+
     useEffect(() => {
         cargarOrdenesFinalizadas();
     }, []);
@@ -345,7 +354,7 @@ const RegistrarCobro = () => {
                                                 {ordenDetalle.productos.map((p, index) => (
                                                     <div key={index} className="servicio-item">
                                                         <span className="servicio-nombre">
-                                                            {p.nombre} x{p.cantidad} — ${Number(p.subtotal).toFixed(2)}
+                                                            {p.nombre} - {p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)} — ${Number(p.subtotal).toFixed(2)}
                                                         </span>
                                                     </div>
                                                 ))}

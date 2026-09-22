@@ -26,6 +26,8 @@ import com.taller.cierres.CierreDiarioRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -128,7 +130,10 @@ public class CobrosService {
         LocalDateTime finDia = LocalDate.now().atTime(23, 59, 59);
 
         List<Transaccion> transacciones = transaccionRepository
-                .findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(inicioDia, finDia);
+                .findByFechaHoraTransaccionBetweenAndCierreAsociadoFalse(inicioDia, finDia)
+                .stream()
+                .sorted(Comparator.comparing(Transaccion::getFechaHoraTransaccion))
+                .collect(Collectors.toList());
 
         BigDecimal totalIngresos = transacciones.stream()
                 .map(Transaccion::getMontoTotal)
@@ -147,10 +152,13 @@ public class CobrosService {
             ultimoCobroHora = ultima.format(DateTimeFormatter.ofPattern("hh:mm a"));
         }
 
+        List<Transaccion> transaccionesRecienteAAntigua = new ArrayList<>(transacciones);
+        Collections.reverse(transaccionesRecienteAAntigua);
+
         List<ArqueoDiarioDTO.TransaccionArqueoDTO> transaccionesDTO = new ArrayList<>();
         int contador = 1;
 
-        for (Transaccion t : transacciones) {
+        for (Transaccion t : transaccionesRecienteAAntigua) {
             ArqueoDiarioDTO.TransaccionArqueoDTO dto = new ArqueoDiarioDTO.TransaccionArqueoDTO();
             dto.setNumero(contador++);
             dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
