@@ -21,6 +21,15 @@ const ModalDetalleOrden = ({
     const [showEditarModal, setShowEditarModal] = useState(false);
     const navigate = useNavigate();
 
+    const obtenerUnidadSinCantidad = (unidadMedida) => {
+        if (!unidadMedida) return 'unidad(es)';
+        const partes = unidadMedida.trim().split(' ');
+        if (partes.length > 1 && !isNaN(partes[0])) {
+            return partes.slice(1).join(' ') || 'unidad(es)';
+        }
+        return unidadMedida;
+    };
+
     useEffect(() => {
         if (isOpen && ordenId) {
             cargarOrden();
@@ -241,7 +250,7 @@ const ModalDetalleOrden = ({
                                         {orden.productos.map((p, i) => (
                                             <tr key={i}>
                                                 <td>{p.nombre}</td>
-                                                <td>{p.cantidad}</td>
+                                                <td>{p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)}</td>
                                                 <td className="precio-col">${p.precioUnitario?.toFixed(2)}</td>
                                                 <td className="precio-col">${p.subtotal?.toFixed(2)}</td>
                                             </tr>

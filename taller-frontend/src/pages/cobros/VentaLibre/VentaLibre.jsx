@@ -137,6 +137,15 @@ const VentaLibre = () => {
         setError('');
     };
 
+    const obtenerUnidadSinCantidad = (unidadMedida) => {
+        if (!unidadMedida) return 'unidad(es)';
+        const partes = unidadMedida.trim().split(' ');
+        if (partes.length > 1 && !isNaN(partes[0])) {
+            return partes.slice(1).join(' ') || 'unidad(es)';
+        }
+        return unidadMedida;
+    };
+
     const eliminarProducto = (index) => {
         setProductosAgregados(prev => prev.filter((_, i) => i !== index));
     };
@@ -309,7 +318,7 @@ const VentaLibre = () => {
                                         {productosAgregados.map((p, index) => (
                                             <div key={index} className="venta-producto-item">
                                                 <span className="venta-producto-nombre">
-                                                    {p.nombre} — {p.cantidad} {p.unidadMedida || 'unidad(es)'}
+                                                    {p.nombre} - {p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)}
                                                 </span>
                                                 <span className="venta-producto-subtotal">${Number(p.subtotal).toFixed(2)}</span>
                                                 <button

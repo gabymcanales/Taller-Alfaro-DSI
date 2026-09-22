@@ -34,6 +34,10 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
             getProductosDisponibles().then(res => setProductosDisponibles(res.data || [])).catch(() => setProductosDisponibles([]));
         }
         if (isOpen) {
+            setEstadoSeleccionado('');
+            setComentario('');
+            setPrecioFinal('');
+            setError('');
             setProductosAUsar([]);
             setProductoSeleccionado('');
             setCantidadProducto('1');
@@ -95,6 +99,15 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
 
     const eliminarProducto = (index) => {
         setProductosAUsar(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const obtenerUnidadSinCantidad = (unidadMedida) => {
+        if (!unidadMedida) return 'unidad(es)';
+        const partes = unidadMedida.trim().split(' ');
+        if (partes.length > 1 && !isNaN(partes[0])) {
+            return partes.slice(1).join(' ') || 'unidad(es)';
+        }
+        return unidadMedida;
     };
 
     if (!isOpen || !servicio) return null;
@@ -383,7 +396,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                                             <option value="">— Seleccione el aceite —</option>
                                             {aceites.map(p => (
                                                 <option key={p.idProducto} value={p.idProducto}>
-                                                    {p.nombre} - ${Number(p.precio || 0).toFixed(2)}/galón (stock: {p.stockActual} {p.unidadMedida})
+                                                    {p.nombre}{p.marca ? ` - ${p.marca}` : ''} - ${Number(p.precio || 0).toFixed(2)}/galón
                                                 </option>
                                             ))}
                                         </select>
@@ -425,7 +438,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                                     <option value="">— Ninguno —</option>
                                     {filtros.map(p => (
                                         <option key={p.idProducto} value={p.idProducto}>
-                                            {p.nombre} - ${Number(p.precio || 0).toFixed(2)} (stock: {p.stockActual} {p.unidadMedida})
+                                            {p.nombre}{p.marca ? ` - ${p.marca}` : ''} - ${Number(p.precio || 0).toFixed(2)}
                                         </option>
                                     ))}
                                 </select>
@@ -456,7 +469,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                                     <option value="">— Seleccione un producto —</option>
                                     {productosDisponibles.map(p => (
                                         <option key={p.idProducto} value={p.idProducto}>
-                                            {p.nombre} - ${Number(p.precio || 0).toFixed(2)} (Stock: {p.stockActual})
+                                            {p.nombre}{p.marca ? ` - ${p.marca}` : ''} - ${Number(p.precio || 0).toFixed(2)}
                                         </option>
                                     ))}
                                 </select>
@@ -477,7 +490,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                                     {productosAUsar.map((p, index) => (
                                         <div key={index} className="avanzar-producto-item">
                                             <span className="avanzar-producto-nombre">
-                                                {p.nombre} — {p.cantidad} {p.unidadMedida || 'unidad(es)'}
+                                                {p.nombre} - {p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)}
                                             </span>
                                             <span className="avanzar-producto-subtotal">${Number(p.subtotal).toFixed(2)}</span>
                                             <button
