@@ -38,18 +38,6 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
         return unidadMedida;
     };
 
-    const formatearCantidadProducto = (p) => {
-        if (p.unidadMedida === 'Cuarto(s)') {
-            const galones = Math.floor(p.cantidad / 4);
-            const cuartos = p.cantidad % 4;
-            if (galones > 0 && cuartos > 0) {
-                return `${galones} Gal y ${cuartos} Cuarto${cuartos > 1 ? 's' : ''}`;
-            }
-            if (galones > 0) return `${galones} Gal`;
-            return `${cuartos} Cuarto${cuartos > 1 ? 's' : ''}`;
-        }
-        return `${p.cantidad} ${obtenerUnidadSinCantidad(p.unidadMedida)}`;
-    };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -129,7 +117,7 @@ const ModalRegistrarCobro = ({ isOpen, onClose, onConfirm, data }) => {
                             <div className="servicios-value">
                                 {data.productos.map((p, index) => (
                                     <span key={index} className="servicio-tag">
-                                        {p.nombre} - {formatearCantidadProducto(p)} — ${Number(p.subtotal).toFixed(2)}
+                                        {p.nombre} - {p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)} — ${Number(p.subtotal).toFixed(2)}
                                     </span>
                                 ))}
                             </div>

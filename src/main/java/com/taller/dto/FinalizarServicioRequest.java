@@ -13,7 +13,6 @@ public class FinalizarServicioRequest {
     private Boolean manoDeObraGratis;
     private Long idProductoAceite;
     private Integer galonesAceite;
-    private Integer cuartosAceite;
     private Long idProductoFiltro;
 
     // Productos generales usados para completar el servicio

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -150,22 +149,6 @@ public class OrdenService {
 
     private BigDecimal registrarProductoEnOrden(Orden orden, ProductoUsadoDTO productoReq,
             Empleado empleado) {
-        return registrarProductoEnOrden(orden, productoReq, empleado, BigDecimal.ONE, null);
-    }
-
-    /**
-     * unidadesPorCantidad: cuántas unidades de "cantidad" (la que se descuenta del inventario)
-     * equivalen a una unidad de precio del producto. Para el aceite, el precio está registrado
-     * por galón pero la cantidad se maneja en cuartos (1 galón = 4 cuartos), así que aquí vale 4.
-     * Para el resto de productos (filtro, productos generales) la cantidad ya es la unidad de
-     * precio, así que vale 1.
-     *
-     * unidadMedidaCantidad: la unidad en la que realmente está expresada "cantidad" (ej. "Cuarto"
-     * cuando se maneja en cuartos), para no mostrarla luego con la unidad de empaque del producto
-     * (ej. "Gal"). Si es null, se usa la unidad registrada del producto.
-     */
-    private BigDecimal registrarProductoEnOrden(Orden orden, ProductoUsadoDTO productoReq,
-            Empleado empleado, BigDecimal unidadesPorCantidad, String unidadMedidaCantidad) {
 
         if (productoReq.getIdProducto() == null) {
             throw new RuntimeException("Debe seleccionar un producto");
@@ -190,16 +173,15 @@ public class OrdenService {
         movimiento.setOrden(orden);
         inventarioService.registrarMovimiento(movimiento);
 
-        BigDecimal precioUnitarioEfectivo = producto.getPrecio()
-                .divide(unidadesPorCantidad, 2, RoundingMode.HALF_UP);
-        BigDecimal subtotal = precioUnitarioEfectivo.multiply(BigDecimal.valueOf(productoReq.getCantidad()));
+        BigDecimal precioUnitario = producto.getPrecio();
+        BigDecimal subtotal = precioUnitario.multiply(BigDecimal.valueOf(productoReq.getCantidad()));
 
         OrdenProducto ordenProducto = new OrdenProducto();
         ordenProducto.setOrden(orden);
         ordenProducto.setProducto(producto);
         ordenProducto.setCantidad(productoReq.getCantidad());
-        ordenProducto.setUnidadMedida(unidadMedidaCantidad != null ? unidadMedidaCantidad : producto.getUnidadMedida());
-        ordenProducto.setPrecioUnitario(precioUnitarioEfectivo);
+        ordenProducto.setUnidadMedida(producto.getUnidadMedida());
+        ordenProducto.setPrecioUnitario(precioUnitario);
         ordenProducto.setSubtotal(subtotal);
         ordenProductoRepository.save(ordenProducto);
 
@@ -505,22 +487,15 @@ public class OrdenService {
             }
 
             int galones = request.getGalonesAceite() != null ? request.getGalonesAceite() : 0;
-            int cuartos = request.getCuartosAceite() != null ? request.getCuartosAceite() : 0;
 
-            if (galones < 0 || cuartos < 0 || cuartos > 3) {
-                throw new RuntimeException("La cantidad de aceite ingresada no es válida (los cuartos van de 0 a 3)");
-            }
-
-            int totalCuartos = galones * 4 + cuartos;
-
-            if (totalCuartos <= 0) {
+            if (galones <= 0) {
                 throw new RuntimeException("Debe indicar la cantidad de aceite utilizada");
             }
 
             ProductoUsadoDTO aceiteReq = new ProductoUsadoDTO();
             aceiteReq.setIdProducto(request.getIdProductoAceite());
-            aceiteReq.setCantidad(totalCuartos);
-            registrarProductoEnOrden(orden, aceiteReq, empleado, BigDecimal.valueOf(4), "Cuarto(s)");
+            aceiteReq.setCantidad(galones);
+            registrarProductoEnOrden(orden, aceiteReq, empleado);
         }
 
         if (request.getIdProductoFiltro() != null) {

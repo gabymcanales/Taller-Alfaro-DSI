@@ -30,18 +30,6 @@ const ModalDetalleOrden = ({
         return unidadMedida;
     };
 
-    const formatearCantidadProducto = (p) => {
-        if (p.unidadMedida === 'Cuarto(s)') {
-            const galones = Math.floor(p.cantidad / 4);
-            const cuartos = p.cantidad % 4;
-            if (galones > 0 && cuartos > 0) {
-                return `${galones} Gal y ${cuartos} Cuarto${cuartos > 1 ? 's' : ''}`;
-            }
-            if (galones > 0) return `${galones} Gal`;
-            return `${cuartos} Cuarto${cuartos > 1 ? 's' : ''}`;
-        }
-        return `${p.cantidad} ${obtenerUnidadSinCantidad(p.unidadMedida)}`;
-    };
 
     useEffect(() => {
         if (isOpen && ordenId) {
@@ -263,7 +251,7 @@ const ModalDetalleOrden = ({
                                         {orden.productos.map((p, i) => (
                                             <tr key={i}>
                                                 <td>{p.nombre}</td>
-                                                <td>{formatearCantidadProducto(p)}</td>
+                                                <td>{p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)}</td>
                                                 <td className="precio-col">${p.precioUnitario?.toFixed(2)}</td>
                                                 <td className="precio-col">${p.subtotal?.toFixed(2)}</td>
                                             </tr>
