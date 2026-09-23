@@ -43,13 +43,20 @@ const ExportIcon = () => (
     </svg>
 );
 
+const formatearFechaLocal = (date) => {
+    const anio = date.getFullYear();
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const dia = String(date.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+};
+
 const primerDiaDelMes = () => {
     const hoy = new Date();
-    return new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+    return formatearFechaLocal(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
 };
 
 const ReporteDiario = () => {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = formatearFechaLocal(new Date());
 
     const [fechaInicio, setFechaInicio] = useState(primerDiaDelMes());
     const [fechaFin, setFechaFin] = useState(hoy);

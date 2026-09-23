@@ -29,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,11 +71,10 @@ public class CobrosService {
         Empleado empleado = empleadoRepository.findByUsername(usernameEmpleado)
                 .orElseThrow(() -> new EmpleadoNoEncontradoException(usernameEmpleado));
 
-        // 4. Calcular total final de la orden (suma de servicios)
-        BigDecimal totalFinal = orden.getOrdenServicios().stream()
-                .map(OrdenServicio::getPrecioAplicado)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 4. Total final de la orden (mano de obra + aceite/filtro/productos utilizados)
+        BigDecimal totalFinal = orden.getTotalCalculadoOrden() != null
+                ? orden.getTotalCalculadoOrden()
+                : BigDecimal.ZERO;
 
         // 5. Validar monto recibido
         if (request.getMontoRecibido().compareTo(totalFinal) < 0) {

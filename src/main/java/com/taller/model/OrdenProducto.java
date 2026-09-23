@@ -25,6 +25,9 @@ public class OrdenProducto {
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 
+    @Column(name = "unidad_medida", length = 20)
+    private String unidadMedida;
+
     @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precioUnitario;
 
