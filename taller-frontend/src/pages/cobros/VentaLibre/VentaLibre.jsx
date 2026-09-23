@@ -19,6 +19,8 @@ const ChangeIcon = () => (
 const VentaLibre = () => {
     const [productosDisponibles, setProductosDisponibles] = useState([]);
     const [productoSeleccionado, setProductoSeleccionado] = useState('');
+    const [busquedaProducto, setBusquedaProducto] = useState('');
+    const [showProductos, setShowProductos] = useState(false);
     const [cantidadProducto, setCantidadProducto] = useState('1');
     const [productosAgregados, setProductosAgregados] = useState([]);
 
@@ -36,6 +38,7 @@ const VentaLibre = () => {
     const [success, setSuccess] = useState(null);
 
     const buscadorRef = useRef(null);
+    const productoBuscadorRef = useRef(null);
 
     useEffect(() => {
         cargarProductos();
@@ -63,6 +66,9 @@ const VentaLibre = () => {
             if (buscadorRef.current && !buscadorRef.current.contains(event.target)) {
                 setShowClientes(false);
             }
+            if (productoBuscadorRef.current && !productoBuscadorRef.current.contains(event.target)) {
+                setShowProductos(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -87,6 +93,19 @@ const VentaLibre = () => {
     const quitarCliente = () => {
         setClienteSeleccionado(null);
         setBusquedaCliente('');
+    };
+
+    const productosFiltrados = busquedaProducto.trim().length > 0
+        ? productosDisponibles.filter(p => {
+            const query = busquedaProducto.trim().toLowerCase();
+            return p.nombre.toLowerCase().includes(query) || (p.marca || '').toLowerCase().includes(query);
+        })
+        : productosDisponibles;
+
+    const seleccionarProducto = (producto) => {
+        setProductoSeleccionado(String(producto.idProducto));
+        setBusquedaProducto(`${producto.nombre}${producto.marca ? ' - ' + producto.marca : ''}`);
+        setShowProductos(false);
     };
 
     const agregarProducto = () => {
@@ -133,6 +152,7 @@ const VentaLibre = () => {
         }
 
         setProductoSeleccionado('');
+        setBusquedaProducto('');
         setCantidadProducto('1');
         setError('');
     };
@@ -191,6 +211,7 @@ const VentaLibre = () => {
     const limpiarFormulario = () => {
         setProductosAgregados([]);
         setProductoSeleccionado('');
+        setBusquedaProducto('');
         setCantidadProducto('1');
         setBusquedaCliente('');
         setClienteSeleccionado(null);
@@ -290,17 +311,44 @@ const VentaLibre = () => {
                             <div className="field">
                                 <label>Productos</label>
                                 <div className="venta-productos-agregar">
-                                    <select
-                                        value={productoSeleccionado}
-                                        onChange={(e) => setProductoSeleccionado(e.target.value)}
-                                    >
-                                        <option value="">— Seleccione un producto —</option>
-                                        {productosDisponibles.map(p => (
-                                            <option key={p.idProducto} value={p.idProducto}>
-                                                {p.nombre} - ${Number(p.precio || 0).toFixed(2)} (Stock: {p.stockActual})
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="buscador-orden" ref={productoBuscadorRef}>
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar producto por nombre o marca"
+                                            value={busquedaProducto}
+                                            onChange={(e) => {
+                                                setBusquedaProducto(e.target.value);
+                                                setShowProductos(true);
+                                                if (!e.target.value) setProductoSeleccionado('');
+                                            }}
+                                            onFocus={() => setShowProductos(true)}
+                                        />
+                                        {showProductos && productosFiltrados.length > 0 && (
+                                            <div className="resultados-ordenes">
+                                                {productosFiltrados.map(p => (
+                                                    <div
+                                                        key={p.idProducto}
+                                                        className="resultado-orden"
+                                                        onClick={() => seleccionarProducto(p)}
+                                                    >
+                                                        <div className="orden-info">
+                                                            <span className="orden-cliente">
+                                                                {p.nombre}{p.marca ? ` - ${p.marca}` : ''}
+                                                            </span>
+                                                        </div>
+                                                        <span className="orden-monto">
+                                                            ${Number(p.precio || 0).toFixed(2)} · Stock: {p.stockActual}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {showProductos && productosFiltrados.length === 0 && (
+                                            <div className="resultados-ordenes sin-resultados">
+                                                <span>No se encontraron productos</span>
+                                            </div>
+                                        )}
+                                    </div>
                                     <input
                                         type="number"
                                         min="1"
