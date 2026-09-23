@@ -150,7 +150,7 @@ public class OrdenService {
 
     private BigDecimal registrarProductoEnOrden(Orden orden, ProductoUsadoDTO productoReq,
             Empleado empleado) {
-        return registrarProductoEnOrden(orden, productoReq, empleado, BigDecimal.ONE);
+        return registrarProductoEnOrden(orden, productoReq, empleado, BigDecimal.ONE, null);
     }
 
     /**
@@ -159,9 +159,13 @@ public class OrdenService {
      * por galón pero la cantidad se maneja en cuartos (1 galón = 4 cuartos), así que aquí vale 4.
      * Para el resto de productos (filtro, productos generales) la cantidad ya es la unidad de
      * precio, así que vale 1.
+     *
+     * unidadMedidaCantidad: la unidad en la que realmente está expresada "cantidad" (ej. "Cuarto"
+     * cuando se maneja en cuartos), para no mostrarla luego con la unidad de empaque del producto
+     * (ej. "Gal"). Si es null, se usa la unidad registrada del producto.
      */
     private BigDecimal registrarProductoEnOrden(Orden orden, ProductoUsadoDTO productoReq,
-            Empleado empleado, BigDecimal unidadesPorCantidad) {
+            Empleado empleado, BigDecimal unidadesPorCantidad, String unidadMedidaCantidad) {
 
         if (productoReq.getIdProducto() == null) {
             throw new RuntimeException("Debe seleccionar un producto");
@@ -194,6 +198,7 @@ public class OrdenService {
         ordenProducto.setOrden(orden);
         ordenProducto.setProducto(producto);
         ordenProducto.setCantidad(productoReq.getCantidad());
+        ordenProducto.setUnidadMedida(unidadMedidaCantidad != null ? unidadMedidaCantidad : producto.getUnidadMedida());
         ordenProducto.setPrecioUnitario(precioUnitarioEfectivo);
         ordenProducto.setSubtotal(subtotal);
         ordenProductoRepository.save(ordenProducto);
@@ -515,7 +520,7 @@ public class OrdenService {
             ProductoUsadoDTO aceiteReq = new ProductoUsadoDTO();
             aceiteReq.setIdProducto(request.getIdProductoAceite());
             aceiteReq.setCantidad(totalCuartos);
-            registrarProductoEnOrden(orden, aceiteReq, empleado, BigDecimal.valueOf(4));
+            registrarProductoEnOrden(orden, aceiteReq, empleado, BigDecimal.valueOf(4), "Cuarto(s)");
         }
 
         if (request.getIdProductoFiltro() != null) {
@@ -889,7 +894,7 @@ public class OrdenService {
         OrdenProductoDTO dto = new OrdenProductoDTO();
         dto.setIdProducto(op.getProducto().getIdProducto());
         dto.setNombre(op.getProducto().getNombre());
-        dto.setUnidadMedida(op.getProducto().getUnidadMedida());
+        dto.setUnidadMedida(op.getUnidadMedida() != null ? op.getUnidadMedida() : op.getProducto().getUnidadMedida());
         dto.setCantidad(op.getCantidad());
         dto.setPrecioUnitario(op.getPrecioUnitario());
         dto.setSubtotal(op.getSubtotal());
