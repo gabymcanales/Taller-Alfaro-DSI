@@ -14,7 +14,6 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
     const [manoDeObraGratis, setManoDeObraGratis] = useState('');
     const [idProductoAceite, setIdProductoAceite] = useState('');
     const [galonesAceite, setGalonesAceite] = useState('');
-    const [cuartosAceite, setCuartosAceite] = useState('0');
     const [idProductoFiltro, setIdProductoFiltro] = useState('');
 
     const [productosDisponibles, setProductosDisponibles] = useState([]);
@@ -44,7 +43,6 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
             setManoDeObraGratis('');
             setIdProductoAceite('');
             setGalonesAceite('');
-            setCuartosAceite('0');
             setIdProductoFiltro('');
         }
     }, [isOpen, esCambioAceite, servicio?.estadoServicioOrden, servicio?.tipoPrecio]);
@@ -207,8 +205,8 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
     const gratisSeleccionado = manoDeObraGratis === 'SI';
     const aceiteSeleccionado = aceites.find(p => p.idProducto === parseInt(idProductoAceite));
     const filtroSeleccionado = filtros.find(p => p.idProducto === parseInt(idProductoFiltro));
-    const totalCuartosAceite = (parseInt(galonesAceite, 10) || 0) * 4 + (parseInt(cuartosAceite, 10) || 0);
-    const costoAceite = gratisSeleccionado && aceiteSeleccionado ? (totalCuartosAceite / 4) * Number(aceiteSeleccionado.precio || 0) : 0;
+    const cantidadGalonesAceite = parseInt(galonesAceite, 10) || 0;
+    const costoAceite = gratisSeleccionado && aceiteSeleccionado ? cantidadGalonesAceite * Number(aceiteSeleccionado.precio || 0) : 0;
     const costoFiltro = filtroSeleccionado ? Number(filtroSeleccionado.precio || 0) : 0;
     const totalProductosGenerales = productosAUsar.reduce((sum, p) => sum + (p.subtotal || 0), 0);
     const precioManoDeObra = gratisSeleccionado ? 0 : Number(servicio.precioAplicado || 0);
@@ -235,7 +233,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                     setError('Seleccione el aceite utilizado');
                     return;
                 }
-                if (totalCuartosAceite <= 0) {
+                if (cantidadGalonesAceite <= 0) {
                     setError('Indique la cantidad de aceite utilizada');
                     return;
                 }
@@ -261,8 +259,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                     payload.manoDeObraGratis = gratisSeleccionado;
                     if (gratisSeleccionado) {
                         payload.idProductoAceite = Number(idProductoAceite);
-                        payload.galonesAceite = parseInt(galonesAceite, 10) || 0;
-                        payload.cuartosAceite = parseInt(cuartosAceite, 10) || 0;
+                        payload.galonesAceite = cantidadGalonesAceite;
                     }
                     if (idProductoFiltro) {
                         payload.idProductoFiltro = Number(idProductoFiltro);
@@ -402,29 +399,15 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                                         </select>
                                     </div>
 
-                                    <div className="avanzar-cantidad-aceite">
-                                        <div className="avanzar-comentario">
-                                            <label>Galones</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={galonesAceite}
-                                                onChange={(e) => setGalonesAceite(e.target.value)}
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <div className="avanzar-comentario">
-                                            <label>Cuartos</label>
-                                            <select
-                                                value={cuartosAceite}
-                                                onChange={(e) => setCuartosAceite(e.target.value)}
-                                            >
-                                                <option value="0">0</option>
-                                                <option value="1">1</option>
-                                                <option value="2">2</option>
-                                                <option value="3">3</option>
-                                            </select>
-                                        </div>
+                                    <div className="avanzar-comentario">
+                                        <label>Galones</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={galonesAceite}
+                                            onChange={(e) => setGalonesAceite(e.target.value)}
+                                            placeholder="0"
+                                        />
                                     </div>
                                 </>
                             )}
@@ -447,7 +430,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                             <p className="precio-note">
                                 <BulbIcon />
                                 {gratisSeleccionado
-                                    ? 'Indica exactamente cuánto aceite se usó (4 cuartos = 1 galón). El filtro es opcional; si lo seleccionas, también se descuenta y se cobra.'
+                                    ? 'Indica cuántos galones de aceite se usaron. El filtro es opcional; si lo seleccionas, también se descuenta y se cobra.'
                                     : 'El cliente trajo su propio aceite, no se descuenta del inventario del taller. El filtro es opcional; si lo seleccionas, se descuenta y se cobra.'}
                             </p>
                         </div>

@@ -291,13 +291,6 @@
     margin-bottom: 0;
 }
 
-.avanzar-cantidad-aceite {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
 /* ========== MANO DE OBRA GRATIS ========== */
 .avanzar-mano-obra {
     margin: 16px 0;

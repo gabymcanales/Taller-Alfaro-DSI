@@ -53,18 +53,6 @@ const RegistrarCobro = () => {
         return unidadMedida;
     };
 
-    const formatearCantidadProducto = (p) => {
-        if (p.unidadMedida === 'Cuarto(s)') {
-            const galones = Math.floor(p.cantidad / 4);
-            const cuartos = p.cantidad % 4;
-            if (galones > 0 && cuartos > 0) {
-                return `${galones} Gal y ${cuartos} Cuarto${cuartos > 1 ? 's' : ''}`;
-            }
-            if (galones > 0) return `${galones} Gal`;
-            return `${cuartos} Cuarto${cuartos > 1 ? 's' : ''}`;
-        }
-        return `${p.cantidad} ${obtenerUnidadSinCantidad(p.unidadMedida)}`;
-    };
 
     useEffect(() => {
         cargarOrdenesFinalizadas();
@@ -367,7 +355,7 @@ const RegistrarCobro = () => {
                                                 {ordenDetalle.productos.map((p, index) => (
                                                     <div key={index} className="servicio-item">
                                                         <span className="servicio-nombre">
-                                                            {p.nombre} - {formatearCantidadProducto(p)} — ${Number(p.subtotal).toFixed(2)}
+                                                            {p.nombre} - {p.cantidad} {obtenerUnidadSinCantidad(p.unidadMedida)} — ${Number(p.subtotal).toFixed(2)}
                                                         </span>
                                                     </div>
                                                 ))}
