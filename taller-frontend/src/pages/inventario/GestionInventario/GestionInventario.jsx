@@ -846,10 +846,12 @@ const GestionInventario = () => {
                                             unidadMedida: e.target.value
                                         })
                                     }
+                                    style={{ color: nuevoProducto.unidadMedida ? '#fff' : '#888' }}
                                 >
-                                    <option value="">Unidad</option>
+                                    <option value="">Seleccionar</option>
                                     <option value="mL">mL</option>
                                     <option value="L">L</option>
+                                    <option value="Cuarto">Cuarto</option>
                                     <option value="Gal">Gal</option>
                                     <option value="g">g</option>
                                     <option value="kg">kg</option>
