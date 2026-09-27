@@ -34,6 +34,7 @@ const RegistrarCobro = () => {
 
     const [cambio, setCambio] = useState(null);
     const [error, setError] = useState('');
+    const [errorMonto, setErrorMonto] = useState('');
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showModalExito, setShowModalExito] = useState(false);
@@ -104,6 +105,7 @@ const RegistrarCobro = () => {
             setOrdenDetalle(null);
             setCambio(null);
             setError('');
+            setErrorMonto('');
             setOrdenesFiltradas(ordenes);
             return;
         }
@@ -124,6 +126,7 @@ const RegistrarCobro = () => {
         setFormData(prev => ({ ...prev, idOrden: orden.idOrden }));
         setShowOrdenes(false);
         setError('');
+        setErrorMonto('');
         setCambio(null);
 
         try {
@@ -142,19 +145,30 @@ const RegistrarCobro = () => {
             if (value === '') {
                 setFormData(prev => ({ ...prev, [name]: value }));
                 setCambio(null);
+                setErrorMonto('El monto recibido es obligatorio');
                 return;
             }
 
             const numValue = parseFloat(value);
-            if (!isNaN(numValue) && numValue <= 0) {
+            const total = ordenDetalle?.totalCalculadoOrden || 0;
+
+            if (isNaN(numValue) || numValue <= 0) {
+                setErrorMonto('Ingrese un monto válido mayor a 0');
+                setFormData(prev => ({ ...prev, [name]: value }));
+                setCambio(null);
                 return;
+            }
+
+            if (numValue < total) {
+                setErrorMonto(`El monto no puede ser menor al total ($${total.toFixed(2)})`);
+            } else {
+                setErrorMonto('');
             }
 
             setFormData(prev => ({ ...prev, [name]: value }));
             setError('');
 
-            const total = ordenDetalle?.totalCalculadoOrden || 0;
-            if (!isNaN(total) && !isNaN(numValue) && numValue >= total && numValue > 0) {
+            if (numValue >= total && numValue > 0) {
                 setCambio(numValue - total);
             } else {
                 setCambio(null);
@@ -170,18 +184,25 @@ const RegistrarCobro = () => {
             return;
         }
 
+        if (!formData.montoRecibido || formData.montoRecibido.toString().trim() === '') {
+            setErrorMonto('El monto recibido es obligatorio');
+            return;
+        }
+
         const recibido = parseFloat(formData.montoRecibido);
         const total = ordenDetalle?.totalCalculadoOrden || 0;
 
         if (isNaN(recibido) || recibido <= 0) {
-            setError('Ingrese un monto recibido válido (mayor a 0)');
+            setErrorMonto('Ingrese un monto recibido válido (mayor a 0)');
             return;
         }
 
         if (recibido < total) {
-            setError('El monto recibido no puede ser menor al total a pagar');
+            setErrorMonto(`El monto no puede ser menor al total ($${total.toFixed(2)})`);
             return;
         }
+
+        setErrorMonto('');
 
         setPendingData({
             idOrden: parseInt(formData.idOrden),
@@ -230,6 +251,7 @@ const RegistrarCobro = () => {
             setFormData({ idOrden: '', montoRecibido: '' });
             setOrdenDetalle(null);
             setCambio(null);
+            setErrorMonto('');
             setPendingData(null);
             setBusquedaOrden('');
             setOrdenesFiltradas(ordenes);
@@ -248,6 +270,7 @@ const RegistrarCobro = () => {
         setOrdenDetalle(null);
         setCambio(null);
         setError('');
+        setErrorMonto('');
         setSuccess(null);
         setBusquedaOrden('');
         setOrdenesFiltradas(ordenes);
@@ -389,7 +412,9 @@ const RegistrarCobro = () => {
                                     min="0.01"
                                     required
                                     disabled={!formData.idOrden}
+                                    className={errorMonto ? 'input-error' : ''}
                                 />
+                                {errorMonto && <span className="error-msg">{errorMonto}</span>}
                             </div>
 
                             {ordenDetalle && ordenDetalle.ordenServicios?.length > 0 && (

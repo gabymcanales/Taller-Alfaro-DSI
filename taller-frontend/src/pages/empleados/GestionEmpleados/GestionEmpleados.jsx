@@ -11,14 +11,6 @@ import { FaEdit, FaBan, FaCheckCircle, FaEye, FaEyeSlash } from 'react-icons/fa'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const EMPLEADO_VACIO = {
-    nombreEmpleado: '',
-    username: '',
-    password: '',
-    rolEmpleado: 'EMPLEADO',
-    servicioIds: []
-};
-
 const GestionEmpleados = () => {
     const [empleados, setEmpleados] = useState([]);
     const [servicios, setServicios] = useState([]);
@@ -27,8 +19,16 @@ const GestionEmpleados = () => {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [modoEdicion, setModoEdicion] = useState(false);
     const [idEditar, setIdEditar] = useState(null);
-    const [nuevoEmpleado, setNuevoEmpleado] = useState(EMPLEADO_VACIO);
     const [mostrarPassword, setMostrarPassword] = useState(false);
+    const [errores, setErrores] = useState({});
+
+    const [nuevoEmpleado, setNuevoEmpleado] = useState({
+        nombreEmpleado: '',
+        username: '',
+        password: '',
+        rolEmpleado: 'EMPLEADO',
+        servicioIds: []
+    });
 
     const [mostrarConfirmEstado, setMostrarConfirmEstado] = useState(false);
     const [empleadoEstado, setEmpleadoEstado] = useState(null);
@@ -50,12 +50,38 @@ const GestionEmpleados = () => {
         }
     };
 
+    const abrirModalNuevo = () => {
+        setModoEdicion(false);
+        setIdEditar(null);
+        setNuevoEmpleado({
+            nombreEmpleado: '',
+            username: '',
+            password: '',
+            rolEmpleado: 'EMPLEADO',
+            servicioIds: []
+        });
+        setMostrarPassword(false);
+        setErrores({});
+        setMostrarModal(true);
+
+        setTimeout(() => {
+            setNuevoEmpleado(prev => ({ ...prev, password: '', username: '' }));
+        }, 100);
+    };
+
     const cerrarModal = () => {
         setMostrarModal(false);
         setModoEdicion(false);
         setIdEditar(null);
-        setNuevoEmpleado(EMPLEADO_VACIO);
+        setNuevoEmpleado({
+            nombreEmpleado: '',
+            username: '',
+            password: '',
+            rolEmpleado: 'EMPLEADO',
+            servicioIds: []
+        });
         setMostrarPassword(false);
+        setErrores({});
     };
 
     const toggleServicio = (idServicio) => {
@@ -70,16 +96,53 @@ const GestionEmpleados = () => {
         });
     };
 
+    const validarFormulario = () => {
+        const nuevosErrores = {};
+
+        if (!nuevoEmpleado.nombreEmpleado.trim()) {
+            nuevosErrores.nombreEmpleado = 'El nombre es obligatorio';
+        }
+
+        if (!nuevoEmpleado.username.trim()) {
+            nuevosErrores.username = 'El usuario es obligatorio';
+        }
+
+        if (!modoEdicion || nuevoEmpleado.password) {
+            const password = nuevoEmpleado.password;
+
+            if (!modoEdicion && !password) {
+                nuevosErrores.password = 'La contraseña es obligatoria';
+            } else if (password) {
+                if (password.length < 8) {
+                    nuevosErrores.password = 'Debe tener al menos 8 caracteres';
+                } else if (!/[A-Z]/.test(password)) {
+                    nuevosErrores.password = 'Debe contener al menos una letra mayúscula';
+                } else if (!/[0-9]/.test(password)) {
+                    nuevosErrores.password = 'Debe contener al menos un número';
+                } else if (!/[!@#$%^&*(),.?":{}|<>_\-+=;'\[\]\\\/~`]/.test(password)) {
+                    nuevosErrores.password = 'Debe contener al menos un carácter especial';
+                }
+            }
+        }
+
+        if (!nuevoEmpleado.rolEmpleado) {
+            nuevosErrores.rolEmpleado = 'El rol es obligatorio';
+        }
+
+        return nuevosErrores;
+    };
+
     const guardarEmpleado = async () => {
         try {
-            if (!nuevoEmpleado.nombreEmpleado || !nuevoEmpleado.username || !nuevoEmpleado.rolEmpleado) {
-                toast.error('Complete todos los campos obligatorios');
+            const nuevosErrores = validarFormulario();
+
+            if (Object.keys(nuevosErrores).length > 0) {
+                setErrores(nuevosErrores);
+                toast.error('Corrige los campos marcados');
                 return;
             }
-            if (!modoEdicion && !nuevoEmpleado.password) {
-                toast.error('La contraseña es obligatoria para un nuevo empleado');
-                return;
-            }
+
+            setErrores({});
 
             const datosEmpleado = {
                 nombreEmpleado: nuevoEmpleado.nombreEmpleado,
@@ -115,6 +178,8 @@ const GestionEmpleados = () => {
             rolEmpleado: empleado.rolEmpleado,
             servicioIds: empleado.servicios?.map(s => s.idServicio) || []
         });
+        setErrores({});
+        setMostrarPassword(false);
         setMostrarModal(true);
     };
 
@@ -149,7 +214,7 @@ const GestionEmpleados = () => {
                     <h1>Gestión de Empleados</h1>
                     <p>Administra los usuarios que tienen acceso al sistema</p>
                 </div>
-                <button className="btn-nuevo" onClick={() => setMostrarModal(true)}>
+                <button className="btn-nuevo" onClick={abrirModalNuevo}>
                     + Nuevo Empleado
                 </button>
             </div>
@@ -211,22 +276,37 @@ const GestionEmpleados = () => {
                 <div className="modal-overlay">
                     <div className="modal-empleado">
                         <h2>{modoEdicion ? 'Editar Empleado' : 'Nuevo Empleado'}</h2>
+
                         <div className="form-field">
                             <label>Nombre completo</label>
                             <input
                                 placeholder="Nombre completo"
                                 value={nuevoEmpleado.nombreEmpleado}
-                                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, nombreEmpleado: e.target.value })}
+                                onChange={(e) => {
+                                    setNuevoEmpleado({ ...nuevoEmpleado, nombreEmpleado: e.target.value });
+                                    if (errores.nombreEmpleado) setErrores({ ...errores, nombreEmpleado: null });
+                                }}
+                                className={errores.nombreEmpleado ? 'input-error' : ''}
+                                autoComplete="off"
                             />
+                            {errores.nombreEmpleado && <span className="error-msg">{errores.nombreEmpleado}</span>}
                         </div>
+
                         <div className="form-field">
                             <label>Usuario</label>
                             <input
                                 placeholder="Usuario"
                                 value={nuevoEmpleado.username}
-                                onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, username: e.target.value })}
+                                onChange={(e) => {
+                                    setNuevoEmpleado({ ...nuevoEmpleado, username: e.target.value });
+                                    if (errores.username) setErrores({ ...errores, username: null });
+                                }}
+                                className={errores.username ? 'input-error' : ''}
+                                autoComplete="off"
                             />
+                            {errores.username && <span className="error-msg">{errores.username}</span>}
                         </div>
+
                         <div className="form-field">
                             <label>Contraseña</label>
                             <div className="password-field">
@@ -234,7 +314,12 @@ const GestionEmpleados = () => {
                                     type={modoEdicion || mostrarPassword ? 'text' : 'password'}
                                     placeholder={modoEdicion ? 'Nueva contraseña (dejar en blanco para no cambiar)' : 'Contraseña'}
                                     value={nuevoEmpleado.password}
-                                    onChange={(e) => setNuevoEmpleado({ ...nuevoEmpleado, password: e.target.value })}
+                                    onChange={(e) => {
+                                        setNuevoEmpleado({ ...nuevoEmpleado, password: e.target.value });
+                                        if (errores.password) setErrores({ ...errores, password: null });
+                                    }}
+                                    className={errores.password ? 'input-error' : ''}
+                                    autoComplete="new-password"
                                 />
                                 {!modoEdicion && (
                                     <span
@@ -245,7 +330,9 @@ const GestionEmpleados = () => {
                                     </span>
                                 )}
                             </div>
+                            {errores.password && <span className="error-msg">{errores.password}</span>}
                         </div>
+
                         <div className="form-field">
                             <label>Rol</label>
                             <select
