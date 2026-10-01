@@ -28,8 +28,7 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
             getProductosPorCategoria('Aceites').then(res => setAceites(res.data)).catch(() => setAceites([]));
             getProductosPorCategoria('Filtros').then(res => setFiltros(res.data)).catch(() => setFiltros([]));
         }
-        const esVariableGeneral = servicio?.tipoPrecio === 'VARIABLE' && !esCambioAceite;
-        if (isOpen && servicio?.estadoServicioOrden === 'EN_PROCESO' && !esVariableGeneral) {
+        if (isOpen && servicio?.estadoServicioOrden === 'EN_PROCESO') {
             getProductosDisponibles().then(res => setProductosDisponibles(res.data || [])).catch(() => setProductosDisponibles([]));
         }
         if (isOpen) {
@@ -448,8 +447,8 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                         </div>
                     )}
 
-                    {/* Productos utilizados (solo al finalizar; no aplica a servicios Variable + General) */}
-                    {estadoSeleccionado === 'FINALIZADO' && !(esVariable && !esCambioAceite) && (
+                    {/* Productos utilizados (solo al finalizar) */}
+                    {estadoSeleccionado === 'FINALIZADO' && (
                         <div className="avanzar-productos">
                             <label>Productos utilizados (opcional)</label>
                             <p className="precio-note" style={{ marginBottom: '8px' }}>
