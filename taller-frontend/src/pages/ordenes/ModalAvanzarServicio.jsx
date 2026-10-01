@@ -209,8 +209,20 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
     const costoAceite = gratisSeleccionado && aceiteSeleccionado ? cantidadGalonesAceite * Number(aceiteSeleccionado.precio || 0) : 0;
     const costoFiltro = filtroSeleccionado ? Number(filtroSeleccionado.precio || 0) : 0;
     const totalProductosGenerales = productosAUsar.reduce((sum, p) => sum + (p.subtotal || 0), 0);
-    const precioManoDeObra = gratisSeleccionado ? 0 : Number(servicio.precioAplicado || 0);
+    const precioManoDeObra = esCambioAceite
+        ? (gratisSeleccionado ? 0 : Number(servicio.precioAplicado || 0))
+        : esVariable
+            ? (parseFloat(precioFinal) || 0)
+            : Number(servicio.precioAplicado || 0);
     const precioFinalCalculado = precioManoDeObra + costoAceite + costoFiltro + totalProductosGenerales;
+
+    const notaTotal = esCambioAceite
+        ? (gratisSeleccionado
+            ? 'Mano de obra gratis — se cobra el aceite, el filtro y los productos utilizados.'
+            : 'Se cobra la mano de obra más el filtro y los productos utilizados (el aceite lo trajo el cliente).')
+        : esVariable
+            ? 'Precio definido manualmente para este servicio variable.'
+            : 'Incluye el precio del servicio más los productos utilizados.';
 
     const handleSubmit = async () => {
         if (!estadoSeleccionado) {
@@ -513,19 +525,17 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                         </div>
                     )}
 
-                    {/* Precio final calculado (cambio de aceite, al final) */}
-                    {esCambioAceite && estadoSeleccionado === 'FINALIZADO' && manoDeObraGratis && (
+                    {/* Total a pagar (suma precio del servicio + aceite/filtro + productos, para todos los casos) */}
+                    {estadoSeleccionado === 'FINALIZADO' && (!esCambioAceite || manoDeObraGratis) && (
                         <div className="avanzar-precio">
-                            <label>Precio final del servicio</label>
+                            <label>Total a pagar</label>
                             <div className="precio-input-wrapper precio-calculado">
                                 <span className="precio-simbolo">$</span>
                                 <span className="precio-calculado-valor">{precioFinalCalculado.toFixed(2)}</span>
                             </div>
                             <p className="precio-note">
                                 <BulbIcon />
-                                {gratisSeleccionado
-                                    ? 'Mano de obra gratis — se cobra el aceite, el filtro y los productos utilizados.'
-                                    : 'Se cobra la mano de obra más el filtro y los productos utilizados (el aceite lo trajo el cliente).'}
+                                {notaTotal}
                             </p>
                         </div>
                     )}

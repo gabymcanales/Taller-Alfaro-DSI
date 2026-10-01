@@ -69,7 +69,7 @@ public class VehiculoController {
         stats.put("totalVehiculos", vehiculoService.getTotalVehiculos());
         stats.put("totalClientes", vehiculoService.getTotalClientesConVehiculos());
         stats.put("nuevosEsteMes", 0);
-        stats.put("ordenesActivas", 0);
+        stats.put("ordenesActivas", vehiculoService.getOrdenesActivas());
         return ResponseEntity.ok(stats);
     }
 }
