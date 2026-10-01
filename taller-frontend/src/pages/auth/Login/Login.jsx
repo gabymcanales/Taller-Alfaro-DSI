@@ -29,16 +29,18 @@ const Login = () => {
         setMensajeSesion('');
 
         try {
-            const response = await axiosInstance.post('/auth/login', { username, password });
+            const response = await axiosInstance.post('/auth/login', {
+                username: username.trim(),
+                password: password.trim(),
+            });
             const { token } = response.data;
-            
-            
+
             localStorage.setItem('token', token);
-            localStorage.setItem('username', username);
-            
-            
+            localStorage.setItem('username', username.trim());
+
             navigate('/');
-        } catch {
+        } catch (err) {
+            console.error(err);
             setError('Usuario o contraseña incorrectos');
         } finally {
             setLoading(false);
@@ -50,23 +52,35 @@ const Login = () => {
             <div className="login-card">
                 <h1>Taller Alfaro</h1>
                 <p>Sistema de Gestión</p>
-                
+
                 <form onSubmit={handleSubmit}>
                     {mensajeSesion && <div className="info">{mensajeSesion}</div>}
+
                     <div className="form-field">
                         <label>Usuario</label>
                         <input
                             type="text"
+                            name="username"
+                            autoComplete="username"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck="false"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
+
                     <div className="form-field">
                         <label>Contraseña</label>
                         <div className="password-field">
                             <input
                                 type={mostrarPassword ? 'text' : 'password'}
+                                name="password"
+                                autoComplete="current-password"
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                                spellCheck="false"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
@@ -79,7 +93,9 @@ const Login = () => {
                             </span>
                         </div>
                     </div>
+
                     {error && <div className="error">{error}</div>}
+
                     <button type="submit" disabled={loading}>
                         {loading ? 'Cargando...' : 'Iniciar Sesión'}
                     </button>

@@ -413,3 +413,15 @@
     color: #888;
     font-size: 13px;
 }
+
+.input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+}
+
+.error-msg {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}

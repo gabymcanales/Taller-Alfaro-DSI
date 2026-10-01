@@ -8,7 +8,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")  
 public class AuthController {
 
     private final AuthService authService;
@@ -17,8 +16,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String token = authService.login(
                 body.get("username"),
-                body.get("password")
-        );
+                body.get("password"));
         return ResponseEntity.ok(Map.of("token", token));
     }
 }
