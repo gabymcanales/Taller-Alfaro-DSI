@@ -189,4 +189,8 @@ public class VehiculoService {
                 .distinct()
                 .count();
     }
+
+    public long getOrdenesActivas() {
+        return ordenRepository.countByEstadoIn(List.of("PENDIENTE", "EN_PROCESO"));
+    }
 }
