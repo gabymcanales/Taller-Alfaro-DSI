@@ -71,7 +71,8 @@ public class CobrosService {
         Empleado empleado = empleadoRepository.findByUsername(usernameEmpleado)
                 .orElseThrow(() -> new EmpleadoNoEncontradoException(usernameEmpleado));
 
-        // 4. Total final de la orden (mano de obra + aceite/filtro/productos utilizados)
+        // 4. Total final de la orden (mano de obra + aceite/filtro/productos
+        // utilizados)
         BigDecimal totalFinal = orden.getTotalCalculadoOrden() != null
                 ? orden.getTotalCalculadoOrden()
                 : BigDecimal.ZERO;
@@ -98,9 +99,7 @@ public class CobrosService {
         orden.setEstadoOrden("ENTREGADO");
         orden = ordenRepository.save(orden);
 
-        // 8. Registrar en historial
-
-        // 9. Retornar respuesta
+        // 8. Retornar respuesta
         RegistroCobroResponse response = new RegistroCobroResponse();
         response.setOrdenId(orden.getIdOrden());
         response.setNumOrden(orden.getNumOrden());
@@ -284,12 +283,7 @@ public class CobrosService {
     }
 
     private String descripcionProductosVenta(VentaLibre venta) {
-        if (venta == null || venta.getDetalles() == null || venta.getDetalles().isEmpty()) {
-            return "Venta libre";
-        }
-        return venta.getDetalles().stream()
-                .map(d -> d.getProducto().getNombre() + " x" + d.getCantidad())
-                .collect(Collectors.joining(", "));
+        return "Venta Libre";
     }
 
     public List<Cliente> buscarClientesPorNombre(String nombre) {
