@@ -1,38 +1,22 @@
+import { exportarTablaExcel } from './exportarReporteExcel';
 import './ModalListaReporte.css';
-
-const exportarCSV = (columnas, filas, nombreArchivo) => {
-    const encabezado = columnas.map(c => `"${c.header}"`).join(',');
-    const cuerpo = filas
-        .map(fila => columnas.map(c => `"${String(fila[c.key] ?? '').replace(/"/g, '""')}"`).join(','))
-        .join('\n');
-    const csv = `${encabezado}\n${cuerpo}`;
-
-    const bom = String.fromCharCode(0xFEFF);
-    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = nombreArchivo;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-};
 
 const CONFIG = {
     ingresos: {
         titulo: 'Transacciones del Período',
+        nombreHoja: 'Ingresos',
         columnas: [
             { key: 'numOrden', header: 'N° Orden' },
             { key: 'nombreCliente', header: 'Cliente' },
-            { key: 'montoTotal', header: 'Monto Total' },
-            { key: 'montoRecibido', header: 'Recibido' },
-            { key: 'cambio', header: 'Cambio' },
+            { key: 'montoTotal', header: 'Monto Total', moneda: true },
+            { key: 'montoRecibido', header: 'Recibido', moneda: true },
+            { key: 'cambio', header: 'Cambio', moneda: true },
             { key: 'hora', header: 'Hora' }
         ]
     },
     ordenes: {
         titulo: 'Órdenes del Período',
+        nombreHoja: 'Órdenes',
         columnas: [
             { key: 'numOrden', header: 'N° Orden' },
             { key: 'nombreCliente', header: 'Cliente' },
@@ -41,10 +25,11 @@ const CONFIG = {
     },
     servicios: {
         titulo: 'Servicios Realizados en el Período',
+        nombreHoja: 'Servicios',
         columnas: [
             { key: 'nombreServicio', header: 'Servicio' },
-            { key: 'cantidadSolicitado', header: 'Veces solicitado' },
-            { key: 'totalIngresos', header: 'Ingresos generados' }
+            { key: 'cantidadSolicitado', header: 'Veces solicitado', numero: true },
+            { key: 'totalIngresos', header: 'Ingresos generados', moneda: true }
         ]
     }
 };
@@ -56,8 +41,20 @@ const ModalListaReporte = ({ tipo, transacciones, ranking, fechaInicio, fechaFin
         ? ranking
         : (transacciones || []).map(t => ({ ...t, hora: t.fechaHoraTransaccion?.substring(11, 16) }));
 
-    const handleExportar = () => {
-        exportarCSV(config.columnas, filas, `${tipo}_${fechaInicio}_a_${fechaFin}.csv`);
+    const handleExportar = async () => {
+        try {
+            await exportarTablaExcel({
+                titulo: config.titulo,
+                nombreHoja: config.nombreHoja,
+                fechaInicio,
+                fechaFin,
+                columnas: config.columnas,
+                filas,
+                nombreArchivo: `${tipo}_${fechaInicio}_a_${fechaFin}.xlsx`
+            });
+        } catch (error) {
+            console.error('Error al exportar a Excel', error);
+        }
     };
 
     return (

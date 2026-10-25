@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getHistorial } from '../../../services/cobroService';
 import CobrosTabs from '../../../components/common/CobrosTabs/CobrosTabs';
 import Pagination from '../../../components/common/Pagination/Pagination';
+import ModalDetalleTransaccion from './ModalDetalleTransaccion';
 import './Historial.css';
 
 const SearchIcon = () => (
@@ -74,6 +75,7 @@ const Historial = () => {
         fechaHasta: ''
     });
     const [currentPage, setCurrentPage] = useState(1);
+    const [transaccionDetalleId, setTransaccionDetalleId] = useState(null);
 
     const cargarHistorial = async () => {
         try {
@@ -220,12 +222,13 @@ const Historial = () => {
                                 <th>Cliente</th>
                                 <th>Monto</th>
                                 <th>Empleado</th>
+                                <th>Detalle</th>
                             </tr>
                         </thead>
                         <tbody>
                             {currentData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="no-data">
+                                    <td colSpan="8" className="no-data">
                                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1" style={{ marginBottom: '16px' }}>
                                             <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
                                             <path d="M21 21l-6 -6" />
@@ -235,7 +238,7 @@ const Historial = () => {
                                 </tr>
                             ) : (
                                 currentData.map((t, index) => (
-                                    <tr key={index}>
+                                    <tr key={t.idTransaccion ?? index}>
                                         <td style={{ color: '#a0a0a0' }}>{t.fecha}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.hora}</td>
                                         <td className="order-highlight">{t.numOrden}</td>
@@ -243,6 +246,14 @@ const Historial = () => {
                                         <td style={{ color: '#fff' }}>{t.clienteNombre || '—'}</td>
                                         <td className="monto-highlight">${t.monto.toFixed(2)}</td>
                                         <td style={{ color: '#a0a0a0' }}>{t.empleadoUsername}</td>
+                                        <td>
+                                            <button
+                                                className="btn-ver-transaccion"
+                                                onClick={() => setTransaccionDetalleId(t.idTransaccion)}
+                                            >
+                                                Ver
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -261,6 +272,13 @@ const Historial = () => {
                     onPageChange={setCurrentPage}
                 />
             </div>
+
+            {transaccionDetalleId && (
+                <ModalDetalleTransaccion
+                    idTransaccion={transaccionDetalleId}
+                    onClose={() => setTransaccionDetalleId(null)}
+                />
+            )}
         </div>
     );
 };

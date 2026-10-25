@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 @Data
 public class HistorialTransaccionDTO {
+    private Long idTransaccion;
     private String fecha;
     private String hora;
     private String numOrden;

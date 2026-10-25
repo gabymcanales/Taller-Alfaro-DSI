@@ -12,6 +12,10 @@ export const actualizarEmpleado = (id, data) => {
     return axiosInstance.put(`/empleados/${id}`, data);
 };
 
+export const eliminarEmpleado = (id) => {
+    return axiosInstance.delete(`/empleados/${id}`);
+};
+
 export const cambiarEstadoEmpleado = (id, activo) => {
     return axiosInstance.patch(`/empleados/${id}/estado?activo=${activo}`);
 };

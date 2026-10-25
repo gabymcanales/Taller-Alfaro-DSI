@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { iniciarServicio, finalizarServicio, getProductosPorCategoria, getProductosDisponibles } from '../../services/ordenService';
+import SelectBuscable from '../../components/common/SelectBuscable/SelectBuscable';
 import './ModalAvanzarServicio.css';
 
 const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioActualizado }) => {
@@ -397,17 +398,15 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                                 <>
                                     <div className="avanzar-comentario">
                                         <label>Aceite utilizado *</label>
-                                        <select
+                                        <SelectBuscable
                                             value={idProductoAceite}
-                                            onChange={(e) => setIdProductoAceite(e.target.value)}
-                                        >
-                                            <option value="">— Seleccione el aceite —</option>
-                                            {aceites.map(p => (
-                                                <option key={p.idProducto} value={p.idProducto}>
-                                                    {p.nombre}{p.marca ? ` - ${p.marca}` : ''} - ${Number(p.precio || 0).toFixed(2)}/galón
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={setIdProductoAceite}
+                                            placeholder="— Seleccione el aceite —"
+                                            options={aceites.map(p => ({
+                                                value: p.idProducto,
+                                                label: `${p.nombre}${p.marca ? ` - ${p.marca}` : ''} - $${Number(p.precio || 0).toFixed(2)}/galón`
+                                            }))}
+                                        />
                                     </div>
 
                                     <div className="avanzar-comentario">
@@ -425,17 +424,18 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
 
                             <div className="avanzar-comentario">
                                 <label>Filtro utilizado (opcional)</label>
-                                <select
+                                <SelectBuscable
                                     value={idProductoFiltro}
-                                    onChange={(e) => setIdProductoFiltro(e.target.value)}
-                                >
-                                    <option value="">— Ninguno —</option>
-                                    {filtros.map(p => (
-                                        <option key={p.idProducto} value={p.idProducto}>
-                                            {p.nombre}{p.marca ? ` - ${p.marca}` : ''} - ${Number(p.precio || 0).toFixed(2)}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={setIdProductoFiltro}
+                                    placeholder="— Ninguno —"
+                                    options={[
+                                        { value: '', label: '— Ninguno —' },
+                                        ...filtros.map(p => ({
+                                            value: p.idProducto,
+                                            label: `${p.nombre}${p.marca ? ` - ${p.marca}` : ''} - $${Number(p.precio || 0).toFixed(2)}`
+                                        }))
+                                    ]}
+                                />
                             </div>
 
                             <p className="precio-note">
@@ -456,17 +456,15 @@ const ModalAvanzarServicio = ({ isOpen, onClose, ordenId, servicio, onServicioAc
                             </p>
 
                             <div className="avanzar-productos-agregar">
-                                <select
+                                <SelectBuscable
                                     value={productoSeleccionado}
-                                    onChange={(e) => setProductoSeleccionado(e.target.value)}
-                                >
-                                    <option value="">— Seleccione un producto —</option>
-                                    {productosDisponibles.map(p => (
-                                        <option key={p.idProducto} value={p.idProducto}>
-                                            {p.nombre}{p.marca ? ` - ${p.marca}` : ''} - ${Number(p.precio || 0).toFixed(2)}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={setProductoSeleccionado}
+                                    placeholder="— Seleccione un producto —"
+                                    options={productosDisponibles.map(p => ({
+                                        value: p.idProducto,
+                                        label: `${p.nombre}${p.marca ? ` - ${p.marca}` : ''} - $${Number(p.precio || 0).toFixed(2)}`
+                                    }))}
+                                />
                                 <input
                                     type="number"
                                     min="1"

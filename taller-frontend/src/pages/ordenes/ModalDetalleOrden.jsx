@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getOrdenById } from '../../services/ordenService';
+import { getOrdenById, eliminarOrden } from '../../services/ordenService';
 import ModalAvanzarServicio from './ModalAvanzarServicio';
 import ModalEditarOrden from './ModalEditarOrden';
 import './ModalDetalleOrden.css';
@@ -19,6 +19,9 @@ const ModalDetalleOrden = ({
     const [showAvanzarModal, setShowAvanzarModal] = useState(false);
     const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
     const [showEditarModal, setShowEditarModal] = useState(false);
+    const [confirmarEliminar, setConfirmarEliminar] = useState(false);
+    const [eliminando, setEliminando] = useState(false);
+    const [errorEliminar, setErrorEliminar] = useState('');
     const navigate = useNavigate();
 
     const obtenerUnidadSinCantidad = (unidadMedida) => {
@@ -40,6 +43,8 @@ const ModalDetalleOrden = ({
     const cargarOrden = async () => {
         setLoading(true);
         setError('');
+        setConfirmarEliminar(false);
+        setErrorEliminar('');
         try {
             const res = await getOrdenById(ordenId);
             console.log(' Detalle orden:', res.data);
@@ -73,6 +78,24 @@ const ModalDetalleOrden = ({
 
     const isAdmin = esAdmin;
     const todosFinalizados = orden?.ordenServicios?.every(s => s.estadoServicioOrden === 'FINALIZADO');
+    // Solo se puede eliminar mientras ningún servicio haya sido iniciado
+    const puedeEliminar = orden?.estadoOrden === 'PENDIENTE' &&
+        orden?.ordenServicios?.every(s => s.estadoServicioOrden === 'PENDIENTE');
+
+    const handleEliminarOrden = async () => {
+        setEliminando(true);
+        setErrorEliminar('');
+        try {
+            await eliminarOrden(ordenId);
+            setConfirmarEliminar(false);
+            onClose();
+            if (onOrdenActualizada) onOrdenActualizada();
+        } catch (err) {
+            setErrorEliminar(err.response?.data?.mensaje || 'Error al eliminar la orden');
+        } finally {
+            setEliminando(false);
+        }
+    };
 
     const handleAvanzarServicio = (servicio) => {
         setServicioSeleccionado(servicio);
@@ -284,9 +307,41 @@ const ModalDetalleOrden = ({
                             )}
                         </div>
 
+                        {/* Confirmación de eliminación */}
+                        {confirmarEliminar && (
+                            <div className="confirmar-eliminar-orden">
+                                <span>
+                                    ¿Eliminar la orden <strong>{orden.numOrden}</strong>? Se borrarán sus servicios
+                                    asignados y su historial. Esta acción no se puede deshacer.
+                                </span>
+                                {errorEliminar && <div className="error-eliminar-orden">{errorEliminar}</div>}
+                                <div className="confirmar-eliminar-botones">
+                                    <button
+                                        className="btn-cancelar-detalle"
+                                        onClick={() => { setConfirmarEliminar(false); setErrorEliminar(''); }}
+                                        disabled={eliminando}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        className="btn-eliminar-orden"
+                                        onClick={handleEliminarOrden}
+                                        disabled={eliminando}
+                                    >
+                                        {eliminando ? 'Eliminando...' : 'Sí, eliminar'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Botones de acción */}
                         <div className="detalle-footer">
                             <button className="btn-cancelar-detalle" onClick={onClose}>Cerrar</button>
+                            {isAdmin && puedeEliminar && !confirmarEliminar && (
+                                <button className="btn-eliminar-orden" onClick={() => setConfirmarEliminar(true)}>
+                                    Eliminar orden
+                                </button>
+                            )}
                             {isAdmin && orden.estadoOrden === 'PENDIENTE' && (
                                 <button className="btn-avanzar" onClick={() => setShowEditarModal(true)}>
                                     Editar orden

@@ -5,6 +5,7 @@ import {
     getServiciosCatalogo,
     getEmpleadosPorServicio
 } from '../../services/ordenService';
+import SelectBuscable from '../../components/common/SelectBuscable/SelectBuscable';
 import './ModalNuevaOrden.css';
 
 const ModalEditarOrden = ({ isOpen, onClose, ordenId, onOrdenEditada }) => {
@@ -65,8 +66,7 @@ const ModalEditarOrden = ({ isOpen, onClose, ordenId, onOrdenEditada }) => {
         }
     };
 
-    const handleServicioChange = async (e) => {
-        const idServicio = e.target.value;
+    const handleServicioChange = async (idServicio) => {
         setServicioSeleccionado(idServicio);
         setEmpleadoSeleccionado('');
 
@@ -227,21 +227,21 @@ const ModalEditarOrden = ({ isOpen, onClose, ordenId, onOrdenEditada }) => {
                                                     <span className="servicio-variable-tag">Precio variable</span>
                                                 )}
                                             </div>
-                                            <select
-                                                className="form-select"
+                                            <SelectBuscable
                                                 style={{ maxWidth: 170, marginRight: 10 }}
                                                 value={s.idEmpleado}
-                                                onChange={(e) => cambiarEmpleadoServicio(index, e.target.value)}
-                                            >
-                                                {!empleadosDisponibles[s.idServicio]?.some(e => e.idEmpleado === s.idEmpleado) && (
-                                                    <option value={s.idEmpleado}>{s.empleadoNombre}</option>
-                                                )}
-                                                {(empleadosDisponibles[s.idServicio] || []).map(e => (
-                                                    <option key={e.idEmpleado} value={e.idEmpleado}>
-                                                        {e.nombreEmpleado}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                onChange={(idEmpleado) => cambiarEmpleadoServicio(index, idEmpleado)}
+                                                placeholder="Empleado"
+                                                options={[
+                                                    ...(!empleadosDisponibles[s.idServicio]?.some(e => e.idEmpleado === s.idEmpleado)
+                                                        ? [{ value: s.idEmpleado, label: s.empleadoNombre }]
+                                                        : []),
+                                                    ...(empleadosDisponibles[s.idServicio] || []).map(e => ({
+                                                        value: e.idEmpleado,
+                                                        label: e.nombreEmpleado
+                                                    }))
+                                                ]}
+                                            />
                                             <div className="servicio-precio">
                                                 {s.tipoPrecio === 'VARIABLE' ? (
                                                     <span className="precio-variable">Se define al finalizar</span>
@@ -262,19 +262,15 @@ const ModalEditarOrden = ({ isOpen, onClose, ordenId, onOrdenEditada }) => {
 
                                 <div className="agregar-servicio-container">
                                     <div className="agregar-servicio-row">
-                                        <select
-                                            className="form-select"
+                                        <SelectBuscable
                                             value={servicioSeleccionado}
                                             onChange={handleServicioChange}
-                                        >
-                                            <option value="">Agregar servicio del catálogo —</option>
-                                            {serviciosDisponiblesParaAgregar.map(s => (
-                                                <option key={s.idServicio} value={s.idServicio}>
-                                                    {s.nombreServicio} - {s.areaServicio}
-                                                    {s.tipoPrecio === 'VARIABLE' ? ' (Variable)' : ''}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            placeholder="Agregar servicio del catálogo —"
+                                            options={serviciosDisponiblesParaAgregar.map(s => ({
+                                                value: s.idServicio,
+                                                label: `${s.nombreServicio} - ${s.areaServicio}${s.tipoPrecio === 'VARIABLE' ? ' (Variable)' : ''}`
+                                            }))}
+                                        />
                                         <button type="button" className="btn-agregar" onClick={agregarServicio}>
                                             + Agregar
                                         </button>
@@ -283,18 +279,16 @@ const ModalEditarOrden = ({ isOpen, onClose, ordenId, onOrdenEditada }) => {
                                     {servicioSeleccionado && (
                                         <div className="empleado-selector">
                                             <label>Asignar empleado:</label>
-                                            <select
-                                                className="form-select"
+                                            <SelectBuscable
+                                                className="sin-borde"
                                                 value={empleadoSeleccionado}
-                                                onChange={(e) => setEmpleadoSeleccionado(e.target.value)}
-                                            >
-                                                <option value="">Seleccionar empleado —</option>
-                                                {empleadosParaServicio.map(e => (
-                                                    <option key={e.idEmpleado} value={e.idEmpleado}>
-                                                        {e.nombreEmpleado} - {e.rolEmpleado}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                onChange={setEmpleadoSeleccionado}
+                                                placeholder="Seleccionar empleado —"
+                                                options={empleadosParaServicio.map(e => ({
+                                                    value: e.idEmpleado,
+                                                    label: `${e.nombreEmpleado} - ${e.rolEmpleado}`
+                                                }))}
+                                            />
                                         </div>
                                     )}
                                 </div>

@@ -78,6 +78,13 @@ public class OrdenController {
         return ResponseEntity.ok(ordenService.editarOrden(id, request, username));
     }
 
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarOrden(@PathVariable Long id) {
+        ordenService.eliminarOrden(id);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/{idOrden}/servicios/{idServicio}/iniciar")
     public ResponseEntity<OrdenServicioDTO> iniciarServicio(
             @PathVariable Long idOrden,

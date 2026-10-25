@@ -41,4 +41,6 @@ public interface OrdenRepository extends JpaRepository<Orden, Long> {
   
     @Query("SELECT COUNT(o) FROM Orden o WHERE o.estadoOrden IN :estados")
     long countByEstadoIn(@Param("estados") List<String> estados);
+
+    boolean existsByEmpleado_IdEmpleado(Long idEmpleado);
 }

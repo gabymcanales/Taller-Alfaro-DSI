@@ -7,6 +7,7 @@ import com.taller.model.*;
 import com.taller.ordenes.ClienteRepository;
 import com.taller.ordenes.EmpleadoRepository;
 import com.taller.ordenes.OrdenRepository;
+import com.taller.ordenes.OrdenProductoRepository;
 import com.taller.ordenes.OrdenService;
 import com.taller.ordenes.OrdenServicioRepository;
 import com.taller.ventalibre.VentaLibreRepository;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.taller.dto.ArqueoDiarioDTO;
+import com.taller.dto.DetalleTransaccionDTO;
 import com.taller.dto.HistorialTransaccionDTO;
 
 import com.taller.dto.OrdenRequestDTO;
@@ -44,6 +46,7 @@ public class CobrosService {
     private final CierreDiarioRepository cierreDiarioRepository;
     private final OrdenService ordenService;
     private final VentaLibreRepository ventaLibreRepository;
+    private final OrdenProductoRepository ordenProductoRepository;
 
     @Transactional
     public RegistroCobroResponse registrarCobro(RegistroCobroRequest request, String usernameEmpleado) {
@@ -250,6 +253,7 @@ public class CobrosService {
     private HistorialTransaccionDTO convertirADTO(Transaccion t) {
         HistorialTransaccionDTO dto = new HistorialTransaccionDTO();
 
+        dto.setIdTransaccion(t.getIdTransaccion());
         dto.setFecha(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
 
@@ -281,6 +285,80 @@ public class CobrosService {
         dto.setEmpleadoUsername(t.getEmpleado().getUsername());
 
         return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public DetalleTransaccionDTO getDetalleTransaccion(Long idTransaccion) {
+        Transaccion t = transaccionRepository.findById(idTransaccion)
+                .orElseThrow(() -> new TransaccionNoEncontradaException(idTransaccion));
+
+        DetalleTransaccionDTO dto = new DetalleTransaccionDTO();
+        dto.setIdTransaccion(t.getIdTransaccion());
+        dto.setFecha(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        dto.setHora(t.getFechaHoraTransaccion().format(DateTimeFormatter.ofPattern("hh:mm a")));
+        dto.setEmpleadoCobro(t.getEmpleado().getNombreEmpleado());
+        dto.setMontoTotal(t.getMontoTotal());
+        dto.setMontoRecibido(t.getMontoRecibido());
+        dto.setCambio(t.getCambio());
+
+        Orden orden = t.getOrden();
+        if (orden != null) {
+            dto.setTipo("ORDEN");
+            dto.setNumero(orden.getNumOrden());
+            dto.setDescripcion(orden.getDescripcion());
+            dto.setClienteNombre(orden.getCliente().getNombreCliente());
+            dto.setClienteTelefono(orden.getCliente().getTelefonoCliente());
+
+            Vehiculo v = orden.getVehiculo();
+            if (v != null) {
+                dto.setVehiculo(v.getMarca() + " " + v.getModelo()
+                        + (v.getAnio() != null ? " " + v.getAnio() : "") + " - " + v.getPlaca());
+            }
+
+            for (OrdenServicio os : ordenServicioRepository.findByOrdenId(orden.getIdOrden())) {
+                DetalleTransaccionDTO.ServicioDetalleDTO s = new DetalleTransaccionDTO.ServicioDetalleDTO();
+                s.setNombreServicio(os.getServicio().getNombreServicio());
+                s.setEmpleado(os.getEmpleado() != null ? os.getEmpleado().getNombreEmpleado() : "Sin asignar");
+                s.setPrecio(os.getPrecioAplicado());
+                dto.getServicios().add(s);
+            }
+
+            for (OrdenProducto op : ordenProductoRepository.findByOrdenId(orden.getIdOrden())) {
+                dto.getProductos().add(convertirProductoDetalle(op.getProducto(), op.getCantidad(),
+                        op.getUnidadMedida(), op.getPrecioUnitario(), op.getSubtotal()));
+            }
+        } else {
+            VentaLibre venta = ventaLibreRepository.findByTransaccion_IdTransaccion(t.getIdTransaccion())
+                    .orElse(null);
+            dto.setTipo("VENTA_LIBRE");
+            dto.setNumero(venta != null ? venta.getNumVenta() : "Venta libre");
+            dto.setClienteNombre(venta != null && venta.getCliente() != null
+                    ? venta.getCliente().getNombreCliente()
+                    : "Venta libre (mostrador)");
+            if (venta != null && venta.getCliente() != null) {
+                dto.setClienteTelefono(venta.getCliente().getTelefonoCliente());
+            }
+
+            if (venta != null && venta.getDetalles() != null) {
+                for (DetalleVentaLibre d : venta.getDetalles()) {
+                    dto.getProductos().add(convertirProductoDetalle(d.getProducto(), d.getCantidad(),
+                            null, d.getPrecioUnitario(), d.getSubtotal()));
+                }
+            }
+        }
+
+        return dto;
+    }
+
+    private DetalleTransaccionDTO.ProductoDetalleDTO convertirProductoDetalle(Producto producto, Integer cantidad,
+            String unidadMedida, BigDecimal precioUnitario, BigDecimal subtotal) {
+        DetalleTransaccionDTO.ProductoDetalleDTO p = new DetalleTransaccionDTO.ProductoDetalleDTO();
+        p.setNombre(producto.getNombre());
+        p.setCantidad(cantidad);
+        p.setUnidadMedida(unidadMedida != null ? unidadMedida : producto.getUnidadMedida());
+        p.setPrecioUnitario(precioUnitario);
+        p.setSubtotal(subtotal);
+        return p;
     }
 
     private String descripcionProductosVenta(VentaLibre venta) {

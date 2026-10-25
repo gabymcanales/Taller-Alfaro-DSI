@@ -3,7 +3,9 @@ package com.taller.empleados;
 import com.taller.dto.EmpleadoDTO;
 import com.taller.dto.EmpleadoRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +31,12 @@ public class EmpleadoController {
     @PutMapping("/{id}")
     public EmpleadoDTO actualizar(@PathVariable Long id, @RequestBody EmpleadoRequest request) {
         return empleadoService.actualizar(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id, Authentication authentication) {
+        empleadoService.eliminar(id, authentication.getName());
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{id}/estado")

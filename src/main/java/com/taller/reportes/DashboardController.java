@@ -41,7 +41,6 @@ public class DashboardController {
         List<Map<String, Object>> ultimas = transacciones.stream()
                 .sorted((a, b) -> b.getFechaHoraTransaccion()
                         .compareTo(a.getFechaHoraTransaccion()))
-                .limit(10)
                 .map(t -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("idTransaccion", t.getIdTransaccion());
@@ -61,6 +60,12 @@ public class DashboardController {
         Map<String, Object> dashboard = new HashMap<>();
         dashboard.put("ingresosDia", ingresosDia);
         dashboard.put("totalVentasDia", transacciones.size());
+        // Al cobrar una orden se crea su transacción y pasa a ENTREGADO
+        dashboard.put("ordenesAtendidas", transacciones.stream()
+                .filter(t -> t.getOrden() != null)
+                .map(t -> t.getOrden().getIdOrden())
+                .distinct()
+                .count());
         dashboard.put("ultimasTransacciones", ultimas);
 
         return ResponseEntity.ok(dashboard);

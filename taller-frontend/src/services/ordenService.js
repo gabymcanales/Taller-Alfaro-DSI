@@ -13,6 +13,8 @@ export const crearOrden = (data) => axiosInstance.post('/ordenes', data);
 
 export const editarOrden = (idOrden, data) => axiosInstance.put(`/ordenes/${idOrden}`, data);
 
+export const eliminarOrden = (idOrden) => axiosInstance.delete(`/ordenes/${idOrden}`);
+
 export const cambiarEstadoOrden = (id, estado) =>
     axiosInstance.patch(`/ordenes/${id}/estado?estado=${estado}`);
 

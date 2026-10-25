@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.taller.dto.ArqueoDiarioDTO;
 import com.taller.dto.CobroRequest;
+import com.taller.dto.DetalleTransaccionDTO;
 import com.taller.dto.HistorialTransaccionDTO;
 import com.taller.dto.OrdenResponseDTO;
 
@@ -55,6 +56,11 @@ public class CobroController {
         List<HistorialTransaccionDTO> historial = cobrosService.getHistorialTransacciones(
                 numOrden, cliente, fechaDesde, fechaHasta);
         return ResponseEntity.ok(historial);
+    }
+
+    @GetMapping("/historial/{idTransaccion}")
+    public ResponseEntity<DetalleTransaccionDTO> getDetalleTransaccion(@PathVariable Long idTransaccion) {
+        return ResponseEntity.ok(cobrosService.getDetalleTransaccion(idTransaccion));
     }
 
     @GetMapping("/clientes")

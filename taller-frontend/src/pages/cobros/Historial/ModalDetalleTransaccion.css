@@ -1,0 +1,200 @@
+.dt-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.dt-modal {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.dt-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dt-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ff8c42;
+}
+
+.dt-tipo {
+    font-size: 12px;
+    color: #888;
+}
+
+.dt-close {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.dt-close:hover {
+    color: #fff;
+}
+
+.dt-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+}
+
+.dt-cargando,
+.dt-error {
+    padding: 24px 0;
+    text-align: center;
+    font-size: 13px;
+    color: #a0a0a0;
+}
+
+.dt-error {
+    color: #ef4444;
+}
+
+.dt-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.dt-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dt-info-item label {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.dt-info-item span {
+    font-size: 14px;
+    color: #fff;
+}
+
+.dt-info-item small {
+    font-size: 12px;
+    color: #a0a0a0;
+}
+
+.dt-descripcion {
+    margin-bottom: 20px;
+}
+
+.dt-seccion {
+    margin-bottom: 20px;
+}
+
+.dt-seccion h4 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ccc;
+}
+
+.dt-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.dt-tabla th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    padding: 8px 10px;
+    border-bottom: 1px solid #333;
+}
+
+.dt-tabla td {
+    padding: 9px 10px;
+    color: #ddd;
+    border-bottom: 1px solid #262626;
+}
+
+.dt-tabla .dt-num {
+    text-align: right;
+}
+
+.dt-vacio {
+    text-align: center;
+    color: #777 !important;
+}
+
+.dt-totales {
+    margin-left: auto;
+    max-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: #a0a0a0;
+}
+
+.dt-totales div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.dt-totales strong {
+    color: #97c459;
+    font-size: 16px;
+}
+
+.dt-footer {
+    padding: 14px 24px;
+    border-top: 1px solid #333;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-ver-transaccion {
+    background: transparent;
+    color: #ff8c42;
+    border: 1px solid #ff8c42;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.btn-ver-transaccion:hover {
+    background: rgba(255, 140, 66, 0.1);
+}
+
+@media (max-width: 600px) {
+    .dt-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dt-body {
+        padding: 16px;
+    }
+}

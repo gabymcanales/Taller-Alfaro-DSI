@@ -6,6 +6,7 @@ import {
     getEmpleadosPorServicio
 } from '../../services/ordenService';
 import { buscarClientesPorNombre } from '../../services/clienteService';
+import SelectBuscable from '../../components/common/SelectBuscable/SelectBuscable';
 import './ModalNuevaOrden.css';
 
 const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
@@ -107,8 +108,7 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
         }
     };
 
-    const handleServicioChange = async (e) => {
-        const idServicio = e.target.value;
+    const handleServicioChange = async (idServicio) => {
         setServicioSeleccionado(idServicio);
         setEmpleadoSeleccionado('');
 
@@ -316,24 +316,20 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                         {/* Vehículo */}
                         <div className="form-group">
                             <label>Vehículo *</label>
-                            <select
-                                className={`form-select ${errores.idVehiculo ? 'input-error' : ''}`}
+                            <SelectBuscable
+                                className={errores.idVehiculo ? 'input-error' : ''}
                                 value={formData.idVehiculo}
-                                onChange={(e) => {
-                                    setFormData(prev => ({ ...prev, idVehiculo: e.target.value }));
+                                onChange={(idVehiculo) => {
+                                    setFormData(prev => ({ ...prev, idVehiculo }));
                                     setErrores(prev => ({ ...prev, idVehiculo: '' }));
                                 }}
                                 disabled={!formData.idCliente}
-                            >
-                                <option value="">
-                                    {formData.idCliente ? '— Seleccionar vehículo —' : ' Primero seleccione cliente '}
-                                </option>
-                                {vehiculos.map(v => (
-                                    <option key={v.idVehiculo} value={v.idVehiculo}>
-                                        {v.marca} {v.modelo} {v.anio || ''} - {v.placa}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder={formData.idCliente ? '— Seleccionar vehículo —' : 'Primero seleccione cliente'}
+                                options={vehiculos.map(v => ({
+                                    value: v.idVehiculo,
+                                    label: `${v.marca} ${v.modelo} ${v.anio || ''} - ${v.placa}`
+                                }))}
+                            />
                             {errores.idVehiculo && <span className="error-msg">{errores.idVehiculo}</span>}
                         </div>
 
@@ -358,19 +354,15 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
 
                             <div className="agregar-servicio-container">
                                 <div className="agregar-servicio-row">
-                                    <select
-                                        className="form-select"
+                                    <SelectBuscable
                                         value={servicioSeleccionado}
                                         onChange={handleServicioChange}
-                                    >
-                                        <option value="">Agregar servicio del catálogo —</option>
-                                        {serviciosCatalogo.map(s => (
-                                            <option key={s.idServicio} value={s.idServicio}>
-                                                {s.nombreServicio} - {s.areaServicio}
-                                                {s.tipoPrecio === 'VARIABLE' ? ' (Variable)' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        placeholder="Agregar servicio del catálogo —"
+                                        options={serviciosCatalogo.map(s => ({
+                                            value: s.idServicio,
+                                            label: `${s.nombreServicio} - ${s.areaServicio}${s.tipoPrecio === 'VARIABLE' ? ' (Variable)' : ''}`
+                                        }))}
+                                    />
                                     <button type="button" className="btn-agregar" onClick={agregarServicio}>
                                         + Agregar
                                     </button>
@@ -379,19 +371,16 @@ const ModalNuevaOrden = ({ isOpen, onClose, onOrdenCreada }) => {
                                 {servicioSeleccionado && (
                                     <div className="empleado-selector">
                                         <label>Asignar empleado:</label>
-                                        <select
-                                            className="form-select"
+                                        <SelectBuscable
+                                            className="sin-borde"
                                             value={empleadoSeleccionado}
-                                            onChange={(e) => setEmpleadoSeleccionado(e.target.value)}
-                                        >
-                                            <option value="">Seleccionar empleado —</option>
-                                            {empleadosParaServicio.map(e => (
-                                                <option key={e.idEmpleado} value={e.idEmpleado}>
-                                                    {e.nombreEmpleado} - {e.rolEmpleado}
-                                                    {!e.activo && ' (Inactivo)'}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={setEmpleadoSeleccionado}
+                                            placeholder="Seleccionar empleado —"
+                                            options={empleadosParaServicio.map(e => ({
+                                                value: e.idEmpleado,
+                                                label: `${e.nombreEmpleado} - ${e.rolEmpleado}${!e.activo ? ' (Inactivo)' : ''}`
+                                            }))}
+                                        />
                                     </div>
                                 )}
                             </div>

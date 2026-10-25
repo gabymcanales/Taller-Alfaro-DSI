@@ -11,6 +11,7 @@ public class EmpleadoDTO {
     private String rolEmpleado;
     private Boolean activo;
     private List<ServicioResumenDTO> servicios;
+    private Boolean tieneOrdenes;
 
     @Data
     public static class ServicioResumenDTO {

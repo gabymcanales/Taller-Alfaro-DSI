@@ -10,6 +10,8 @@ export const getArqueoDiario = () => axiosInstance.get('/cobros/arqueo');
 
 export const getHistorial = (params) => axiosInstance.get('/cobros/historial', { params });
 
+export const getDetalleTransaccion = (idTransaccion) => axiosInstance.get(`/cobros/historial/${idTransaccion}`);
+
 export const getServicios = () => axiosInstance.get('/cobros/servicios');
 
 export const buscarClientes = (nombre) => axiosInstance.get(`/cobros/clientes?nombre=${nombre}`);

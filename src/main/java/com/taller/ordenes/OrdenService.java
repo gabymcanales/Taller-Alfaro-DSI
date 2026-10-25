@@ -291,6 +291,27 @@ public class OrdenService {
         return convertToDTO(orden);
     }
 
+    @Transactional
+    public void eliminarOrden(Long idOrden) {
+        Orden orden = ordenRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
+        boolean algunoIniciado = ordenServicioRepository.findByOrdenId(idOrden).stream()
+                .anyMatch(os -> !"PENDIENTE".equals(os.getEstadoServicioOrden()));
+        if (!"PENDIENTE".equals(orden.getEstadoOrden()) || algunoIniciado) {
+            throw new RuntimeException(
+                    "La orden ya tiene servicios iniciados y no puede eliminarse");
+        }
+
+        if (transaccionRepository.findByOrdenId(idOrden).isPresent()) {
+            throw new RuntimeException("La orden tiene un cobro registrado y no puede eliminarse");
+        }
+
+        // Servicios, historial y productos se eliminan en cascada
+        ordenRepository.delete(orden);
+        log.info("Orden eliminada: {}", orden.getNumOrden());
+    }
+
     public List<OrdenResponseDTO> getOrdenes() {
         return ordenRepository.findAll().stream()
                 .map(this::convertToDTO)

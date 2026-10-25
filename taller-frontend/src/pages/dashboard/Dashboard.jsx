@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { getUsuarioActual } from '../../utils/authUser';
+import Pagination from '../../components/common/Pagination/Pagination';
 import './Dashboard.css';
+
+const ITEMS_PER_PAGE = 10;
+
+const formatoMonto = (valor) => `$${Number(valor ?? 0).toFixed(2)}`;
 
 const Dashboard = () => {
     const [datos, setDatos] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
     const usuario = getUsuarioActual();
 
     useEffect(() => {
@@ -23,7 +29,10 @@ const Dashboard = () => {
         }
     };
 
-    
+    const ventas = datos?.ultimasTransacciones ?? [];
+    const totalPages = Math.ceil(ventas.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const currentData = ventas.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     return (
         <div className="dashboard-container">
@@ -35,7 +44,7 @@ const Dashboard = () => {
                     <p>Bienvenido al sistema de gestión</p>
                 </div>
                 <div className="ingresos-badge">
-                    <span>Ingresos del día: ${datos?.ingresosDia ?? 0}</span>
+                    <span>Ingresos del día: {formatoMonto(datos?.ingresosDia)}</span>
                 </div>
             </div>
 
@@ -49,8 +58,8 @@ const Dashboard = () => {
                         </svg>
                     </div>
                     <div className="dash-card-info">
-                        <span className="dash-card-label">Ventas Hoy</span>
-                        <span className="dash-card-value">{datos?.totalVentasDia ?? 0}</span>
+                        <span className="dash-card-label">Órdenes Atendidas</span>
+                        <span className="dash-card-value">{datos?.ordenesAtendidas ?? 0}</span>
                     </div>
                 </div>
 
@@ -63,7 +72,7 @@ const Dashboard = () => {
                     </div>
                     <div className="dash-card-info">
                         <span className="dash-card-label">Ingresos del Día</span>
-                        <span className="dash-card-value">${datos?.ingresosDia ?? 0}</span>
+                        <span className="dash-card-value">{formatoMonto(datos?.ingresosDia)}</span>
                     </div>
                 </div>
 
@@ -77,8 +86,8 @@ const Dashboard = () => {
                         <span className="dash-card-label">Último Cobro</span>
                         <span className="dash-card-value">
                             {datos?.ultimasTransacciones?.length > 0
-                                ? `$${datos.ultimasTransacciones[0].montoTotal}`
-                                : '$0'}
+                                ? formatoMonto(datos.ultimasTransacciones[0].montoTotal)
+                                : formatoMonto(0)}
                         </span>
                     </div>
                 </div>
@@ -92,7 +101,7 @@ const Dashboard = () => {
                     </div>
                     <div className="dash-card-info">
                         <span className="dash-card-label">Transacciones</span>
-                        <span className="dash-card-value">{datos?.ultimasTransacciones?.length ?? 0}</span>
+                        <span className="dash-card-value">{datos?.totalVentasDia ?? 0}</span>
                     </div>
                 </div>
             </div>
@@ -109,11 +118,11 @@ const Dashboard = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {datos?.ultimasTransacciones?.length > 0
-                        ? datos.ultimasTransacciones.map((t, i) => (
-                            <tr key={i}>
+                    {currentData.length > 0
+                        ? currentData.map((t, i) => (
+                            <tr key={t.idTransaccion ?? i}>
                                 <td>{t.numOrden}</td>
-                                <td className="monto">${t.montoTotal}</td>
+                                <td className="monto">{formatoMonto(t.montoTotal)}</td>
                                 <td>{t.hora}</td>
                             </tr>
                         ))
@@ -125,6 +134,11 @@ const Dashboard = () => {
                     }
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </div>
         </div>
     );

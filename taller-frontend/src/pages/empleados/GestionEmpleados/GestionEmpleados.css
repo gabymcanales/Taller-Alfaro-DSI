@@ -312,6 +312,7 @@
 
 .icono-editar,
 .icono-inhabilitar,
+.icono-eliminar,
 .icono-habilitar {
     cursor: pointer;
     font-size: 16px;
@@ -324,7 +325,8 @@
     transform: scale(1.15);
 }
 
-.icono-inhabilitar:hover {
+.icono-inhabilitar:hover,
+.icono-eliminar:hover {
     color: #ef4444;
     transform: scale(1.15);
 }

@@ -3,11 +3,13 @@ import {
     getEmpleados,
     crearEmpleado,
     actualizarEmpleado,
-    cambiarEstadoEmpleado
+    cambiarEstadoEmpleado,
+    eliminarEmpleado
 } from '../../../services/empleadoService';
 import { getServicios } from '../../../services/servicioService';
+import { getUsuarioActual } from '../../../utils/authUser';
 import './GestionEmpleados.css';
-import { FaEdit, FaBan, FaCheckCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEdit, FaBan, FaCheckCircle, FaEye, FaEyeSlash, FaTrash } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -32,6 +34,9 @@ const GestionEmpleados = () => {
 
     const [mostrarConfirmEstado, setMostrarConfirmEstado] = useState(false);
     const [empleadoEstado, setEmpleadoEstado] = useState(null);
+
+    const [empleadoEliminar, setEmpleadoEliminar] = useState(null);
+    const usernameActual = getUsuarioActual()?.username;
 
     useEffect(() => {
         cargarDatos();
@@ -202,6 +207,18 @@ const GestionEmpleados = () => {
         }
     };
 
+    const confirmarEliminar = async () => {
+        try {
+            await eliminarEmpleado(empleadoEliminar.idEmpleado);
+            toast.success('Empleado eliminado correctamente');
+            setEmpleadoEliminar(null);
+            await cargarDatos();
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.mensaje || 'Error al eliminar el empleado');
+        }
+    };
+
     const empleadosFiltrados = empleados.filter(e =>
         e.nombreEmpleado.toLowerCase().includes(busqueda.toLowerCase()) ||
         e.username.toLowerCase().includes(busqueda.toLowerCase())
@@ -247,6 +264,13 @@ const GestionEmpleados = () => {
                                         className="icono-habilitar"
                                         title="Habilitar"
                                         onClick={() => cambiarEstadoHandler(empleado)}
+                                    />
+                                )}
+                                {!empleado.tieneOrdenes && empleado.username !== usernameActual && (
+                                    <FaTrash
+                                        className="icono-eliminar"
+                                        title="Eliminar"
+                                        onClick={() => setEmpleadoEliminar(empleado)}
                                     />
                                 )}
                             </div>
@@ -391,6 +415,26 @@ const GestionEmpleados = () => {
                             </button>
                             <button onClick={confirmarCambioEstado}>
                                 {empleadoEstado?.activo ? 'Inhabilitar' : 'Habilitar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {empleadoEliminar && (
+                <div className="modal-overlay">
+                    <div className="modal-empleado">
+                        <h2>Eliminar empleado</h2>
+                        <p>
+                            ¿Desea eliminar a <strong>{empleadoEliminar.nombreEmpleado}</strong>?
+                            Esta acción no se puede deshacer.
+                        </p>
+                        <div className="modal-buttons">
+                            <button onClick={() => setEmpleadoEliminar(null)}>
+                                Cancelar
+                            </button>
+                            <button onClick={confirmarEliminar}>
+                                Eliminar
                             </button>
                         </div>
                     </div>

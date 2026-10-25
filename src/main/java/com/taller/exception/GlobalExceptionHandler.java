@@ -27,6 +27,20 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(TransaccionNoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> handleNoEncontrado(RuntimeException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("status", 404);
+        response.put("mensaje", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleAllExceptions(Exception ex) {
 

@@ -8,7 +8,10 @@ import com.taller.exception.UsernameYaExisteException;
 import com.taller.model.Empleado;
 import com.taller.model.Servicio;
 import com.taller.ordenes.EmpleadoRepository;
+import com.taller.ordenes.OrdenRepository;
+import com.taller.ordenes.OrdenServicioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,8 @@ public class EmpleadoService {
 
     private final EmpleadoRepository empleadoRepository;
     private final ServicioRepository servicioRepository;
+    private final OrdenRepository ordenRepository;
+    private final OrdenServicioRepository ordenServicioRepository;
     private final PasswordEncoder passwordEncoder;
 
     public List<EmpleadoDTO> obtenerTodos() {
@@ -81,6 +86,34 @@ public class EmpleadoService {
         return toDTO(empleadoRepository.save(empleado));
     }
 
+    @Transactional
+    public void eliminar(Long id, String usernameActual) {
+        Empleado empleado = empleadoRepository.findById(id)
+                .orElseThrow(() -> new EmpleadoNoEncontradoException(id));
+
+        if (empleado.getUsername().equals(usernameActual)) {
+            throw new RuntimeException("No puede eliminar su propio usuario");
+        }
+
+        if (tieneOrdenes(id)) {
+            throw new RuntimeException(
+                    "No se puede eliminar el empleado porque tiene órdenes asociadas. Puede inhabilitarlo en su lugar.");
+        }
+
+        try {
+            empleadoRepository.delete(empleado);
+            empleadoRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException(
+                    "No se puede eliminar el empleado porque tiene operaciones registradas (cobros, cierres o movimientos de inventario). Puede inhabilitarlo en su lugar.");
+        }
+    }
+
+    private boolean tieneOrdenes(Long idEmpleado) {
+        return ordenRepository.existsByEmpleado_IdEmpleado(idEmpleado)
+                || ordenServicioRepository.existsByEmpleado_IdEmpleado(idEmpleado);
+    }
+
     private void validarCamposObligatorios(EmpleadoRequest request, boolean esCreacion) {
         if (request.getNombreEmpleado() == null || request.getNombreEmpleado().isBlank()) {
             throw new IllegalArgumentException("El nombre del empleado es obligatorio");
@@ -113,6 +146,7 @@ public class EmpleadoService {
         dto.setRolEmpleado(empleado.getRolEmpleado());
         dto.setActivo(empleado.getActivo());
         dto.setServicios(empleadoRepository.findServiciosResumenByEmpleadoId(empleado.getIdEmpleado()));
+        dto.setTieneOrdenes(tieneOrdenes(empleado.getIdEmpleado()));
         return dto;
     }
 }

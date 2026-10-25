@@ -1,0 +1,111 @@
+.select-buscable {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+}
+
+.select-buscable-input {
+    width: 100%;
+    padding: 10px 32px 10px 14px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.select-buscable-input:focus {
+    border-color: #ff4000;
+    cursor: text;
+}
+
+.select-buscable-input::placeholder {
+    color: #888;
+}
+
+/* Variante sin borde, para cuando el select va dentro de una caja (ej. "Asignar empleado") */
+.select-buscable-input.sin-borde,
+.select-buscable-input.sin-borde:focus {
+    background: transparent;
+    border-color: transparent;
+    padding-left: 0;
+}
+
+.select-buscable-input.input-error {
+    border-color: #ef4444;
+}
+
+.select-buscable.deshabilitado .select-buscable-input {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.select-buscable-flecha {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0a0a0;
+    font-size: 12px;
+    pointer-events: none;
+    transition: transform 0.15s;
+}
+
+.select-buscable-flecha.abierto {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* 6 opciones visibles (6 x 36px); a partir de la 7 aparece el scroll */
+.select-buscable-lista {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    max-height: 216px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.select-buscable-opcion,
+.select-buscable-vacio {
+    min-height: 36px;
+    padding: 9px 14px;
+    font-size: 13px;
+    color: #fff;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.select-buscable-opcion {
+    cursor: pointer;
+}
+
+.select-buscable-opcion.resaltada {
+    background: #2a2a2a;
+}
+
+.select-buscable-opcion.seleccionada {
+    color: #ff8c42;
+    font-weight: 600;
+}
+
+.select-buscable-vacio {
+    color: #888;
+    font-style: italic;
+}

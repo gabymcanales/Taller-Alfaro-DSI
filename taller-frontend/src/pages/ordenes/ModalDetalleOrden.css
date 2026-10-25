@@ -242,3 +242,47 @@
     border-radius: 8px;
     cursor: pointer;
 }
+.btn-eliminar-orden {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-eliminar-orden:hover {
+    background: #b91c1c;
+}
+
+.btn-eliminar-orden:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.confirmar-eliminar-orden {
+    background: rgba(226, 75, 74, 0.05);
+    border: 1px solid rgba(226, 75, 74, 0.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #f09595;
+    line-height: 1.5;
+}
+
+.error-eliminar-orden {
+    margin-top: 8px;
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.confirmar-eliminar-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 12px;
+}
