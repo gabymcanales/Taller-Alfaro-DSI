@@ -162,6 +162,13 @@ const GestionInventario = () => {
                 return;
             }
 
+            if (Number(nuevoProducto.cantidadUnidad) <= 0) {
+
+                toast.error('El contenido de la unidad debe ser mayor a 0');
+
+                return;
+            }
+
             const datosProducto = {
                 nombre: nuevoProducto.nombre,
                 descripcion: nuevoProducto.descripcion,
@@ -824,7 +831,7 @@ const GestionInventario = () => {
                                 <label>Contenido</label>
                                 <input
                                     type="number"
-                                    min="0"
+                                    min="0.01"
                                     step="any"
                                     value={nuevoProducto.cantidadUnidad}
                                     onChange={(e) =>

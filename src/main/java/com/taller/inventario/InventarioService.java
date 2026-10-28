@@ -28,6 +28,7 @@ public class InventarioService {
     }
 
     public Producto guardarProducto(Producto producto) {
+        validarUnidadMedida(producto.getUnidadMedida());
         if (existeProductoDuplicado(producto.getNombre(), producto.getMarca(), null)) {
             throw new RuntimeException(mensajeDuplicado(producto.getNombre(), producto.getMarca()));
         }
@@ -38,6 +39,8 @@ public class InventarioService {
 
     Producto producto = productoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        validarUnidadMedida(productoActualizado.getUnidadMedida());
 
         if (existeProductoDuplicado(productoActualizado.getNombre(), productoActualizado.getMarca(), id)) {
             throw new RuntimeException(mensajeDuplicado(productoActualizado.getNombre(), productoActualizado.getMarca()));
@@ -54,6 +57,20 @@ public class InventarioService {
 
     return productoRepository.save(producto);
 }
+
+    // unidadMedida llega como "<contenido> <unidad>", ej. "1 Gal"; el contenido debe ser mayor a 0
+    private void validarUnidadMedida(String unidadMedida) {
+        String[] partes = unidadMedida == null ? new String[0] : unidadMedida.trim().split("\\s+");
+        double contenido;
+        try {
+            contenido = partes.length > 1 ? Double.parseDouble(partes[0]) : 0;
+        } catch (NumberFormatException e) {
+            contenido = 0;
+        }
+        if (contenido <= 0) {
+            throw new RuntimeException("El contenido de la unidad debe ser mayor a 0");
+        }
+    }
 
     public void eliminarProducto(Long id) {
 
