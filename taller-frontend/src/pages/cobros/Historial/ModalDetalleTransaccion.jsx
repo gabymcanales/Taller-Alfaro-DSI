@@ -4,6 +4,30 @@ import './ModalDetalleTransaccion.css';
 
 const formatoMonto = (valor) => (valor != null ? `$${Number(valor).toFixed(2)}` : '—');
 
+// Nombre de la unidad en singular/plural; las abreviaturas sin entrada (mL, kg, oz...) se dejan igual
+const UNIDADES = {
+    gal: ['galón', 'galones'],
+    galon: ['galón', 'galones'],
+    galón: ['galón', 'galones'],
+    galones: ['galón', 'galones'],
+    l: ['litro', 'litros'],
+    litro: ['litro', 'litros'],
+    litros: ['litro', 'litros'],
+    cuarto: ['cuarto', 'cuartos'],
+    cuartos: ['cuarto', 'cuartos'],
+    unidad: ['unidad', 'unidades'],
+    unidades: ['unidad', 'unidades'],
+};
+
+// unidadMedida viene como "1 Gal" (presentación); se quita el número y se ajusta a la cantidad vendida
+const formatoCantidad = (cantidad, unidadMedida) => {
+    const partes = (unidadMedida || '').trim().split(/\s+/);
+    const unidad = (partes.length > 1 && !isNaN(partes[0]) ? partes.slice(1).join(' ') : partes.join(' ')) || 'unidad';
+    const formas = UNIDADES[unidad.toLowerCase()];
+    if (!formas) return `${cantidad} ${unidad}`;
+    return `${cantidad} ${Number(cantidad) === 1 ? formas[0] : formas[1]}`;
+};
+
 const ModalDetalleTransaccion = ({ idTransaccion, onClose }) => {
     const [detalle, setDetalle] = useState(null);
     const [error, setError] = useState('');
@@ -111,7 +135,7 @@ const ModalDetalleTransaccion = ({ idTransaccion, onClose }) => {
                                         ) : detalle.productos.map((p, i) => (
                                             <tr key={i}>
                                                 <td>{p.nombre}</td>
-                                                <td>{p.cantidad} {p.unidadMedida || ''}</td>
+                                                <td>{formatoCantidad(p.cantidad, p.unidadMedida)}</td>
                                                 <td className="dt-num">{formatoMonto(p.precioUnitario)}</td>
                                                 <td className="dt-num">{formatoMonto(p.subtotal)}</td>
                                             </tr>
